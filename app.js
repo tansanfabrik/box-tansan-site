@@ -30,6 +30,7 @@ let sourceImage=null, sourceName='', uploadGeneration=0, selectedFace='front';
 const faceNames={front:'表面',back:'裏面',left:'左面',right:'右面',top:'上面',bottom:'下面','base-left':'身の左面','base-right':'身の右面','base-top':'身の上面','base-bottom':'身の下面'};
 let autoLayoutDimensions=null,restoredColors=false;
 let crops={},box={width:95,height:122,depth:22,radius:1,color:'#f1eee8',baseColor:'#f1eee8',interiorColor:'#e7e1d5',basePeekMM:2.4,baseArtwork:false,type:'lid'};
+let frontGuide=null,guessGeneration=0,guessing=false;
 let faceGuess=null,cropDrag=null,cropView=null,ground=null,floorGrid=null,sampleMode=false,cancelExport=false,exportSamples=256,gifPairOffsets=null,referenceMesh=null,sceneBoxCount=1,previewScale=1;
 const outputIds=['output-bg','background-color','output-aspect','placement','resolution','upright','gif-speed','paper-finish','lid-pose','box-arrangement','size-reference','dimension-caption'];
 function readOutput(){return Object.fromEntries(outputIds.map(id=>[id,$(id)?.type==='checkbox'?$(id).checked:$(id)?.value]));}
@@ -120,8 +121,8 @@ function setLayout(kind){
  selectedFace='front';refreshCrop();rebuildBox();message('画像上で各面の範囲を調整できます。選び直すと、その範囲だけが箱に反映されます。');
 }
 function refreshCrop(){
- if(faceGuess&&(faceGuess.image!==faceImage()||faceGuess.dimensions!==[box.width,box.height,box.depth].join(',')))clearFaceGuess();
- syncBaseArtwork();checkRatios();showPDFResult();
+ if(faceGuess&&(faceGuess.image!==faceImage()||faceGuess.dimensions!==[box.type,box.width,box.height,box.depth].join(',')))clearFaceGuess();
+ syncFrontGuide();syncBaseArtwork();checkRatios();showPDFResult();
  document.querySelectorAll('[data-face]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.face===selectedFace)));
  const c=crops[selectedFace];$('face-upload-label').textContent=faceNames[selectedFace]+'の画像・PDFを選ぶ';$('crop-label').textContent=faceNames[selectedFace]+(c?' · '+c.rotation+'°':' · 未設定');
  $('inset').value=c?.inset||0;$('inset-value').textContent=(c?.inset||0)+' px';
@@ -129,7 +130,7 @@ function refreshCrop(){
  $('rotate-crop').disabled=!c;$('clear-face').disabled=!c;$('inset').disabled=!c;
  BoxRangeInputs.sync();drawCrop();
 }
-function faceImage(){return crops[selectedFace]?.image||sourceImage;}
+function faceImage(){return selectedFace==='front'&&frontGuide?frontGuide.image:crops[selectedFace]?.image||sourceImage;}
 function drawCrop(){
  const image=faceImage();if(!image)return;const c=$('crop-canvas'),width=c.clientWidth,height=c.clientHeight;if(!width||!height)return;
  const ratio=Math.min(devicePixelRatio||1,2);c.width=Math.round(width*ratio);c.height=Math.round(height*ratio);const ctx=c.getContext('2d');ctx.scale(ratio,ratio);
@@ -140,13 +141,14 @@ function drawCrop(){
  ctx.fillStyle='#fff';ctx.strokeStyle='#0071e3';ctx.lineWidth=2;for(const [key,hx,hy] of BoxCrop.handles([px,py,pw,ph])){const size=key.length===2?9:7;ctx.fillRect(hx-size/2,hy-size/2,size,size);ctx.strokeRect(hx-size/2,hy-size/2,size,size);}
  const inset=active.inset*scale;if(inset>0){ctx.setLineDash([3,3]);ctx.strokeStyle='#fff';ctx.lineWidth=1;ctx.strokeRect(px+inset,py+inset,pw-2*inset,ph-2*inset);}
  }
- if(faceGuess&&faceGuess.image===image){ctx.setLineDash([6,3]);ctx.lineWidth=2;ctx.font='bold 13px sans-serif';for(const [face,candidate] of Object.entries(faceGuess.faces)){const [x,y,w,h]=candidate.rect,px=ox+x*scale,py=oy+y*scale;ctx.strokeStyle='#d24b00';ctx.strokeRect(px,py,w*scale,h*scale);const label=faceNames[face]+' 候補',tw=ctx.measureText(label).width;ctx.fillStyle='#fff';ctx.fillRect(px,py,tw+10,20);ctx.fillStyle='#8f3300';ctx.fillText(label,px+5,py+14);}ctx.setLineDash([]);}
+ if(faceGuess&&faceGuess.image===image){ctx.setLineDash([6,3]);ctx.lineWidth=2;ctx.font='bold 13px sans-serif';for(const [face,candidate] of Object.entries(faceGuess.faces)){const [x,y,w,h]=candidate.rect,px=ox+x*scale,py=oy+y*scale;const color={front:'#0071e3',back:'#7b3fbb',left:'#b64b00',right:'#007d73',top:'#9b6500',bottom:'#b32c6c'}[face]||'#555';ctx.strokeStyle=color;ctx.strokeRect(px,py,w*scale,h*scale);const label=faceNames[face]+(face==='front'&&faceGuess.anchored?' 固定':' 候補'),tw=ctx.measureText(label).width;ctx.fillStyle='#fff';ctx.fillRect(px,py,tw+10,20);ctx.fillStyle=color;ctx.fillText(label,px+5,py+14);}ctx.setLineDash([]);}
  c.setAttribute('aria-label',faceNames[selectedFace]+'の範囲。辺・四隅をドラッグしてサイズ調整、内側で移動、外側で選び直し。矢印キーで1px移動。'+(active?active.rect.join(', '):'未設定'));
 }
 function cropPoint(e){const image=faceImage(),rect=$('crop-canvas').getBoundingClientRect();return[clamp((e.clientX-rect.left-cropView.ox)/cropView.scale,0,image.naturalWidth),clamp((e.clientY-rect.top-cropView.oy)/cropView.scale,0,image.naturalHeight)];}
 function updateCrop(){clearFaceGuess();sampleMode=false;refreshCrop();rebuildBox();}
 let activePDF=null,importController=null,importing=false;
 function syncPDFControls(){
+ syncFrontGuide();
  $('pdf-controls').hidden=!activePDF||!!activePDF.face&&activePDF.face!==selectedFace;
  if(activePDF){$('pdf-page').value=activePDF.page;$('pdf-page').max=activePDF.doc.numPages;$('pdf-total').textContent='/ '+activePDF.doc.numPages+' ページ';}
  $('pdf-page').disabled=importing||exporting||!activePDF;
@@ -155,7 +157,7 @@ function syncPDFControls(){
  $('dropzone').setAttribute('aria-busy',String(importing));
  exportButton.disabled=!ready||!sourceImage||importing||exporting;syncExportButtons();
 }
-function startImport(){if(importController)importController.abort();importController=new AbortController();importing=true;const generation=++uploadGeneration;syncPDFControls();return{generation,signal:importController.signal};}
+function startImport(){if(frontGuide){cancelFrontGuide();refreshCrop();rebuildBox();}clearFaceGuess();if(importController)importController.abort();importController=new AbortController();importing=true;const generation=++uploadGeneration;syncPDFControls();return{generation,signal:importController.signal};}
 function releasePDF(pdf){if(pdf)pdf.doc.loadingTask.destroy().catch(()=>{});}
 function applySource(img,name){
  const detectedColor=BoxPhotoColor.fromImage(img);
@@ -539,6 +541,7 @@ $('inset').addEventListener('input',()=>{if(crops[selectedFace]){crops[selectedF
 ['x','y','w','h'].forEach(k=>$('crop-'+k).addEventListener('change',()=>{if(!crops[selectedFace])return;const values=['x','y','w','h'].map(key=>Number($('crop-'+key).value));if(values.every(Number.isFinite)){crops[selectedFace].rect=normalizeRect(values,faceImage());updateCrop();}}));
 function openImageEditor(){if(!sourceImage)return;$('shooting-settings').close();document.body.classList.remove('shooting-open');$('open-shooting').setAttribute('aria-expanded','false');if(!$('image-editor').open)$('image-editor').showModal();refreshCrop();}
 function useSingleImage(){
+ cancelFrontGuide();
  if(autoLayoutDimensions){Object.assign(box,autoLayoutDimensions);for(const key of ['width','height','depth'])$('box-'+key).value=box[key];syncSizePreset();}
  clearFaceGuess();$('guess-message').textContent='元画像全体を表面に配置しました。展開図なら、面を推測して配置し直せます。';sampleMode=false;clearAutoLayoutNotice();$('file-info').dataset.autoLayout='single';setLayout('single');$('preview-badge').textContent='1枚のデザインを表面に';message('1枚絵の全体を表面に配置しました。箱のサイズは「箱のかたち」タブで変更できます。');save();
 }
@@ -547,21 +550,65 @@ $('use-full-image').addEventListener('click',useSingleImage);
 $('open-image-editor').addEventListener('click',openImageEditor);$('close-image-editor').addEventListener('click',()=>$('image-editor').close());
 new ResizeObserver(drawCrop).observe($('crop-canvas'));
 const cropCanvas=$('crop-canvas');
-function clearFaceGuess(){faceGuess=null;$('guess-actions').hidden=true;}
-$('guess-faces').addEventListener('click',async()=>{
- if(importing||exporting||cropDrag||!faceImage())return;
- clearFaceGuess();const image=faceImage(),dimensions=[box.width,box.height,box.depth].join(',');$('guess-faces').disabled=true;$('guess-message').textContent='面の候補を探しています…';await tick();
- try{const result=BoxFaceDetection.detect(image,box);if(image!==faceImage()||dimensions!==[box.width,box.height,box.depth].join(','))return;
- if(!result){$('guess-message').textContent='確かな候補が見つかりませんでした。辺や四隅を動かして範囲を指定してください。';drawCrop();return;}
- faceGuess={...result,image,dimensions};$('guess-actions').hidden=false;$('guess-message').textContent=result.count+'面の候補をオレンジ色で表示しました。'+(result.sizeMismatch?'選択した箱サイズと展開図の比率に差があります。寸法と側面の範囲を確認してください。':'')+(result.frontAmbiguous?'表裏は寸法だけでは区別できません。':'')+'表裏・面の位置・文字の向きを確認してください。適用すると、見つかった面だけを置き換えます。';drawCrop();
- }catch(e){$('guess-message').textContent='推測できませんでした。範囲を手動で指定してください。';}finally{$('guess-faces').disabled=false;}
+function clearFaceGuess(){faceGuess=null;guessGeneration++;$('guess-actions').hidden=true;}
+function syncFrontGuide(){
+ const active=!!frontGuide;$('front-guide').hidden=!active;$('specify-front').hidden=active;$('guess-faces').hidden=active;
+ $('guess-faces').disabled=guessing||importing;$('specify-front').disabled=guessing||importing;
+ $('guess-from-front').disabled=guessing||importing||!crops.front;
+ if(active)$('front-direction').value=String(crops.front?.rotation||0);
+ for(const b of document.querySelectorAll('[data-face]'))b.disabled=active&&b.dataset.face!=='front';
+}
+function cancelFrontGuide(restore=true){
+ if(!frontGuide)return;const {original,originalSampleMode}=frontGuide;frontGuide=null;clearFaceGuess();
+ if(restore){if(original)crops.front=original;else delete crops.front;sampleMode=originalSampleMode;}
+ syncFrontGuide();
+}
+$('specify-front').addEventListener('click',()=>{
+ if(importing||exporting||cropDrag||guessing||!faceImage())return;
+ const image=faceImage(),original=crops.front?{...crops.front,rect:[...crops.front.rect]}:null;
+ const current=(crops.front?.image||sourceImage)===image?original:null;
+ const candidate=faceGuess?.image===image?faceGuess.faces.front:null;
+ frontGuide={image,original,originalSampleMode:sampleMode};selectedFace='front';
+ if(current||candidate){const c=current||candidate;crops.front={...c,rect:[...c.rect],image};}else delete crops.front;
+ clearFaceGuess();$('guess-message').textContent='表面だけを指定し、文字の上側を選んでください。その範囲を固定して残りの面を探します。';refreshCrop();syncPDFControls();
 });
-$('cancel-guess').addEventListener('click',()=>{clearFaceGuess();$('guess-message').textContent='候補を取り消しました。元の配置は変更していません。';drawCrop();});
+$('front-direction').addEventListener('change',()=>{if(!frontGuide||!crops.front)return;crops.front.rotation=Number($('front-direction').value);updateCrop();});
+$('cancel-front-guide').addEventListener('click',()=>{cancelFrontGuide();$('guess-message').textContent='表面の指定を取り消しました。';refreshCrop();rebuildBox();});
+async function guessFaces(anchored=false){
+ if(importing||exporting||cropDrag||guessing||!faceImage()||anchored&&(!frontGuide||!crops.front))return;
+ clearFaceGuess();const generation=guessGeneration,image=anchored?frontGuide.image:faceImage(),dimensions=[box.type,box.width,box.height,box.depth].join(','),anchor=anchored?{...crops.front,rect:[...crops.front.rect]}:null;
+ guessing=true;syncFrontGuide();$('guess-message').textContent=anchored?'指定した表面を固定して、残りの面を探しています…':'面の候補を探しています…';await tick();
+ try{
+  if(generation!==guessGeneration)return;
+  const result=BoxFaceDetection.detect(image,box,anchor);
+  if(generation!==guessGeneration||image!==faceImage()||dimensions!==[box.type,box.width,box.height,box.depth].join(','))return;
+  if(!result){$('guess-message').textContent=anchored?'表面以外の確かな候補は見つかりませんでした。表面の範囲・向きと箱の寸法を確認して再推測するか、残りの面を手動で指定してください。':'確かな候補が見つかりませんでした。「表面を指定して推測」をお試しください。';drawCrop();return;}
+  // Keep independently uploaded artwork; this proposal only rearranges this image.
+  const protectedFaces=['back','left','right','top','bottom'].filter(f=>crops[f]?.image&&crops[f].image!==image);
+  const faces=Object.fromEntries(Object.entries(result.faces).filter(([f])=>!protectedFaces.includes(f)));
+  const missing=['back','left','right','top','bottom'].filter(f=>!faces[f]&&!protectedFaces.includes(f));
+  faceGuess={...result,faces,image,dimensions,anchor,protectedFaces,missing};$('guess-actions').hidden=false;
+  $('guess-message').textContent=(anchored?'表面を固定し、残り'+(Object.keys(faces).length-1)+'面の候補を色分けして表示しました。':Object.keys(faces).length+'面の候補を色分けして表示しました。')+(result.sizeMismatch?'箱の寸法と画像の比率に差があります。範囲と寸法を確認してください。':'')+(result.frontAmbiguous?'表裏が違う場合は「表面を指定して推測」を選んでください。':'')+(anchored&&missing.length?'見つからない面（'+missing.map(f=>faceNames[f]).join('・')+'）は、適用時に未設定になります。':'')+(protectedFaces.length?'個別にアップロードした面は維持します。':'')+'表裏・範囲・向きを確認して「この配置を使う」で確定します。';drawCrop();
+ }catch(e){$('guess-message').textContent='推測できませんでした。表面の範囲を確認するか、各面を手動で指定してください。';}
+ finally{guessing=false;syncFrontGuide();}
+}
+$('guess-faces').addEventListener('click',()=>guessFaces());
+$('guess-from-front').addEventListener('click',()=>guessFaces(true));
+$('cancel-guess').addEventListener('click',()=>{clearFaceGuess();$('guess-message').textContent=frontGuide?'候補を取り消しました。表面を調整して再推測できます。':'候補を取り消しました。配置は変更していません。';drawCrop();});
 $('apply-guess').addEventListener('click',()=>{
- if(!faceGuess||importing||exporting)return;const proposal=faceGuess;
- for(const [face,item] of Object.entries(proposal.faces))crops[face]={rect:normalizeRect(item.rect,proposal.image),rotation:item.rotation,inset:item.inset||0,image:proposal.image,name:'推測した'+faceNames[face]};
- selectedFace='front';clearFaceGuess();clearAutoLayoutNotice();sampleMode=false;$('preview-badge').textContent='面の候補を反映しました';$('guess-message').textContent='候補を適用しました。面の範囲や文字の向きを確認し、必要に応じて調整してください。';refreshCrop();rebuildBox();
+ if(!faceGuess||importing||exporting||cropDrag)return;const proposal=faceGuess;
+ if(proposal.dimensions!==[box.type,box.width,box.height,box.depth].join(',')||proposal.image!==faceImage()){clearFaceGuess();return;}
+ if(proposal.anchored){
+  if(!frontGuide||JSON.stringify(crops.front?.rect)!==JSON.stringify(proposal.anchor.rect)||crops.front?.rotation!==proposal.anchor.rotation){clearFaceGuess();return;}
+  for(const face of proposal.missing)delete crops[face];
+ }
+ for(const [face,item] of Object.entries(proposal.faces)){
+  if(proposal.anchored&&face==='front')continue;
+  crops[face]={rect:normalizeRect(item.rect,proposal.image),rotation:item.rotation,inset:item.inset||0,image:proposal.image,name:'推測した'+faceNames[face]};
+ }
+ const missing=proposal.anchored?proposal.missing:[];cancelFrontGuide(false);selectedFace='front';clearFaceGuess();clearAutoLayoutNotice();sampleMode=false;$('preview-badge').textContent='面の候補を反映しました';$('guess-message').textContent='配置を反映しました。'+(missing.length?'未設定の面（'+missing.map(f=>faceNames[f]).join('・')+'）は、面を選んで範囲を指定してください。':'各面の文字の向きを確認してください。');refreshCrop();rebuildBox();
 });
+$('image-editor').addEventListener('close',()=>{if(frontGuide){cancelFrontGuide();refreshCrop();rebuildBox();}else clearFaceGuess();});
 function cropHit(e){return BoxCrop.hit(crops[selectedFace]?.rect,cropPoint(e),(e.pointerType==='touch'?20:9)/cropView.scale);}
 cropCanvas.addEventListener('pointerdown',e=>{
  if(!sourceImage||exporting||importing||cropDrag||e.button!==0)return;
@@ -595,7 +642,7 @@ function syncBasePeek(){
 }
 function syncBaseArtwork(){
  const available=box.type==='lid',enabled=available&&box.baseArtwork;
- $('base-artwork-option').hidden=!available;$('base-artwork').checked=box.baseArtwork;$('base-face-tabs').hidden=!enabled;
+ $('base-artwork').disabled=!!frontGuide;$('base-artwork-option').hidden=!available;$('base-artwork').checked=box.baseArtwork;$('base-face-tabs').hidden=!enabled;
  if(!enabled&&selectedFace.startsWith('base-'))selectedFace='front';
  $('base-artwork-hint').hidden=!selectedFace.startsWith('base-');
 }
