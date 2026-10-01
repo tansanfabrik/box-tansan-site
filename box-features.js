@@ -79,5 +79,12 @@ function tuckFlapGeometry(T,w,d,u,top=true){
  for(const [a,b] of edges){const start=positions.length/3;for(const [q,lower] of [[a,false],[b,false],[b,true],[a,true]]){positions.push(...point(...q,lower));uvs.push(0,0);}indices.push(start,start+1,start+2,start,start+2,start+3);}
  const geo=new T.BufferGeometry();geo.setAttribute('position',new T.Float32BufferAttribute(positions,3));geo.setAttribute('uv',new T.Float32BufferAttribute(uvs,2));geo.setIndex(indices);geo.addGroup(0,faceCount,0);geo.addGroup(faceCount,indices.length-faceCount,1);geo.computeVertexNormals();return geo;
 }
-const api={tuckFlapGeometry,orbitCamera,spinPose,groundUp,viewPresets,flatPose,finishes,references,layout,hollow,arrange,reference,dragRotation,companionRotation};if(typeof module==='object'&&module.exports)module.exports=api;else root.BoxFeatures=api;
+// Orbit the key light and its reflection panel together, retaining the original rig at defaults.
+function lightPosition(base,azimuth=0,elevation=0,distance=100){
+ const [x,y,z]=base,r=Math.hypot(x,y,z)*distance/100;
+ const az=Math.atan2(x,z)+azimuth*Math.PI/180;
+ const el=Math.max(-85,Math.min(85,Math.atan2(y,Math.hypot(x,z))*180/Math.PI+elevation))*Math.PI/180;
+ return [r*Math.cos(el)*Math.sin(az),r*Math.sin(el),r*Math.cos(el)*Math.cos(az)];
+}
+const api={lightPosition,tuckFlapGeometry,orbitCamera,spinPose,groundUp,viewPresets,flatPose,finishes,references,layout,hollow,arrange,reference,dragRotation,companionRotation};if(typeof module==='object'&&module.exports)module.exports=api;else root.BoxFeatures=api;
 })(globalThis);

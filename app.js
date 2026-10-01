@@ -14,8 +14,8 @@ const lightingStyles={
  contrast:{label:'陰影くっきり',description:'片側からの光を強め、側面の陰影と角の丸みを際立たせます。',ambient:.22,key:3.15,fill:.25,rim:1.25,room:.075,softness:.68,powers:[4.4,.55,3.7,.6],colors:['#ffffff','#edf3ff','#ffffff'],exposure:1.12},
  warm:{label:'暖かい光',description:'ほんのり暖色の光に、やわらかな補助光を合わせます。',ambient:.72,key:2.2,fill:.9,rim:.8,room:.21,softness:1.2,powers:[3.6,1.8,2.6,1.35],colors:['#ffd5a9','#eaf2ff','#ffead4'],exposure:1.12}
 };
-const detailDefaults={key:100,fill:100,rim:100,ambient:100,elevation:0,temperature:6500,spread:100};
-const detailLimits={key:[0,200],fill:[0,200],rim:[0,200],ambient:[0,200],elevation:[-40,60],temperature:[3000,8000],spread:[50,180]};
+const detailDefaults={key:100,fill:100,rim:100,ambient:100,elevation:0,temperature:6500,spread:100,keyAzimuth:0,keyElevation:0,keyDistance:100};
+const detailLimits={key:[0,200],fill:[0,200],rim:[0,200],ambient:[0,200],elevation:[-40,60],temperature:[3000,8000],spread:[50,180],keyAzimuth:[-180,180],keyElevation:[-80,80],keyDistance:[50,200]};
 function cleanDetails(value){const out={...detailDefaults};for(const key in out)if(Number.isFinite(value?.[key]))out[key]=clamp(value[key],...detailLimits[key]);return out;}
 let state={paired:false,pairGapMM:10,cameraAzimuth:0,cameraElevation:0,cameraDistance:100,x:0,y:30,z:0,zoom:1,view:'angle',lighting:'studio',brightness:100,lightDirection:0,details:{...detailDefaults},focusPosition:'middle',focusBlur:0,shadowBlur:25};
 try{const s=JSON.parse(localStorage.getItem('box-photo-preferences-v1'));if(s&&['x','y','z','zoom'].every(k=>Number.isFinite(s[k])))state={...state,x:clamp(s.x,-180,180),y:wrap(s.y),z:clamp(s.z,-180,180),zoom:clamp(s.zoom,.7,3),view:s.view||'custom',lighting:Object.hasOwn(lightingStyles,s.lighting)?s.lighting:'studio',brightness:Number.isFinite(s.brightness)?clamp(s.brightness,65,145):100,lightDirection:Number.isFinite(s.lightDirection)?clamp(s.lightDirection,-100,100):0,details:cleanDetails(s.details),focusPosition:['near','middle','far'].includes(s.focusPosition)?s.focusPosition:'middle',focusBlur:Number.isFinite(s.focusBlur)?clamp(s.focusBlur,0,100):0};}catch(e){}
@@ -305,20 +305,21 @@ function applyLighting(rebuildEnvironment=false){
  if(!lightSources)return;const style=lightingStyles[state.lighting],detail=state.details,tint=temperatureColor(detail.temperature),spread=style.softness*detail.spread/100;
  for(const name of ['ambient','key','fill','rim'])lightSources[name].intensity=style[name]*detail[name]/100;
  ['key','fill','rim'].forEach((name,i)=>lightSources[name].color.set(style.colors[i]).multiply(tint));lightSources.ambient.color.copy(tint);
+ lightSources.key.position.set(...BoxFeatures.lightPosition([-500,650,1000],detail.keyAzimuth,detail.keyElevation,detail.keyDistance));
  lightingRig.rotation.set(rad(-detail.elevation),rad(state.lightDirection),0);syncShadowBlur();
  // Studio uses linear exposure to retain artwork hues; the other photographic presets keep their filmic look.
  renderer.toneMapping=state.lighting==='neutral'?THREE.NoToneMapping:state.lighting==='studio'?THREE.LinearToneMapping:THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=style.exposure*state.brightness/100;
  syncLightingControls();
  lightingPreset.value=state.lighting;brightness.value=state.brightness;lightDirection.value=state.lightDirection;
  $('brightness-value').textContent=state.brightness+'%';$('direction-value').textContent=state.lightDirection+'°';$('lighting-description').textContent=style.description;
- for(const key in detailDefaults){$('light-'+key).value=detail[key];$('light-'+key+'-value').textContent=detail[key]+(key==='temperature'?' K':key==='elevation'?'°':'%');}
+ for(const key in detailDefaults){$('light-'+key).value=detail[key];$('light-'+key+'-value').textContent=detail[key]+(key==='temperature'?' K':['elevation','keyAzimuth','keyElevation'].includes(key)?'°':'%');}
  if(rebuildEnvironment){
   clearTimeout(environmentTimer);environmentTimer=0;
   const room=new THREE.Scene();room.background=new THREE.Color(style.room,style.room,style.room).multiplyScalar(detail.ambient/100).multiply(tint);
   const panels=new THREE.Group();panels.rotation.copy(lightingRig.rotation);room.add(panels);
   function softbox(x,y,z,w,h,power,color){if(power<=0)return;const material=new THREE.MeshBasicMaterial({color:new THREE.Color(color).multiply(tint).multiplyScalar(power),side:THREE.DoubleSide});const m=new THREE.Mesh(new THREE.PlaneGeometry(w*spread,h*spread),material);m.position.set(x,y,z);m.lookAt(0,0,0);panels.add(m);}
-  softbox(-650,650,850,900,1100,style.powers[0]*detail.key/100,style.colors[0]);softbox(700,150,450,650,950,style.powers[1]*detail.fill/100,style.colors[1]);softbox(300,550,-800,750,900,style.powers[2]*detail.rim/100,style.colors[2]);softbox(0,1100,0,1000,850,style.powers[3]*detail.ambient/100,style.colors[0]);
-  const previous=environmentTarget;environmentTarget=pmrem.fromScene(room,.03,1,3000);scene.environment=environmentTarget.texture;if(previous)previous.dispose();
+  softbox(...BoxFeatures.lightPosition([-650,650,850],detail.keyAzimuth,detail.keyElevation,detail.keyDistance),900,1100,style.powers[0]*detail.key/100,style.colors[0]);softbox(700,150,450,650,950,style.powers[1]*detail.fill/100,style.colors[1]);softbox(300,550,-800,750,900,style.powers[2]*detail.rim/100,style.colors[2]);softbox(0,1100,0,1000,850,style.powers[3]*detail.ambient/100,style.colors[0]);
+  const previous=environmentTarget;environmentTarget=pmrem.fromScene(room,.03,1,6000);scene.environment=environmentTarget.texture;if(previous)previous.dispose();
   room.traverse(o=>{if(o.isMesh){o.geometry.dispose();o.material.dispose();}});
  }
  draw();
@@ -473,6 +474,7 @@ for(const key in detailDefaults){
  $('light-'+key).addEventListener('input',()=>{if(exporting)return;state.details[key]=Number($('light-'+key).value);applyLighting();clearTimeout(environmentTimer);environmentTimer=setTimeout(()=>{environmentTimer=0;applyLighting(true);},120);});
  $('light-'+key).addEventListener('change',()=>{applyLighting(true);lightingChanged();});
 }
+$('reset-light-position').addEventListener('click',()=>{for(const key of ['keyAzimuth','keyElevation','keyDistance'])state.details[key]=detailDefaults[key];applyLighting(true);lightingChanged();});
 $('reset-lighting-details').addEventListener('click',()=>{state.details={...detailDefaults};applyLighting(true);lightingChanged();});
 const reviewURLs=[];
 const tick=()=>new Promise(resolve=>setTimeout(resolve,0));
@@ -794,7 +796,7 @@ if(document.modelContext?.registerTool){
  register({name:'configure_box_lighting',title:'箱の照明を調整',description:'Change the visible lighting preset, brightness and direction. Does not export or upload anything.',inputSchema:{type:'object',properties:{preset:{type:'string',enum:Object.keys(lightingStyles)},brightness:{type:'number',minimum:65,maximum:145},direction:{type:'number',minimum:-100,maximum:100}},required:['preset'],additionalProperties:false},annotations:{readOnlyHint:false,untrustedContentHint:false},execute:input=>{if(!ready||exporting)throw new Error('Studio is not ready.');if(!input||!Object.hasOwn(lightingStyles,input.preset)||Object.keys(input).some(k=>!['preset','brightness','direction'].includes(k))||input.brightness!==undefined&&(!Number.isFinite(input.brightness)||input.brightness<65||input.brightness>145)||input.direction!==undefined&&(!Number.isFinite(input.direction)||input.direction < -100||input.direction>100))throw new Error('Invalid lighting settings.');state.lighting=input.preset;if(input.brightness!==undefined)state.brightness=input.brightness;if(input.direction!==undefined)state.lightDirection=input.direction;applyLighting(true);rebuildBox();lightingChanged();return{preset:state.lighting,brightness:state.brightness,direction:state.lightDirection};}});
 }
 
-function syncLightingControls(){$('finish-note').hidden=state.lighting!=='neutral';const neutral=state.lighting==='neutral';for(const id of ['brightness','light-direction',...Object.keys(detailDefaults).map(k=>'light-'+k),'reset-lighting-details'])$(id).disabled=exporting||neutral;}
+function syncLightingControls(){$('finish-note').hidden=state.lighting!=='neutral';const neutral=state.lighting==='neutral';for(const id of ['brightness','light-direction',...Object.keys(detailDefaults).map(k=>'light-'+k),'reset-lighting-details','reset-light-position'])$(id).disabled=exporting||neutral;}
 let pinch=null;
 stage.addEventListener('touchstart',e=>{if(e.touches.length===2&&!exporting)pinch={distance:Math.hypot(e.touches[0].clientX-e.touches[1].clientX,e.touches[0].clientY-e.touches[1].clientY),zoom:state.zoom};},{passive:true});
 stage.addEventListener('touchmove',e=>{if(e.touches.length===2&&pinch&&!exporting){e.preventDefault();const distance=Math.hypot(e.touches[0].clientX-e.touches[1].clientX,e.touches[0].clientY-e.touches[1].clientY);state.zoom=clamp(pinch.zoom*distance/pinch.distance,.7,3);fitPreviewZoom();draw();}},{passive:false});
@@ -831,7 +833,7 @@ for(const tablist of document.querySelectorAll('[role="tablist"]')){
 }
 // Project files share the complete scene settings with reusable composition files.
 const projectSchema={
- state:{paired:'boolean',pairGapMM:[0,100],cameraAzimuth:[-180,180],cameraElevation:[-75,90],cameraDistance:[70,180],x:[-180,180],y:[-180,180],z:[-180,180],zoom:[.7,3],view:{values:[...Object.keys(presets),'custom']},lighting:{values:Object.keys(lightingStyles)},brightness:[65,145],lightDirection:[-100,100],details:detailLimits,focusPosition:{values:['near','middle','far']},focusBlur:[0,100],shadowBlur:[0,100]},
+ state:{paired:'boolean',pairGapMM:[0,100],cameraAzimuth:[-180,180],cameraElevation:[-75,90],cameraDistance:[70,180],x:[-180,180],y:[-180,180],z:[-180,180],zoom:[.7,3],view:{values:[...Object.keys(presets),'custom']},lighting:{values:Object.keys(lightingStyles)},brightness:[65,145],lightDirection:[-100,100],details:{...detailLimits,...Object.fromEntries(['keyAzimuth','keyElevation','keyDistance'].map(k=>[k,{range:detailLimits[k],default:detailDefaults[k]}]))},focusPosition:{values:['near','middle','far']},focusBlur:[0,100],shadowBlur:[0,100]},
  box:{width:[30,400],height:[30,400],depth:[3,250],radius:[.2,4],color:'color',baseColor:'color',interiorColor:'color',basePeekMM:[0,100],baseArtwork:'boolean',tuckNotch:'boolean',type:{values:['lid','tuck']}},
  output:Object.fromEntries(outputIds.map(id=>{const el=$(id);return[id,el.type==='checkbox'?'boolean':el.type==='color'?'color':{values:el.tagName==='SELECT'?[...el.options].map(o=>o.value):Array.from({length:8},(_,i)=>String(.25+i*.25))}];}))
 };

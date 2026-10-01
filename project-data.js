@@ -8,7 +8,8 @@
   if(!value||typeof value!=='object')return fail();
   const out={};for(const [key,rule] of Object.entries(schema)){
    const v=value[key];
-   if(Array.isArray(rule)){if(!Number.isFinite(v)||v<rule[0]||v>rule[1])return fail();out[key]=v;}
+   if(rule&&rule.range){const n=v===undefined?rule.default:v;if(!Number.isFinite(n)||n<rule.range[0]||n>rule.range[1])return fail();out[key]=n;}
+   else if(Array.isArray(rule)){if(!Number.isFinite(v)||v<rule[0]||v>rule[1])return fail();out[key]=v;}
    else if(rule==='boolean'){if(typeof v!=='boolean')return fail();out[key]=v;}
    else if(rule==='color'){if(typeof v!=='string'||!/^#[0-9a-f]{6}$/i.test(v))return fail();out[key]=v;}
    else if(rule.values){if(!rule.values.includes(v))return fail();out[key]=v;}
