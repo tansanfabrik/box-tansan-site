@@ -412,7 +412,7 @@ function lockGifPairCenters(original){
  const [a,b]=samples.map(points=>BoxStudio.rotationHalfWidth(...points));gifPairOffsets=BoxStudio.pairCenters([-a,a],[-b,b],pairGap());
 }
 function updateUI(){$('paired-box').checked=state.paired;$('paired-box').disabled=exporting||$('box-arrangement').value!=='single';$('pair-gap-row').hidden=!state.paired;$('pair-gap').value=state.pairGapMM;$('pair-gap-value').textContent=state.pairGapMM+' mm';for(const [id,key] of [['camera-horizontal','cameraAzimuth'],['camera-height','cameraElevation'],['camera-distance','cameraDistance']])$(id).value=state[key];rotation.value=wrap(state.y);tilt.value=state.x;roll.value=state.z;zoom.value=Math.round(state.zoom*100);buttons.forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.view===state.view)));BoxRangeInputs.sync();}
-function draw(){if(!ready||exporting||comparisonActive)return;syncModel();fitFeaturePreview();updateUI();renderWithFocus(camera);syncCaptionPreview();}
+function draw(){if(!ready||exporting||comparisonActive)return;syncModel();fitFeaturePreview();updateUI();renderWithFocus(camera);syncCaptionPreview();window.BoxFriendly?.sync();}
 function fitPreviewZoom(){camera.zoom=state.zoom*previewScale*Math.min(camera.aspect,1/camera.aspect);camera.updateProjectionMatrix();}
 function resize(){if(!renderer||exporting||comparisonActive)return;const w=stage.clientWidth,h=stage.clientHeight;renderer.setPixelRatio(Math.min(devicePixelRatio||1,2));renderer.setSize(w,h,false);camera.aspect=w/h;camera.setFocalLength(85);fitPreviewZoom();draw();}
 async function init(){
@@ -532,7 +532,8 @@ async function runExport(kind){
  if(!ready||!sourceImage||exporting||importing)return;stopFocusPreview();cancelAnimationFrame(animation);release();if(environmentTimer)applyLighting(true);const original={...state},previewSize=renderer.getSize(new THREE.Vector2()),oldRatio=renderer.getPixelRatio(),originalBackground=$('output-bg').value;exporting=true;cancelExport=false;
  const controls=[...document.querySelectorAll('button,input,select')];controls.forEach(el=>el.disabled=true);$('cancel-export').hidden=false;$('cancel-export').disabled=false;exportButton.textContent='作成中…';exportSamples=kind==='gif'?96:256;
  try{
-  const [width,height]=dimensionsFor(kind==='gif'?512:Number(resolution.value));const items=[];
+  const liveOrbit=kind==='gif'&&originalBackground==='shadow',liveScale=512/Math.max(previewSize.x,previewSize.y);
+  const [width,height]=liveOrbit?[Math.max(1,Math.round(previewSize.x*liveScale)),Math.max(1,Math.round(previewSize.y*liveScale))]:dimensionsFor(kind==='gif'?512:Number(resolution.value));const items=[];
   if(kind==='layers'){
    $('output-bg').value='shadow';syncModel();const cam=exportCameraFor(width,height);
    for(const layer of ['box','shadow']){message(layer==='box'?'箱を描画しています…':'影を描画しています…');await tick();const frame=await capture(width,height,{cam,layer});frame.canvas.width=frame.canvas.height=1;items.push({blob:frame.blob,metadata:frame.metadata,label:layer==='box'?'箱（上に重ねる）':'影（下に重ねる）',name:layer+'.png'});}
@@ -542,15 +543,18 @@ async function runExport(kind){
    const orbit=originalBackground==='shadow';message(orbit?'箱と影を固定して、カメラを回すGIFを準備しています…':'回転GIFを準備しています…');
    const {GIFEncoder,quantize,applyPalette}=await import('./vendor/gifenc.mjs'),gif=GIFEncoder(),timing=BoxStudio.gifTiming($('gif-speed').value);
    if(orbit)syncModel();else lockGifPairCenters(original);
-   // A single framing covers the full orbit, including projected shadows, without breathing.
-   const base=camera.clone();base.aspect=width/height;base.zoom=1;base.clearViewOffset();base.updateProjectionMatrix();const union={x0:Infinity,y0:Infinity,x1:-Infinity,y1:-Infinity};
-   for(let i=0;i<72;i++){
-    const angle=i*5;let view=base;
-    if(orbit)view=BoxFeatures.orbitCamera(THREE,base,angle);
-    else{Object.assign(state,BoxFeatures.spinPose(THREE,original,angle,BoxStudio.uprightTurn(box,$('upright').value)));syncModel();}
-    const b=outputBounds(view);union.x0=Math.min(union.x0,b.x0);union.x1=Math.max(union.x1,b.x1);union.y0=Math.min(union.y0,b.y0);union.y1=Math.max(union.y1,b.y1);
+   // Shadow GIFs use the live projection verbatim, including zoom and aspect.
+   // Shadows or boxes may leave this chosen frame; never pull back to fit them.
+   let fitted=camera.clone();
+   if(!orbit){
+    const base=camera.clone();base.aspect=width/height;base.zoom=1;base.clearViewOffset();base.updateProjectionMatrix();const union={x0:Infinity,y0:Infinity,x1:-Infinity,y1:-Infinity};
+    for(let i=0;i<72;i++){
+     Object.assign(state,BoxFeatures.spinPose(THREE,original,i*5,BoxStudio.uprightTurn(box,$('upright').value)));syncModel();
+     const b=outputBounds(base);union.x0=Math.min(union.x0,b.x0);union.x1=Math.max(union.x1,b.x1);union.y0=Math.min(union.y0,b.y0);union.y1=Math.max(union.y1,b.y1);
+    }
+    fitted=exportCameraFor(width,height,union,base);
    }
-   const fitted=exportCameraFor(width,height,union,base);let metadata;
+   let metadata;
    for(let i=0;i<timing.frames;i++){
     if(cancelExport)throw new Error('書き出しを中止しました。');const angle=i*360/timing.frames;
     const cam=orbit?BoxFeatures.orbitCamera(THREE,fitted,angle):fitted;
@@ -560,7 +564,7 @@ async function runExport(kind){
     if(orbit)metadata.camera={...metadata.camera,azimuth:wrap(original.cameraAzimuth-angle),position:cam.position.toArray()};
     frame.canvas.width=frame.canvas.height=1;message((orbit?'カメラを回してGIFを作成しています… ':'回転GIFを作成しています… ')+Math.round((i+1)/timing.frames*100)+'%');await tick();
    }
-   gif.finish();const blob=new Blob([gif.bytes()],{type:'image/gif'});metadata={...metadata,durationMS:timing.durationMS,frames:timing.frames,rotationSpeed:timing.speed,gifMotion:orbit?'camera-orbit':'box-turntable',pairCenterOffsets:gifPairOffsets?[...gifPairOffsets]:null};const seconds=timing.durationMS/1000;showReview(blob,'box-rotation-'+seconds+'s.gif',[{blob,metadata,label:seconds+'秒ループ'}],'回転GIF · '+seconds+'秒ループ'+(orbit?' · カメラが周回':''));
+   gif.finish();const blob=new Blob([gif.bytes()],{type:'image/gif'});metadata={...metadata,durationMS:timing.durationMS,frames:timing.frames,rotationSpeed:timing.speed,gifMotion:orbit?'camera-orbit':'box-turntable',gifFraming:orbit?'live-preview':'auto-fit',cameraZoom:fitted.zoom,cameraAspect:fitted.aspect,pairCenterOffsets:gifPairOffsets?[...gifPairOffsets]:null};const seconds=timing.durationMS/1000;showReview(blob,'box-rotation-'+seconds+'s.gif',[{blob,metadata,label:seconds+'秒ループ'}],'回転GIF · '+seconds+'秒ループ'+(orbit?' · ライブビューの画角':''));
   }else{
    const cuts=kind==='three'?[{label:'斜め',name:'01-angle.png',pose:presets.angle},{label:'正面',name:'02-front.png',pose:presets.front},{label:'裏面',name:'03-back.png',pose:presets.back}]:kind==='pair'?[{label:'現在の角度',name:'01-current.png',pose:original},{label:'同じ角度の反対面',name:'02-reverse.png',pose:{...original,...companionState()}}]:[{label:'現在の向き',name:'box-image.png',pose:original}];
    for(const cut of cuts){Object.assign(state,cut.pose);syncModel();message(cut.label+'を描画しています…');await tick();const frame=await capture(width,height);frame.canvas.width=frame.canvas.height=1;items.push({blob:frame.blob,metadata:frame.metadata,label:cut.label,name:cut.name});}
@@ -569,7 +573,7 @@ async function runExport(kind){
   }
   message('仕上がりを確認し、保存ボタンを押してください。');
  }catch(error){console.error(error);message(error.message||'書き出しに失敗しました。サイズを下げて再度お試しください。',!cancelExport);}
- finally{gifPairOffsets=null;$('output-bg').value=originalBackground;Object.assign(state,original);renderer.setPixelRatio(oldRatio);renderer.setSize(previewSize.x,previewSize.y,false);exporting=false;exportSamples=256;controls.forEach(el=>el.disabled=!ready);$('cancel-export').hidden=true;refreshCrop();syncPDFControls();syncBoxType();syncLightingControls();syncExportButtons();if(!focusSupported){$('focus-blur').disabled=true;$('focus-position').disabled=true;}exportButton.textContent='仕上がりを確認 →';resize();}
+ finally{gifPairOffsets=null;$('output-bg').value=originalBackground;Object.assign(state,original);renderer.setPixelRatio(oldRatio);renderer.setSize(previewSize.x,previewSize.y,false);exporting=false;exportSamples=256;controls.forEach(el=>el.disabled=!ready);$('cancel-export').hidden=true;refreshCrop();syncPDFControls();syncBoxType();syncLightingControls();syncExportButtons();if(!focusSupported){$('focus-blur').disabled=true;$('focus-position').disabled=true;}exportButton.textContent='仕上がりを見る →';resize();}
 }
 exportButton.addEventListener('click',()=>runExport('single'));
 $('export-three').addEventListener('click',()=>runExport('three'));
