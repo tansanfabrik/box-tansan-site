@@ -412,7 +412,7 @@ function lockGifPairCenters(original){
  const [a,b]=samples.map(points=>BoxStudio.rotationHalfWidth(...points));gifPairOffsets=BoxStudio.pairCenters([-a,a],[-b,b],pairGap());
 }
 function updateUI(){$('paired-box').checked=state.paired;$('paired-box').disabled=exporting||$('box-arrangement').value!=='single';$('pair-gap-row').hidden=!state.paired;$('pair-gap').value=state.pairGapMM;$('pair-gap-value').textContent=state.pairGapMM+' mm';for(const [id,key] of [['camera-horizontal','cameraAzimuth'],['camera-height','cameraElevation'],['camera-distance','cameraDistance']])$(id).value=state[key];rotation.value=wrap(state.y);tilt.value=state.x;roll.value=state.z;zoom.value=Math.round(state.zoom*100);buttons.forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.view===state.view)));BoxRangeInputs.sync();}
-function draw(){if(!ready||exporting||comparisonActive)return;syncModel();fitFeaturePreview();updateUI();renderWithFocus(camera);}
+function draw(){if(!ready||exporting||comparisonActive)return;syncModel();fitFeaturePreview();updateUI();renderWithFocus(camera);syncCaptionPreview();}
 function fitPreviewZoom(){camera.zoom=state.zoom*previewScale*Math.min(camera.aspect,1/camera.aspect);camera.updateProjectionMatrix();}
 function resize(){if(!renderer||exporting||comparisonActive)return;const w=stage.clientWidth,h=stage.clientHeight;renderer.setPixelRatio(Math.min(devicePixelRatio||1,2));renderer.setSize(w,h,false);camera.aspect=w/h;camera.setFocalLength(85);fitPreviewZoom();draw();}
 async function init(){
@@ -477,6 +477,21 @@ $('reset-lighting-details').addEventListener('click',()=>{state.details={...deta
 const reviewURLs=[];
 const tick=()=>new Promise(resolve=>setTimeout(resolve,0));
 function syncExportButtons(){for(const id of ['export-three','export-pair','export-gif','export-layers'])$(id).disabled=!ready||!sourceImage||importing||exporting;}
+function captionLines(){
+ const lines=[];if($('dimension-caption').checked)lines.push(box.width+' × '+box.height+' × '+box.depth+' mm');
+ if(referenceMesh)lines.push(BoxFeatures.references[$('size-reference').value].label);return lines;
+}
+function paintCornerCaption(ctx,width,height,lines){
+ if(lines.length){let font=Math.max(12,Math.round(Math.min(width,height)*.018));ctx.font='500 '+font+'px sans-serif';const measured=Math.max(...lines.map(t=>ctx.measureText(t).width))+font*1.3;if(measured>width*.88)font=Math.max(6,Math.floor(font*width*.88/measured));const pad=font*.65,margin=font*1.1;ctx.font='500 '+font+'px sans-serif';ctx.textBaseline='top';const labelW=Math.max(...lines.map(t=>ctx.measureText(t).width))+pad*2,labelH=font*1.5*lines.length+pad*2,x=width-margin-labelW,y=height-margin-labelH;ctx.fillStyle='rgba(255,255,255,.9)';ctx.fillRect(x,y,labelW,labelH);ctx.fillStyle='#35383e';lines.forEach((text,i)=>ctx.fillText(text,x+pad,y+pad+i*font*1.5));}
+}
+function syncCaptionPreview(){
+ const canvas=$('stage-caption'),enabled=$('dimension-caption').checked;
+ canvas.hidden=!enabled;stage.classList.toggle('caption-preview-enabled',enabled);if(!enabled)return;
+ const w=stage.clientWidth,h=stage.clientHeight,ratio=Math.min(devicePixelRatio||1,2);if(!w||!h)return;
+ const pw=Math.round(w*ratio),ph=Math.round(h*ratio);if(canvas.width!==pw||canvas.height!==ph){canvas.width=pw;canvas.height=ph;}
+ const ctx=canvas.getContext('2d');ctx.setTransform(ratio,0,0,ratio,0,0);ctx.clearRect(0,0,w,h);const lines=captionLines();paintCornerCaption(ctx,w,h,lines);canvas.setAttribute('aria-label','書き出し時の右下の表記：'+lines.join('、'));
+}
+$('dimension-caption').addEventListener('change',()=>{syncCaptionPreview();save();});
 function dimensionsFor(longEdge){const ratio={square:1,portrait:4/5,story:9/16,wide:16/9}[$('output-aspect').value]||1;return ratio>=1?[longEdge,Math.round(longEdge/ratio)]:[Math.round(longEdge*ratio),longEdge];}
 function exportCameraFor(width,height,bounds){
  const cam=camera.clone();cam.aspect=width/height;cam.zoom=1;cam.clearViewOffset();cam.updateProjectionMatrix();const b={...(bounds||outputBounds(cam))};
@@ -495,11 +510,7 @@ async function capture(width,height,{cam,solid=false,png=true,layer=null}={}){
   if(layer==='shadow')boxGroup.traverseVisible(mesh=>{if(!mesh.isMesh)return;for(const material of Array.isArray(mesh.material)?mesh.material:[mesh.material]){if(materialStates.has(material))continue;materialStates.set(material,{colorWrite:material.colorWrite,depthWrite:material.depthWrite});material.colorWrite=false;material.depthWrite=false;}});
   await renderExportFocus(cam);ctx.drawImage(renderer.domElement,0,0);
  }finally{for(const [material,saved] of materialStates)Object.assign(material,saved);syncBackground(solid);}
- if(layer!=='shadow'){
-  const lines=[];if($('dimension-caption').checked)lines.push(box.width+' × '+box.height+' × '+box.depth+' mm');
-  if(referenceMesh)lines.push(BoxFeatures.references[$('size-reference').value].label);
-  if(lines.length){let font=Math.max(12,Math.round(Math.min(width,height)*.018));ctx.font='500 '+font+'px sans-serif';const measured=Math.max(...lines.map(t=>ctx.measureText(t).width))+font*1.3;if(measured>width*.88)font=Math.max(6,Math.floor(font*width*.88/measured));const pad=font*.65,margin=font*1.1;ctx.font='500 '+font+'px sans-serif';ctx.textBaseline='top';const labelW=Math.max(...lines.map(t=>ctx.measureText(t).width))+pad*2,labelH=font*1.5*lines.length+pad*2,x=width-margin-labelW,y=height-margin-labelH;ctx.fillStyle='rgba(255,255,255,.9)';ctx.fillRect(x,y,labelW,labelH);ctx.fillStyle='#35383e';lines.forEach((text,i)=>ctx.fillText(text,x+pad,y+pad+i*font*1.5));}
- }
+ if(layer!=='shadow')paintCornerCaption(ctx,width,height,captionLines());
  const pixels=ctx.getImageData(0,0,width,height).data;let clear=0,opaque=0,soft=0,x0=width,y0=height,x1=-1,y1=-1;
  for(let i=3;i<pixels.length;i+=4){const a=pixels[i];if(!a){clear++;continue;}a===255?opaque++:soft++;const pos=(i-3)/4,x=pos%width,y=Math.floor(pos/width);x0=Math.min(x0,x);y0=Math.min(y0,y);x1=Math.max(x1,x);y1=Math.max(y1,y);}
  if(layer!=='shadow'&&!opaque)throw new Error('箱を描画できませんでした。もう一度お試しください。');
