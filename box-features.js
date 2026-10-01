@@ -8,7 +8,7 @@ const references={hand:{label:'手のひらの目安 約110 × 180 mm（指を�
 function layout(kind,w,h,d,gap){const match=/^(stack|flat)([3-5])$/.exec(kind);if(!match)return[[0,0,0]];const n=Number(match[2]);if(match[1]==='stack')return Array.from({length:n},(_,i)=>[0,0,(i-(n-1)/2)*d]);const cols=n===4?2:3,rows=Math.ceil(n/cols);return Array.from({length:n},(_,i)=>{const row=Math.floor(i/cols),count=Math.min(cols,n-row*cols);return[(i%cols-(count-1)/2)*(w+gap),((rows-1)/2-row)*(h+gap),0];});}
 // Convert the existing exterior into an open tray with a paper lining and thickness at its rim.
 function hollow(T,group,w,h,d,openPositive,u,interiorColor=0xe7e1d5){
- const removed=group.getObjectByName(group.name+'-'+(openPositive?'front':'back'));if(removed){group.remove(removed);removed.geometry.dispose();removed.material.map?.dispose();removed.material.dispose();}
+ const removed=group.getObjectByName(group.name+'-'+(openPositive?'front':'back'));if(removed){group.remove(removed);removed.geometry.dispose();for(const key of ['map','metalnessMap','roughnessMap','clearcoatMap','clearcoatRoughnessMap'])removed.material[key]?.dispose();removed.material.dispose();}
  const t=Math.min(1.2*u,d/5),inner=new T.MeshStandardMaterial({color:interiorColor,roughness:.95,side:T.DoubleSide});
  const plane=(W,H,x,y,z,rx,ry,name)=>{const m=new T.Mesh(new T.PlaneGeometry(W,H),inner);m.position.set(x,y,z);m.rotation.set(rx,ry,0);m.name=name;m.castShadow=m.receiveShadow=true;group.add(m);};
  const floorZ=openPositive?-d/2+t:d/2-t,wallZ=openPositive?t/2:-t/2,rimZ=openPositive?d/2:-d/2;

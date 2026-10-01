@@ -2,9 +2,10 @@
 window.BoxProjects={install(api){
  'use strict';
  const $=id=>document.getElementById(id),data=BoxProjectData,dialog=$('project-dialog');
- let designs=[],busy=false,dirty=false;
+ let designs=[],busy=false,dirty=false;const excluded=new WeakSet();
  const notice=(text,error=false)=>{$('project-status').textContent=text;$('project-status').classList.toggle('error',error);};
  function render(){
+  $('compare-live').disabled=busy||!designs.some(d=>!excluded.has(d));
   $('compare-count').textContent=designs.length+' / 6';$('compare-add').disabled=busy||designs.length>=6;$('compare-align').disabled=busy||!designs.length;
   $('comparison-grid').replaceChildren();
   for(let i=0;i<6;i++){
@@ -12,13 +13,13 @@ window.BoxProjects={install(api){
    if(!d){const add=document.createElement('button');add.className='comparison-empty';add.textContent='＋ 現在のデザインを追加';add.disabled=busy||designs.length>=6;add.addEventListener('click',addDesign);card.append(add);}
    else{
     const img=document.createElement('img');img.src=d.thumbnail;img.alt=d.name+'の箱プレビュー';
-    const name=document.createElement('input');name.type='text';name.maxLength=50;name.value=d.name;name.setAttribute('aria-label','比較案'+(i+1)+'の名前');name.disabled=busy;name.addEventListener('change',()=>{d.name=name.value.trim()||'デザイン '+(i+1);name.value=d.name;img.alt=d.name+'の箱プレビュー';dirty=true;});
+    const name=document.createElement('input');name.type='text';name.maxLength=50;name.value=d.name;name.setAttribute('aria-label','比較案'+(i+1)+'の名前');name.disabled=busy;name.addEventListener('input',()=>{d.name=name.value.trim()||'デザイン '+(i+1);dirty=true;});name.addEventListener('change',()=>{d.name=name.value.trim()||'デザイン '+(i+1);name.value=d.name;img.alt=d.name+'の箱プレビュー';dirty=true;});
     const actions=document.createElement('div');actions.className='comparison-actions';
     const button=(label,fn)=>{const b=document.createElement('button');b.textContent=label;b.disabled=busy;b.addEventListener('click',fn);actions.append(b);};
     button('編集する',()=>run(async()=>{api.apply(d.snapshot);dialog.close();api.message(d.name+'を開きました。編集後は「現在の状態で更新」で比較案に反映できます。');}));
     button('現在の状態で更新',()=>run(async()=>{if(!confirm('「'+d.name+'」を現在のデザイン・設定で更新しますか？'))return;const snapshot=api.snapshot(),thumbnail=await api.thumbnail(snapshot);designs[i]={...d,snapshot,thumbnail};dirty=true;notice('比較案を更新しました。');}));
     button('削除',()=>{if(confirm('「'+d.name+'」を比較から外しますか？')){designs.splice(i,1);dirty=true;render();}});
-    card.append(img,name,actions);
+    const select=document.createElement('label');select.className='comparison-select';const check=document.createElement('input');check.type='checkbox';check.checked=!excluded.has(d);check.disabled=busy;check.setAttribute('aria-label',d.name+'を比較に表示');check.addEventListener('change',()=>{if(check.checked)excluded.delete(d);else excluded.add(d);$('compare-live').disabled=!designs.some(item=>!excluded.has(item));});select.append(check,document.createTextNode('比較に表示'));card.append(img,name,select,actions);
    }$('comparison-grid').append(card);
   }
  }
@@ -37,6 +38,7 @@ window.BoxProjects={install(api){
   const link=document.createElement('a'),url=URL.createObjectURL(blob);link.href=url;link.download=($('project-name').value.trim()||'箱プロジェクト').replace(/[\\/:*?"<>|]/g,'_')+suffix;document.body.append(link);link.click();link.remove();setTimeout(()=>URL.revokeObjectURL(url),60000);
  }
  $('compare-add').addEventListener('click',addDesign);
+ $('compare-live').addEventListener('click',()=>run(async()=>{const selected=designs.filter(d=>!excluded.has(d));if(!selected.length)return;notice('比較用の箱を準備しています…');const context=api.comparison(selected);BoxComparison.open(context);notice('ライブ比較を閉じると、各案を編集できます。');}));
  $('compare-align').addEventListener('click',()=>run(async()=>{
   notice('現在の構図・照明で比較をそろえています…');const configuration=api.snapshot().config,newDesigns=[];
   for(const d of designs){const snapshot=api.withComposition(d.snapshot,configuration);newDesigns.push({...d,snapshot,thumbnail:await api.thumbnail(snapshot)});}

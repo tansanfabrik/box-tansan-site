@@ -23,7 +23,7 @@ try{const s=JSON.parse(localStorage.getItem('box-photo-preferences-v1'));state.p
 let renderer,scene,camera,model,companion,boxGroup,animation=0,drag=null,ready=false,exporting=false,lastURL=null;
 let lightingRig,lightSources,environmentTarget,pmrem,environmentTimer=0;
 let focusEngine,focusSupported=false,focusRAF=0,focusGeneration=0;
-let resetting=false;
+let resetting=false,comparisonActive=false;
 const save=()=>{if(resetting)return;try{localStorage.setItem('box-photo-preferences-v1',JSON.stringify(state));localStorage.setItem('box-studio-settings-v2',JSON.stringify({box,output:readOutput()}));}catch(e){}};
 function message(text,error=false){status.textContent=text;status.classList.toggle('error',error);}
 // Artwork never leaves this document. Only local object URLs are decoded.
@@ -62,7 +62,7 @@ function syncBackground(forceSolid=false){
  }
 }
 
-function texture(image,crop,face){
+function texture(image,crop,face,finishMask=null){
  image=crop.image||image;crop=placedCrop(face,crop);
  const [x,y,w,h]=crop.rect;
  const inset=Math.min(crop.inset,Math.max(0,(Math.min(w,h)-2)/2));
@@ -72,23 +72,33 @@ function texture(image,crop,face){
  // Preserve the selected artwork's proportions when its upright orientation changes.
  if(BoxStudio.uprightTurn(box,$('upright').value)){const ratio=BoxStudio.faceRatio(face,box),cw=c.width,ch=c.height;const width=Math.max(cw,ch*ratio),height=Math.max(ch,cw/ratio),limit=Math.min(1,3072/Math.max(width,height));c.width=Math.max(2,Math.round(width*limit));c.height=Math.max(2,Math.round(height*limit));}
  const fit=Math.min(c.width/((turn?sh:sw)*scale),c.height/((turn?sw:sh)*scale));
- const ctx=c.getContext('2d');ctx.fillStyle=faceColor(face);ctx.fillRect(0,0,c.width,c.height);ctx.translate(c.width/2,c.height/2);ctx.rotate(rad(crop.rotation));ctx.scale(fit,fit);
- ctx.drawImage(image,x+inset,y+inset,sw,sh,-sw*scale/2,-sh*scale/2,sw*scale,sh*scale);
- const t=new THREE.CanvasTexture(c);t.colorSpace=THREE.SRGBColorSpace;t.anisotropy=renderer.capabilities.getMaxAnisotropy();return t;
+ const ctx=c.getContext('2d');ctx.fillStyle=finishMask?'#000000':faceColor(face);ctx.fillRect(0,0,c.width,c.height);ctx.translate(c.width/2,c.height/2);ctx.rotate(rad(crop.rotation));ctx.scale(fit,fit);
+ if(finishMask){
+  const mask=BoxPrintFinish.prepared(finishMask.image).gray;
+  const bounds=BoxPrintFinish.maskRect(crop,{width:image.naturalWidth,height:image.naturalHeight},mask,finishMask.alignment),[mx,my,mw,mh]=bounds;
+  ctx.drawImage(mask,mx+inset/w*mw,my+inset/h*mh,mw*(1-2*inset/w),mh*(1-2*inset/h),-sw*scale/2,-sh*scale/2,sw*scale,sh*scale);
+ }else ctx.drawImage(image,x+inset,y+inset,sw,sh,-sw*scale/2,-sh*scale/2,sw*scale,sh*scale);
+ const t=new THREE.CanvasTexture(c);t.colorSpace=finishMask?THREE.NoColorSpace:THREE.SRGBColorSpace;t.anisotropy=renderer.capabilities.getMaxAnisotropy();return t;
 }
-function disposeModel(){companion.clear();const materials=new Set(),maps=new Set();model.traverse(o=>{if(o.isMesh){o.geometry.dispose();for(const m of Array.isArray(o.material)?o.material:[o.material]){materials.add(m);if(m.map)maps.add(m.map);}}});for(const map of maps)map.dispose();for(const material of materials)material.dispose();model.clear();}
+function disposeModel(){companion.clear();const materials=new Set(),maps=new Set();model.traverse(o=>{if(o.isMesh){o.geometry.dispose();for(const m of Array.isArray(o.material)?o.material:[o.material]){materials.add(m);for(const key of ['map','metalnessMap','roughnessMap','clearcoatMap','clearcoatRoughnessMap'])if(m[key])maps.add(m[key]);}}});for(const map of maps)map.dispose();for(const material of materials)material.dispose();model.clear();}
+function faceMaterial(face){
+ const crop=crops[face];if(!sourceImage||!crop)return paper(null,faceColor(face));
+ const material=paper(texture(sourceImage,crop,face));
+ if(crop.finish?.image&&crop.finish.kind!=='none')BoxPrintFinish.apply(THREE,material,texture(sourceImage,crop,face,crop.finish),crop.finish.kind);
+ return material;
+}
 function rebuildBox(){
  $('stage-dimensions').textContent=box.width+' × '+box.height+' × '+box.depth+' mm';
  if(!model)return;syncSceneOptions();syncBasePeek();disposeModel();model.rotation.set(0,0,0);model.position.set(0,0,0);
  const u=330/Math.max(box.width,box.height,box.depth),w=box.width*u,h=box.height*u,d=box.depth*u;
  const radius=Math.min(box.radius*u,w/6,h/6,d/6);
- const mats=axes.map(a=>{const m=sourceImage&&crops[a.name]?paper(texture(sourceImage,crops[a.name],a.name)):paper(null,faceColor(a.name));if(state.lighting==='neutral')m.color.multiplyScalar(a.name==='front'||a.name==='back'?1:.88);return m;});
+ const mats=axes.map(a=>{const m=faceMaterial(a.name);if(state.lighting==='neutral')m.color.multiplyScalar(a.name==='front'||a.name==='back'?1:.88);return m;});
  if(box.type==='tuck'){
   tuckBox(w,h,d,radius,mats,u);
  }else{
   // Keep the lid and its artwork unchanged; extend the base behind the back plane.
   const profile=BoxStudio.lidProfile(d,(.2+box.basePeekMM)*u),baseD=profile.baseDepth,lidD=profile.lidDepth;
-  roundedBox(w*.985,h*.985,baseD,Math.min(radius*.8,baseD/6),axes.map(a=>{if(a.name==='back')return mats[5];const face='base-'+a.name,crop=box.baseArtwork&&crops[face];const material=crop?paper(texture(sourceImage,crop,face)):paper(null,box.baseColor);if(state.lighting==='neutral'&&a.name!=='front')material.color.multiplyScalar(.88);return material;}),profile.baseCenter,'base');
+  roundedBox(w*.985,h*.985,baseD,Math.min(radius*.8,baseD/6),axes.map(a=>{if(a.name==='back')return mats[5];const face='base-'+a.name,crop=box.baseArtwork&&crops[face];const material=crop?faceMaterial(face):paper(null,box.baseColor);if(state.lighting==='neutral'&&a.name!=='front')material.color.multiplyScalar(.88);return material;}),profile.baseCenter,'base');
   roundedBox(w,h,lidD,radius,mats.map((m,i)=>i===5?paper(null,box.color):m),profile.lidCenter,'lid');
  }
  if(box.type==='lid'&&$('lid-pose').value!=='closed'){
@@ -129,7 +139,7 @@ function refreshCrop(){
  $('inset').value=c?.inset||0;$('inset-value').textContent=(c?.inset||0)+' px';
  ['x','y','w','h'].forEach((k,i)=>{const input=$('crop-'+k);input.value=c?c.rect[i]:'';input.disabled=!c;});
  $('rotate-crop').disabled=!c;$('clear-face').disabled=!c;$('inset').disabled=!c;
- BoxRangeInputs.sync();drawCrop();
+ syncFinishControls();BoxRangeInputs.sync();drawCrop();
 }
 function faceImage(){return selectedFace==='front'&&frontGuide?frontGuide.image:crops[selectedFace]?.image||sourceImage;}
 function drawCrop(){
@@ -137,6 +147,7 @@ function drawCrop(){
  const ratio=Math.min(devicePixelRatio||1,2);c.width=Math.round(width*ratio);c.height=Math.round(height*ratio);const ctx=c.getContext('2d');ctx.scale(ratio,ratio);
  const scale=Math.min((width-12)/image.naturalWidth,(height-12)/image.naturalHeight),ox=(width-image.naturalWidth*scale)/2,oy=(height-image.naturalHeight*scale)/2;
  cropView={scale,ox,oy};ctx.drawImage(image,ox,oy,image.naturalWidth*scale,image.naturalHeight*scale);
+ if($('finish-overlay').checked&&crops[selectedFace]?.finish)BoxPrintFinish.paintOverlay(ctx,crops[selectedFace].finish,crops[selectedFace],image,scale,ox,oy);
  const active=crops[selectedFace];if(active){const [x,y,w,h]=active.rect;const px=ox+x*scale,py=oy+y*scale,pw=w*scale,ph=h*scale;
  ctx.fillStyle='#1f30254d';ctx.beginPath();ctx.rect(0,0,width,height);ctx.rect(px,py,pw,ph);ctx.fill('evenodd');ctx.strokeStyle='#0071e3';ctx.lineWidth=2;ctx.strokeRect(px,py,pw,ph);
  ctx.fillStyle='#fff';ctx.strokeStyle='#0071e3';ctx.lineWidth=2;for(const [key,hx,hy] of BoxCrop.handles([px,py,pw,ph])){const size=key.length===2?9:7;ctx.fillRect(hx-size/2,hy-size/2,size,size);ctx.strokeRect(hx-size/2,hy-size/2,size,size);}
@@ -400,9 +411,9 @@ function lockGifPairCenters(original){
  const [a,b]=samples.map(points=>BoxStudio.rotationHalfWidth(...points));gifPairOffsets=BoxStudio.pairCenters([-a,a],[-b,b],pairGap());
 }
 function updateUI(){$('paired-box').checked=state.paired;$('paired-box').disabled=exporting||$('box-arrangement').value!=='single';$('pair-gap-row').hidden=!state.paired;$('pair-gap').value=state.pairGapMM;$('pair-gap-value').textContent=state.pairGapMM+' mm';for(const [id,key] of [['camera-horizontal','cameraAzimuth'],['camera-height','cameraElevation'],['camera-distance','cameraDistance']])$(id).value=state[key];rotation.value=wrap(state.y);tilt.value=state.x;roll.value=state.z;zoom.value=Math.round(state.zoom*100);buttons.forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.view===state.view)));BoxRangeInputs.sync();}
-function draw(){if(!ready||exporting)return;syncModel();fitFeaturePreview();updateUI();renderWithFocus(camera);}
+function draw(){if(!ready||exporting||comparisonActive)return;syncModel();fitFeaturePreview();updateUI();renderWithFocus(camera);}
 function fitPreviewZoom(){camera.zoom=state.zoom*previewScale*Math.min(camera.aspect,1/camera.aspect);camera.updateProjectionMatrix();}
-function resize(){if(!renderer||exporting)return;const w=stage.clientWidth,h=stage.clientHeight;renderer.setPixelRatio(Math.min(devicePixelRatio||1,2));renderer.setSize(w,h,false);camera.aspect=w/h;camera.setFocalLength(85);fitPreviewZoom();draw();}
+function resize(){if(!renderer||exporting||comparisonActive)return;const w=stage.clientWidth,h=stage.clientHeight;renderer.setPixelRatio(Math.min(devicePixelRatio||1,2));renderer.setSize(w,h,false);camera.aspect=w/h;camera.setFocalLength(85);fitPreviewZoom();draw();}
 async function init(){
  try{
   renderer=new THREE.WebGLRenderer({alpha:true,antialias:true,preserveDrawingBuffer:true,powerPreference:'high-performance'});
@@ -575,6 +586,28 @@ const dropzone=$('dropzone');
 dropzone.addEventListener('drop',e=>loadImage(e.dataTransfer.files[0]));
 window.addEventListener('dragover',e=>e.preventDefault());window.addEventListener('drop',e=>e.preventDefault());
 document.querySelectorAll('[data-face]').forEach(button=>button.addEventListener('click',()=>{selectedFace=button.dataset.face;refreshCrop();syncPDFControls();}));
+function syncFinishControls(){
+ const crop=crops[selectedFace],finish=crop?.finish;
+ $('finish-face-name').textContent=faceNames[selectedFace];$('finish-kind').value=finish?.kind||'none';$('finish-alignment').value=finish?.alignment||'source';
+ $('finish-upload-button').disabled=!crop||importing||exporting;$('finish-kind').disabled=!crop||importing||exporting;$('finish-alignment').disabled=!finish||importing||exporting;$('finish-remove').disabled=!finish||importing||exporting;
+ $('finish-file-name').textContent=finish?.name||'黒い部分を加工します。白・透明の部分は加工しません。';
+}
+$('finish-upload-button').addEventListener('click',()=>$('finish-upload').click());
+$('finish-upload').addEventListener('change',async e=>{
+ const file=e.target.files[0];e.target.value='';const face=selectedFace,crop=crops[face];if(!file||!crop||importing||exporting)return;
+ if(!['image/png','image/jpeg','image/webp'].includes(file.type)||file.size>30*1024*1024){$('finish-file-name').textContent='30 MB以下のPNG・JPEG・WebPを選んでください。';return;}
+ const requestedKind=$('finish-kind').value,requestedAlignment=$('finish-alignment').value;let loadError='';const {generation,signal}=startImport();syncFinishControls();const url=URL.createObjectURL(file);
+ try{const image=new Image();image.src=url;await image.decode();if(image.naturalWidth<2||image.naturalHeight<2||image.naturalWidth*image.naturalHeight>65000000||Math.max(image.naturalWidth,image.naturalHeight)>16000)throw new Error('各辺16,000 px以下・合計6,500万画素以下の画像を選んでください。');
+  if(signal.aborted||generation!==uploadGeneration||crops[face]!==crop)return;
+  crop.finish={image,name:file.name,kind:crop.finish?.kind&&crop.finish.kind!=='none'?crop.finish.kind:(requestedKind==='none'?'varnish':requestedKind),alignment:requestedAlignment};
+  if(state.lighting==='neutral'){state.lighting='studio';applyLighting(true);}sampleMode=false;rebuildBox();refreshCrop();message(faceNames[face]+'に加工用画像を配置しました。青い部分が加工範囲です。');
+ }catch(error){if(!signal.aborted){loadError=error.message||'加工用画像を読み込めませんでした。';}}
+ finally{URL.revokeObjectURL(url);if(generation===uploadGeneration){importing=false;syncPDFControls();syncFinishControls();if(loadError)$('finish-file-name').textContent=loadError;}}
+});
+$('finish-kind').addEventListener('change',()=>{const c=crops[selectedFace];if(!c)return;if(c.finish){c.finish={...c.finish,kind:$('finish-kind').value};if(c.finish.kind!=='none'&&state.lighting==='neutral'){state.lighting='studio';applyLighting(true);}updateCrop();}else $('finish-file-name').textContent='加工用画像を読み込むと、黒い部分に選んだ加工を反映します。';});
+$('finish-alignment').addEventListener('change',()=>{const c=crops[selectedFace];if(c?.finish){c.finish={...c.finish,alignment:$('finish-alignment').value};updateCrop();}});
+$('finish-overlay').addEventListener('change',drawCrop);
+$('finish-remove').addEventListener('click',()=>{const c=crops[selectedFace];if(c?.finish){delete c.finish;updateCrop();}});
 $('rotate-crop').addEventListener('click',()=>{if(crops[selectedFace]){crops[selectedFace].rotation=(crops[selectedFace].rotation+90)%360;updateCrop();}});
 $('clear-face').addEventListener('click',()=>{delete crops[selectedFace];updateCrop();});
 $('inset').addEventListener('input',()=>{if(crops[selectedFace]){crops[selectedFace].inset=Number($('inset').value);updateCrop();}});
@@ -765,7 +798,7 @@ const projectSchema={
  box:{width:[30,400],height:[30,400],depth:[3,250],radius:[.2,4],color:'color',baseColor:'color',interiorColor:'color',basePeekMM:[0,100],baseArtwork:'boolean',tuckNotch:'boolean',type:{values:['lid','tuck']}},
  output:Object.fromEntries(outputIds.map(id=>{const el=$(id);return[id,el.type==='checkbox'?'boolean':el.type==='color'?'color':{values:el.tagName==='SELECT'?[...el.options].map(o=>o.value):Array.from({length:8},(_,i)=>String(.25+i*.25))}];}))
 };
-function projectSnapshot(){return{config:{state:BoxProjectData.copy({...state,y:wrap(state.y)}),box:{...box},output:readOutput()},sourceImage,sourceName,sampleMode,selectedFace,crops:Object.fromEntries(Object.entries(crops).map(([f,c])=>[f,{...c,rect:[...c.rect]}]))};}
+function projectSnapshot(){return{config:{state:BoxProjectData.copy({...state,y:wrap(state.y)}),box:{...box},output:readOutput()},sourceImage,sourceName,sampleMode,selectedFace,crops:Object.fromEntries(Object.entries(crops).map(([f,c])=>[f,{...c,rect:[...c.rect],...(c.finish?{finish:{...c.finish}}:{})}]))};}
 function projectComposition(snapshot,config){
  const next={...snapshot,config:BoxProjectData.copy(snapshot.config)};
  next.config.state=BoxProjectData.copy(config.state);
@@ -776,7 +809,7 @@ function applyProjectSnapshot(snapshot,keepPDF=false){
  cancelAnimationFrame(animation);stopFocusPreview();clearFaceGuess();frontGuide=null;clearAutoLayoutNotice();
  state=BoxProjectData.copy(snapshot.config.state);box={...snapshot.config.box};
  sourceImage=snapshot.sourceImage;sourceName=snapshot.sourceName;sampleMode=snapshot.sampleMode;selectedFace=snapshot.selectedFace;
- crops=Object.fromEntries(Object.entries(snapshot.crops).map(([f,c])=>[f,{...c,rect:[...c.rect]}]));
+ crops=Object.fromEntries(Object.entries(snapshot.crops).map(([f,c])=>[f,{...c,rect:[...c.rect],...(c.finish?{finish:{...c.finish}}:{})}]));
  for(const id of outputIds){const el=$(id);if(el.type==='checkbox')el.checked=snapshot.config.output[id];else el.value=snapshot.config.output[id];}
  if(!keepPDF){releasePDF(activePDF);activePDF=null;$('result').hidden=true;$('result-image').removeAttribute('src');if(lastURL){URL.revokeObjectURL(lastURL);lastURL=null;}}
  for(const key of ['width','height','depth'])$('box-'+key).value=box[key];
@@ -791,8 +824,22 @@ async function projectThumbnail(snapshot){
   const [w,h]=dimensionsFor(512),frame=await capture(w,h);const data=frame.canvas.toDataURL('image/png');frame.canvas.width=frame.canvas.height=1;return data;
  }finally{applyProjectSnapshot(original,true);exportSamples=oldSamples;renderer.setPixelRatio(oldRatio);renderer.setSize(size.x,size.y,false);}
 }
-BoxProjects.install({schema:projectSchema,snapshot:projectSnapshot,withComposition:projectComposition,apply:applyProjectSnapshot,thumbnail:projectThumbnail,message,
- busy:()=>!ready||importing||exporting||resetting,
+// Detach independently owned geometry while borrowing the existing WebGL renderer.
+function comparisonModels(designs){
+ const original={state,box,sourceImage,sourceName,sampleMode,selectedFace,crops},output=readOutput(),items=[];
+ try{
+  for(const design of designs){
+   const snapshot=design.snapshot;state=BoxProjectData.copy({...original.state,paired:false,focusBlur:0});box={...snapshot.config.box};sourceImage=snapshot.sourceImage;sourceName=snapshot.sourceName;sampleMode=snapshot.sampleMode;crops=snapshot.crops;
+   for(const id of ['upright','paper-finish','lid-pose'])$(id).value=snapshot.config.output[id];$('box-arrangement').value='single';$('size-reference').value='none';
+   rebuildBox();const detached=new THREE.Group();while(model.children.length)detached.add(model.children[0]);items.push({model:detached,name:design.name,quarter:BoxStudio.uprightTurn(box,$('upright').value)});
+  }
+ }catch(e){BoxComparison.dispose(items.map(i=>i.model));throw e;}
+ finally{({state,box,sourceImage,sourceName,sampleMode,selectedFace,crops}=original);for(const id of outputIds){const el=$(id);if(el.type==='checkbox')el.checked=output[id];else el.value=output[id];}rebuildBox();}
+ comparisonActive=true;
+ return {items,renderer,environment:scene.environment,lights:[lightSources.ambient.clone(),lightingRig.clone(true)],pose:{x:state.x,y:state.y,z:state.z},background:output['background-color'],resume:()=>{comparisonActive=false;resize();}};
+}
+BoxProjects.install({schema:projectSchema,snapshot:projectSnapshot,withComposition:projectComposition,apply:applyProjectSnapshot,thumbnail:projectThumbnail,message,comparison:comparisonModels,
+ busy:()=>!ready||importing||exporting||resetting||comparisonActive,
  closePanels:()=>{$('shooting-settings').close();$('image-editor').close();$('review-dialog').close();},
  run:async action=>{
   stopFocusPreview();cancelAnimationFrame(animation);release();const controls=[...document.querySelectorAll('button,input,select')].map(el=>[el,el.disabled]);exporting=true;cancelExport=false;controls.forEach(([el])=>el.disabled=true);
