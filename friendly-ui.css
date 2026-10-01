@@ -30,5 +30,3 @@ header .brand img{height:32px}.header-actions{gap:6px}.header-actions button,.bu
 @media(max-width:1250px){.view-bar .segments{grid-template-columns:repeat(5,minmax(0,1fr))}}
 @media(min-width:901px){.shooting-open .view-bar .segments{grid-template-columns:repeat(5,minmax(0,1fr))}}
 @media(max-width:700px){:root{--dock-height:calc(var(--mobile-stage) + 126px)}#preview-dock .view-bar{height:92px}#preview-dock .view-bar .segments{grid-template-columns:repeat(5,minmax(0,1fr))}}
-
-.light-position-options{margin:16px 0;padding:12px;border:1px solid var(--border);border-radius:12px;background:white}.light-position-options>summary{font-size:13px}.light-position-options .advanced-grid{margin:12px 0}
