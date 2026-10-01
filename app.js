@@ -89,7 +89,7 @@ function faceMaterial(face){
 }
 function rebuildBox(){
  $('stage-dimensions').textContent=box.width+' × '+box.height+' × '+box.depth+' mm';
- if(!model)return;syncSceneOptions();syncBasePeek();disposeModel();model.rotation.set(0,0,0);model.position.set(0,0,0);
+ if(!model)return;finishLidAnimation();syncSceneOptions();syncBasePeek();disposeModel();model.rotation.set(0,0,0);model.position.set(0,0,0);
  const u=330/Math.max(box.width,box.height,box.depth),w=box.width*u,h=box.height*u,d=box.depth*u;
  const radius=Math.min(box.radius*u,w/6,h/6,d/6);
  const mats=axes.map(a=>{const m=faceMaterial(a.name);if(state.lighting==='neutral')m.color.multiplyScalar(a.name==='front'||a.name==='back'?1:.88);return m;});
@@ -101,11 +101,11 @@ function rebuildBox(){
   roundedBox(w*.985,h*.985,baseD,Math.min(radius*.8,baseD/6),axes.map(a=>{if(a.name==='back')return mats[5];const face='base-'+a.name,crop=box.baseArtwork&&crops[face];const material=crop?faceMaterial(face):paper(null,box.baseColor);if(state.lighting==='neutral'&&a.name!=='front')material.color.multiplyScalar(.88);return material;}),profile.baseCenter,'base');
   roundedBox(w,h,lidD,radius,mats.map((m,i)=>i===5?paper(null,box.color):m),profile.lidCenter,'lid');
  }
- if(box.type==='lid'&&$('lid-pose').value!=='closed'){
+ if(box.type==='lid'){
   const base=model.getObjectByName('base'),lid=model.getObjectByName('lid'),profile=BoxStudio.lidProfile(d,(.2+box.basePeekMM)*u);
   BoxFeatures.hollow(THREE,base,w*.985,h*.985,profile.baseDepth,true,u,box.interiorColor);BoxFeatures.hollow(THREE,lid,w,h,profile.lidDepth,false,u,box.interiorColor);
   if($('lid-pose').value==='lifted'){lid.rotation.x=rad(-22);lid.rotation.z=rad(-12);lid.position.z+=d+h*.3;lid.position.x-=w*.16;}
-  else{lid.position.x=(w+w*Math.cos(rad(8))+h*Math.sin(rad(8)))/2+18*u;lid.position.z=-.2*u-box.basePeekMM*u;lid.rotation.z=rad(-8);}
+  else if($('lid-pose').value==='beside'){lid.position.x=(w+w*Math.cos(rad(8))+h*Math.sin(rad(8)))/2+18*u;lid.position.z=-.2*u-box.basePeekMM*u;lid.rotation.z=rad(-8);}
  }
  sceneBoxCount=BoxFeatures.arrange(THREE,model,$('box-arrangement').value,w,h,d+(box.type==='lid'?.2+box.basePeekMM:0)*u,u);
  for(const child of model.children)companion.add(child.clone(true));
@@ -277,8 +277,38 @@ function tuckBox(w,h,d,r,mats,u){
  for(const top of [true,false]){
   const face=top?'top':'bottom',flap=shell.getObjectByName('tuck-'+face),edge=paper(null,'#ded7ca');edge.side=THREE.DoubleSide;
   flap.geometry.dispose();flap.geometry=BoxFeatures.tuckFlapGeometry(THREE,w,d,u,top);flap.material=[flap.material,edge];flap.position.y=(top?1:-1)*hh;
+  if(top){
+   const hinge=new THREE.Group();hinge.name='tuck-top-hinge';hinge.position.set(0,hh,d/2-.06*u);
+   shell.remove(flap);flap.position.set(0,0,-d/2+.06*u);hinge.add(flap);shell.add(hinge);
+   const underside=new THREE.Mesh(flap.geometry.clone(),paper(null,box.interiorColor));underside.material.side=THREE.BackSide;underside.position.copy(flap.position);underside.position.y-=.28*u;underside.name='tuck-flap-lining';underside.receiveShadow=true;hinge.add(underside);
+  }
  }
- if(box.tuckNotch){const tongueH=Math.min(14*u,h*.2),inner=new THREE.Mesh(new THREE.BoxGeometry(w*.88,tongueH,.28*u),paper(null,box.color));inner.rotation.y=Math.PI;inner.position.set(0,hh-tongueH/2,-d/2+.5*u);inner.name='tuck-inner-flap';shell.add(inner);}
+ if(box.tuckNotch){
+  const geometry=BoxFeatures.tuckNotchGeometry(THREE,n,notchDepth,hh,-d/2,u);
+  const tongueH=Math.min(14*u,h*.2),inner=new THREE.Mesh(new THREE.BoxGeometry(w*.88,tongueH,geometry.thickness),paper(null,box.color));
+  const tongueHinge=new THREE.Group();tongueHinge.name='tuck-tongue-hinge';tongueHinge.position.set(0,0,-d+geometry.inset+.06*u);
+  inner.position.set(0,-tongueH/2,0);inner.name='tuck-inner-flap';inner.castShadow=inner.receiveShadow=true;tongueHinge.add(inner);shell.getObjectByName('tuck-top-hinge').add(tongueHinge);
+  const rimMaterial=paper(null,box.color);rimMaterial.color.multiplyScalar(.65);rimMaterial.side=THREE.DoubleSide;
+  const rim=new THREE.Mesh(geometry.rim,rimMaterial);rim.name='tuck-notch-paper-edge';rim.castShadow=rim.receiveShadow=true;shell.add(rim);
+  const recessMaterial=paper(null,box.color);recessMaterial.vertexColors=true;recessMaterial.side=THREE.DoubleSide;
+  const recess=new THREE.Mesh(geometry.recess,recessMaterial);recess.name='tuck-notch-recess';recess.receiveShadow=true;shell.add(recess);
+ }
+ if(!box.tuckNotch){
+  const tongueH=Math.min(14*u,h*.2),tongueHinge=new THREE.Group();tongueHinge.name='tuck-tongue-hinge';tongueHinge.position.set(0,0,-d+1.16*u);
+  const inner=new THREE.Mesh(new THREE.BoxGeometry(w*.88,tongueH,.28*u),paper(null,box.color));inner.position.y=-tongueH/2;inner.castShadow=inner.receiveShadow=true;tongueHinge.add(inner);shell.getObjectByName('tuck-top-hinge').add(tongueHinge);
+ }
+ // Lining is independent of the printed exterior and leaves the top opening clear.
+ for(const face of ['front','back','left','right','bottom']){
+  const exterior=shell.getObjectByName('tuck-'+face),lining=new THREE.Mesh(exterior.geometry.clone(),paper(null,box.interiorColor));
+  lining.material.side=THREE.BackSide;const normal=axes.find(a=>a.name===face).n;lining.position.addScaledVector(new THREE.Vector3(...normal),-.3*u);lining.name='tuck-lining-'+face;lining.receiveShadow=true;shell.add(lining);
+ }
+ // A continuous rolled paper fold joins the front panel to the hinged lid.
+ const foldGeometry=new THREE.CylinderGeometry(.18*u,.18*u,w-.32*u,12,1);foldGeometry.rotateZ(Math.PI/2);
+ const foldPosition=foldGeometry.attributes.position,foldUV=foldGeometry.attributes.uv;
+ for(let i=0;i<foldPosition.count;i++)foldUV.setXY(i,(foldPosition.getX(i)+w/2)/w,clamp(1+(foldPosition.getY(i)-.18*u)/h,0,1));
+ const fold=new THREE.Mesh(foldGeometry,mats[4].clone());fold.position.set(0,hh,d/2-.06*u);fold.name='tuck-front-fold';fold.castShadow=fold.receiveShadow=true;shell.add(fold);
+ const opened=$('lid-pose').value!=='closed';shell.getObjectByName('tuck-top-hinge').rotation.x=opened?rad(110):0;shell.getObjectByName('tuck-tongue-hinge').rotation.x=opened?rad(80):0;
+ const recess=shell.getObjectByName('tuck-notch-recess');if(recess)recess.visible=!opened;
  // Narrow shaded paper overlaps, not dieline artwork.
  for(const [x,y,z,width] of [[-(hw+n)/2,hh-.10*u,-d/2-.01*u,hw-n-r],[(hw+n)/2,hh-.10*u,-d/2-.01*u,hw-n-r],[0,-hh+.10*u,-d/2-.01*u,w-2*r]]){
   const material=new THREE.MeshBasicMaterial({color:0x393630,transparent:true,opacity:.18,side:THREE.DoubleSide,depthWrite:false});
@@ -361,9 +391,12 @@ $('focus-position').addEventListener('change',()=>{state.focusPosition=$('focus-
 $('focus-blur').addEventListener('input',()=>{state.focusBlur=Number($('focus-blur').value);syncFocusUI();draw();});$('focus-blur').addEventListener('change',save);
 function syncCamera(){const az=rad(state.cameraAzimuth),el=rad(state.cameraElevation),distance=1420*state.cameraDistance/100;camera.position.set(distance*Math.cos(el)*Math.sin(az),distance*Math.sin(el),distance*Math.cos(el)*Math.cos(az));camera.up.set(-Math.sin(az)*Math.sin(el),Math.cos(el),-Math.cos(az)*Math.sin(el));camera.lookAt(0,0,0);camera.updateMatrixWorld(true);}
 function syncSceneOptions(){
- const lid=box.type==='lid';$('lid-pose-row').hidden=!lid;if(!lid)$('lid-pose').value='closed';
+ const lid=box.type==='lid';$('lid-pose-row').hidden=false;
+ const lift=$('lid-pose').querySelector('[value="lifted"]'),beside=$('lid-pose').querySelector('[value="beside"]');
+ lift.textContent=lid?'斜めに持ち上げる':'蓋を開く';beside.hidden=beside.disabled=!lid;
+ if(!lid&&$('lid-pose').value==='beside')$('lid-pose').value='closed';
  if($('box-arrangement').value!=='single'){state.paired=false;$('lid-pose').value='closed';}
- $('interior-color-row').hidden=!lid||$('lid-pose').value==='closed';
+ $('interior-color-row').hidden=$('lid-pose').value==='closed';
  const ref=BoxFeatures.references[$('size-reference').value];$('reference-note').hidden=!ref;$('reference-badge').hidden=!ref;
  $('reference-note').textContent=ref?ref.label+($('size-reference').value==='hand'?'。大きさには個人差があります。':'。製品によって寸法は異なります。'):'';$('reference-badge').textContent=ref?ref.label:'';
 }
@@ -387,7 +420,20 @@ function fitShadowCamera(){
 }
 function stageFlat(){cancelAnimationFrame(animation);Object.assign(state,BoxFeatures.flatPose,{view:'custom'});$('placement').value='flat';}
 $('paper-finish').addEventListener('change',()=>{if(state.lighting==='neutral'){state.lighting='studio';applyLighting(true);}rebuildBox();save();});
-$('lid-pose').addEventListener('change',()=>{if($('lid-pose').value!=='closed'){$('box-arrangement').value='single';stageFlat();}rebuildBox();save();});
+let lidAnimation=0;
+const lidMovingNames=new Set(['lid','base','tuck','tuck-top-hinge','tuck-tongue-hinge']);
+function finishLidAnimation(){cancelAnimationFrame(lidAnimation);lidAnimation=0;for(const root of [model,companion])root?.traverse(o=>{if(o.userData.lidTarget){o.position.copy(o.userData.lidTarget.position);o.quaternion.copy(o.userData.lidTarget.quaternion);delete o.userData.lidTarget;}});syncTuckRecess();}
+function syncTuckRecess(){for(const root of [model,companion]){const hinge=root?.getObjectByName('tuck-top-hinge'),recess=root?.getObjectByName('tuck-notch-recess');if(recess&&hinge)recess.visible=Math.abs(hinge.rotation.x)<rad(12);}}
+function animateLidChange(){
+ cancelAnimationFrame(lidAnimation);lidAnimation=0;
+ const previous=new Map();model.traverse(o=>{if(lidMovingNames.has(o.name))previous.set(o.name,{position:o.position.clone(),quaternion:o.quaternion.clone()});});
+ if($('lid-pose').value!=='closed'){$('box-arrangement').value='single';if(box.type==='lid')stageFlat();}
+ rebuildBox();
+ const tracks=[];for(const root of [model,companion])root.traverse(o=>{const from=previous.get(o.name);if(from){const to={position:o.position.clone(),quaternion:o.quaternion.clone()};o.userData.lidTarget=to;tracks.push({o,from,to});}});
+ const duration=matchMedia('(prefers-reduced-motion: reduce)').matches?0:700,start=performance.now();
+ function frame(now){const t=duration?Math.min(1,(now-start)/duration):1,e=t*t*(3-2*t);for(const {o,from,to} of tracks){o.position.lerpVectors(from.position,to.position,e);o.quaternion.slerpQuaternions(from.quaternion,to.quaternion,e);}syncTuckRecess();draw();stage.dataset.lidAnimating=String(t<1);if(t<1)lidAnimation=requestAnimationFrame(frame);else{finishLidAnimation();draw();save();}}lidAnimation=requestAnimationFrame(frame);
+}
+$('lid-pose').addEventListener('change',animateLidChange);
 $('box-arrangement').addEventListener('change',()=>{if($('box-arrangement').value!=='single'){state.paired=false;$('lid-pose').value='closed';stageFlat();}rebuildBox();save();});
 $('size-reference').addEventListener('change',()=>{rebuildBox();save();});
 function companionState(){return BoxFeatures.dragRotation(THREE,companion.quaternion,camera.quaternion,0,0,BoxStudio.uprightTurn(box,$('upright').value));}
@@ -531,7 +577,7 @@ function showReview(blob,name,items,title){
  $('result').hidden=false;if(!$('review-dialog').open)$('review-dialog').showModal();
 }
 async function runExport(kind){
- if(!ready||!sourceImage||exporting||importing)return;stopFocusPreview();cancelAnimationFrame(animation);release();if(environmentTimer)applyLighting(true);const original={...state},previewSize=renderer.getSize(new THREE.Vector2()),oldRatio=renderer.getPixelRatio(),originalBackground=$('output-bg').value;exporting=true;cancelExport=false;
+ if(!ready||!sourceImage||exporting||importing)return;stopFocusPreview();cancelAnimationFrame(animation);finishLidAnimation();release();if(environmentTimer)applyLighting(true);const original={...state},previewSize=renderer.getSize(new THREE.Vector2()),oldRatio=renderer.getPixelRatio(),originalBackground=$('output-bg').value;exporting=true;cancelExport=false;
  const controls=[...document.querySelectorAll('button,input,select')];controls.forEach(el=>el.disabled=true);$('cancel-export').hidden=false;$('cancel-export').disabled=false;exportButton.textContent='作成中…';exportSamples=kind==='gif'?96:256;
  try{
   const liveOrbit=kind==='gif'&&originalBackground==='shadow',liveScale=512/Math.max(previewSize.x,previewSize.y);
@@ -889,7 +935,7 @@ BoxProjects.install({schema:projectSchema,snapshot:projectSnapshot,withCompositi
  busy:()=>!ready||importing||exporting||resetting||comparisonActive,
  closePanels:()=>{$('shooting-settings').close();$('image-editor').close();$('review-dialog').close();},
  run:async action=>{
-  stopFocusPreview();cancelAnimationFrame(animation);release();const controls=[...document.querySelectorAll('button,input,select')].map(el=>[el,el.disabled]);exporting=true;cancelExport=false;controls.forEach(([el])=>el.disabled=true);
+  stopFocusPreview();cancelAnimationFrame(animation);finishLidAnimation();release();const controls=[...document.querySelectorAll('button,input,select')].map(el=>[el,el.disabled]);exporting=true;cancelExport=false;controls.forEach(([el])=>el.disabled=true);
   try{return await action();}finally{exporting=false;controls.forEach(([el,disabled])=>{if(el.isConnected)el.disabled=disabled;});syncBoxType();syncPDFControls();syncLightingControls();syncFocusUI();refreshCrop();resize();save();}
  }
 });
