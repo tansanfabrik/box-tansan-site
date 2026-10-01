@@ -277,7 +277,7 @@ function tuckBox(w,h,d,r,mats,u){
   const face=top?'top':'bottom',flap=shell.getObjectByName('tuck-'+face),edge=paper(null,'#ded7ca');edge.side=THREE.DoubleSide;
   flap.geometry.dispose();flap.geometry=BoxFeatures.tuckFlapGeometry(THREE,w,d,u,top);flap.material=[flap.material,edge];flap.position.y=(top?1:-1)*hh;
  }
- if(box.tuckNotch){const tongueH=Math.min(14*u,h*.2),inner=new THREE.Mesh(new THREE.BoxGeometry(w*.88,tongueH,.28*u),paper(null,box.interiorColor));inner.rotation.y=Math.PI;inner.position.set(0,hh-tongueH/2,-d/2+.5*u);inner.name='tuck-inner-flap';shell.add(inner);}
+ if(box.tuckNotch){const tongueH=Math.min(14*u,h*.2),inner=new THREE.Mesh(new THREE.BoxGeometry(w*.88,tongueH,.28*u),paper(null,box.color));inner.rotation.y=Math.PI;inner.position.set(0,hh-tongueH/2,-d/2+.5*u);inner.name='tuck-inner-flap';shell.add(inner);}
  // Narrow shaded paper overlaps, not dieline artwork.
  for(const [x,y,z,width] of [[-(hw+n)/2,hh-.10*u,-d/2-.01*u,hw-n-r],[(hw+n)/2,hh-.10*u,-d/2-.01*u,hw-n-r],[0,-hh+.10*u,-d/2-.01*u,w-2*r]]){
   const material=new THREE.MeshBasicMaterial({color:0x393630,transparent:true,opacity:.18,side:THREE.DoubleSide,depthWrite:false});
