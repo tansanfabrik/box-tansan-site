@@ -19,7 +19,7 @@ const detailLimits={key:[0,200],fill:[0,200],rim:[0,200],ambient:[0,200],elevati
 function cleanDetails(value){const out={...detailDefaults};for(const key in out)if(Number.isFinite(value?.[key]))out[key]=clamp(value[key],...detailLimits[key]);return out;}
 let state={paired:false,pairGapMM:10,cameraAzimuth:0,cameraElevation:0,cameraDistance:100,x:0,y:30,z:0,zoom:1,view:'angle',lighting:'studio',brightness:100,lightDirection:0,details:{...detailDefaults},focusPosition:'middle',focusBlur:0,shadowBlur:25};
 try{const s=JSON.parse(localStorage.getItem('box-photo-preferences-v1'));if(s&&['x','y','z','zoom'].every(k=>Number.isFinite(s[k])))state={...state,x:clamp(s.x,-180,180),y:wrap(s.y),z:clamp(s.z,-180,180),zoom:clamp(s.zoom,.7,3),view:s.view||'custom',lighting:Object.hasOwn(lightingStyles,s.lighting)?s.lighting:'studio',brightness:Number.isFinite(s.brightness)?clamp(s.brightness,65,145):100,lightDirection:Number.isFinite(s.lightDirection)?clamp(s.lightDirection,-100,100):0,details:cleanDetails(s.details),focusPosition:['near','middle','far'].includes(s.focusPosition)?s.focusPosition:'middle',focusBlur:Number.isFinite(s.focusBlur)?clamp(s.focusBlur,0,100):0};}catch(e){}
-try{const s=JSON.parse(localStorage.getItem('box-photo-preferences-v1'));state.paired=s?.paired===true;for(const [key,min,max] of [['cameraAzimuth',-180,180],['cameraElevation',-75,75],['cameraDistance',70,180],['pairGapMM',0,100],['shadowBlur',0,100]])if(Number.isFinite(s?.[key]))state[key]=clamp(s[key],min,max);}catch(e){}
+try{const s=JSON.parse(localStorage.getItem('box-photo-preferences-v1'));state.paired=s?.paired===true;for(const [key,min,max] of [['cameraAzimuth',-180,180],['cameraElevation',-75,90],['cameraDistance',70,180],['pairGapMM',0,100],['shadowBlur',0,100]])if(Number.isFinite(s?.[key]))state[key]=clamp(s[key],min,max);}catch(e){}
 let renderer,scene,camera,model,companion,boxGroup,animation=0,drag=null,ready=false,exporting=false,lastURL=null;
 let lightingRig,lightSources,environmentTarget,pmrem,environmentTimer=0;
 let focusEngine,focusSupported=false,focusRAF=0,focusGeneration=0;
@@ -358,7 +358,7 @@ function syncShadowBlur(){
 $('shadow-blur').addEventListener('input',()=>{state.shadowBlur=Number($('shadow-blur').value);syncShadowBlur();draw();});$('shadow-blur').addEventListener('change',save);
 $('focus-position').addEventListener('change',()=>{state.focusPosition=$('focus-position').value;draw();save();});
 $('focus-blur').addEventListener('input',()=>{state.focusBlur=Number($('focus-blur').value);syncFocusUI();draw();});$('focus-blur').addEventListener('change',save);
-function syncCamera(){const az=rad(state.cameraAzimuth),el=rad(state.cameraElevation),distance=1420*state.cameraDistance/100;camera.position.set(distance*Math.cos(el)*Math.sin(az),distance*Math.sin(el),distance*Math.cos(el)*Math.cos(az));camera.lookAt(0,0,0);camera.updateMatrixWorld(true);}
+function syncCamera(){const az=rad(state.cameraAzimuth),el=rad(state.cameraElevation),distance=1420*state.cameraDistance/100;camera.position.set(distance*Math.cos(el)*Math.sin(az),distance*Math.sin(el),distance*Math.cos(el)*Math.cos(az));camera.up.set(-Math.sin(az)*Math.sin(el),Math.cos(el),-Math.cos(az)*Math.sin(el));camera.lookAt(0,0,0);camera.updateMatrixWorld(true);}
 function syncSceneOptions(){
  const lid=box.type==='lid';$('lid-pose-row').hidden=!lid;if(!lid)$('lid-pose').value='closed';
  if($('box-arrangement').value!=='single'){state.paired=false;$('lid-pose').value='closed';}
@@ -429,7 +429,7 @@ async function init(){
  }catch(e){console.error(e);message('3D表示を読み込めませんでした。WebGLが利用できるブラウザで開き直してください。',true);}
 }
 const presets=BoxFeatures.viewPresets;
-function select(view){if(exporting)return;$('placement').value=view==='flat-overhead'?'flat':'standing';cancelAnimationFrame(animation);const from={...state},target={...presets[view]},duration=matchMedia('(prefers-reduced-motion: reduce)').matches?0:450,start=performance.now();target.y=from.y+wrap(target.y-from.y);state.view=view;
+function select(view){if(exporting)return;$('placement').value=['flat-overhead','top'].includes(view)?'flat':'standing';cancelAnimationFrame(animation);const from={...state},target={...presets[view]},duration=matchMedia('(prefers-reduced-motion: reduce)').matches?0:450,start=performance.now();target.y=from.y+wrap(target.y-from.y);state.view=view;
  function frame(now){const t=duration?Math.min(1,(now-start)/duration):1,e=t*t*(3-2*t);for(const k of ['x','y','z','cameraAzimuth','cameraElevation'])state[k]=from[k]+(target[k]-from[k])*e;draw();if(t<1)animation=requestAnimationFrame(frame);else{state.y=wrap(state.y);draw();save();}}animation=requestAnimationFrame(frame);
 }
 buttons.forEach(b=>b.addEventListener('click',()=>select(b.dataset.view)));
@@ -831,7 +831,7 @@ for(const tablist of document.querySelectorAll('[role="tablist"]')){
 }
 // Project files share the complete scene settings with reusable composition files.
 const projectSchema={
- state:{paired:'boolean',pairGapMM:[0,100],cameraAzimuth:[-180,180],cameraElevation:[-75,75],cameraDistance:[70,180],x:[-180,180],y:[-180,180],z:[-180,180],zoom:[.7,3],view:{values:[...Object.keys(presets),'custom']},lighting:{values:Object.keys(lightingStyles)},brightness:[65,145],lightDirection:[-100,100],details:detailLimits,focusPosition:{values:['near','middle','far']},focusBlur:[0,100],shadowBlur:[0,100]},
+ state:{paired:'boolean',pairGapMM:[0,100],cameraAzimuth:[-180,180],cameraElevation:[-75,90],cameraDistance:[70,180],x:[-180,180],y:[-180,180],z:[-180,180],zoom:[.7,3],view:{values:[...Object.keys(presets),'custom']},lighting:{values:Object.keys(lightingStyles)},brightness:[65,145],lightDirection:[-100,100],details:detailLimits,focusPosition:{values:['near','middle','far']},focusBlur:[0,100],shadowBlur:[0,100]},
  box:{width:[30,400],height:[30,400],depth:[3,250],radius:[.2,4],color:'color',baseColor:'color',interiorColor:'color',basePeekMM:[0,100],baseArtwork:'boolean',tuckNotch:'boolean',type:{values:['lid','tuck']}},
  output:Object.fromEntries(outputIds.map(id=>{const el=$(id);return[id,el.type==='checkbox'?'boolean':el.type==='color'?'color':{values:el.tagName==='SELECT'?[...el.options].map(o=>o.value):Array.from({length:8},(_,i)=>String(.25+i*.25))}];}))
 };

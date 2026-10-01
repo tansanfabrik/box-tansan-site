@@ -25,8 +25,8 @@ header .brand img{height:32px}.header-actions{gap:6px}.header-actions button,.bu
 /* Keep the artwork area and controls neutral; lemon marks actions and selection. */
 .studio-controls{background:#FFFFFF}.save-controls{background:#F7F8FA}.numeric-field .range-entry .range-number{background:#F4F5F7}.step-guide button b,.control-title b,.step{background:#F4F5F7;color:#555B63}.step-guide button[aria-current=step] b{background:var(--lime);color:var(--ink)}.shooting-header{background:#FFFFFF}.upload-icon{background:#FFFFFF}.panel-tabs button[aria-selected=true],.export-bar .primary{box-shadow:none}
 
-/* Eight view presets: wrap on narrow screens without squeezing labels. */
-.view-bar .segments{grid-template-columns:repeat(8,minmax(0,1fr))}
-@media(max-width:1250px){.view-bar .segments{grid-template-columns:repeat(4,minmax(0,1fr))}}
-@media(min-width:901px){.shooting-open .view-bar .segments{grid-template-columns:repeat(4,minmax(0,1fr))}}
-@media(max-width:700px){:root{--dock-height:calc(var(--mobile-stage) + 126px)}#preview-dock .view-bar{height:92px}#preview-dock .view-bar .segments{grid-template-columns:repeat(4,minmax(0,1fr))}}
+/* Ten view presets: wrap on narrow screens without squeezing labels. */
+.view-bar .segments{grid-template-columns:repeat(10,minmax(0,1fr))}
+@media(max-width:1250px){.view-bar .segments{grid-template-columns:repeat(5,minmax(0,1fr))}}
+@media(min-width:901px){.shooting-open .view-bar .segments{grid-template-columns:repeat(5,minmax(0,1fr))}}
+@media(max-width:700px){:root{--dock-height:calc(var(--mobile-stage) + 126px)}#preview-dock .view-bar{height:92px}#preview-dock .view-bar .segments{grid-template-columns:repeat(5,minmax(0,1fr))}}
