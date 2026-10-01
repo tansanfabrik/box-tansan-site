@@ -23,7 +23,8 @@ try{const s=JSON.parse(localStorage.getItem('box-photo-preferences-v1'));state.p
 let renderer,scene,camera,model,companion,boxGroup,animation=0,drag=null,ready=false,exporting=false,lastURL=null;
 let lightingRig,lightSources,environmentTarget,pmrem,environmentTimer=0;
 let focusEngine,focusSupported=false,focusRAF=0,focusGeneration=0;
-const save=()=>{try{localStorage.setItem('box-photo-preferences-v1',JSON.stringify(state));localStorage.setItem('box-studio-settings-v2',JSON.stringify({box,output:readOutput()}));}catch(e){}};
+let resetting=false;
+const save=()=>{if(resetting)return;try{localStorage.setItem('box-photo-preferences-v1',JSON.stringify(state));localStorage.setItem('box-studio-settings-v2',JSON.stringify({box,output:readOutput()}));}catch(e){}};
 function message(text,error=false){status.textContent=text;status.classList.toggle('error',error);}
 // Artwork never leaves this document. Only local object URLs are decoded.
 let sourceImage=null, sourceName='', uploadGeneration=0, selectedFace='front';
@@ -148,6 +149,7 @@ function cropPoint(e){const image=faceImage(),rect=$('crop-canvas').getBoundingC
 function updateCrop(){clearFaceGuess();sampleMode=false;refreshCrop();rebuildBox();}
 let activePDF=null,importController=null,importing=false;
 function syncPDFControls(){
+ $('reset-all').disabled=!ready||importing||exporting||resetting;
  syncFrontGuide();
  $('pdf-controls').hidden=!activePDF||!!activePDF.face&&activePDF.face!==selectedFace;
  if(activePDF){$('pdf-page').value=activePDF.page;$('pdf-page').max=activePDF.doc.numPages;$('pdf-total').textContent='/ '+activePDF.doc.numPages+' ページ';}
@@ -526,6 +528,24 @@ $('cancel-export').addEventListener('click',()=>cancelExport=true);
 for(const [id,key] of [['camera-horizontal','cameraAzimuth'],['camera-height','cameraElevation'],['camera-distance','cameraDistance']]){$(id).addEventListener('input',()=>{cancelAnimationFrame(animation);state[key]=Number($(id).value);state.view='custom';draw();});$(id).addEventListener('change',save);}
 $('paired-box').addEventListener('change',()=>{state.paired=$('paired-box').checked;draw();save();});
 $('pair-gap').addEventListener('input',()=>{state.pairGapMM=Number($('pair-gap').value);draw();save();});
+$('reset-all').addEventListener('click',()=>{
+ if(!ready||importing||exporting||resetting)return;
+ if(!window.confirm('すべての設定を初期状態に戻しますか？\n\n箱のサイズ・向き・光・ピント・背景・保存設定と、読み込んだ画像の配置をリセットし、ドイツ小箱のサンプルに戻します。\n元の画像・PDFファイルや保存済みの画像は削除されません。'))return;
+ resetting=true;
+ try{
+  // Remove only this tool's preferences, never other data on the same origin.
+  localStorage.removeItem('box-photo-preferences-v1');
+  localStorage.removeItem('box-studio-settings-v2');
+ }catch(e){resetting=false;window.alert('ブラウザーに保存した設定をリセットできませんでした。ブラウザーの保存設定を確認してください。');return;}
+ $('reset-all').disabled=true;cancelAnimationFrame(animation);
+ // Also clear live form values before reload, for browsers that restore forms.
+ for(const el of document.querySelectorAll('input,select')){
+  if(el.tagName==='SELECT'){el.selectedIndex=Math.max(0,[...el.options].findIndex(o=>o.defaultSelected));}
+  else if(el.type==='checkbox')el.checked=el.defaultChecked;
+  else el.value=el.type==='file'?'':el.defaultValue;
+ }
+ window.location.reload();
+});
 $('reset-view').addEventListener('click',()=>{state.cameraAzimuth=0;state.cameraElevation=0;state.cameraDistance=100;state.zoom=1;fitPreviewZoom();select('angle');});
 $('upload').addEventListener('change',e=>loadImage(e.target.files[0]));
 $('face-upload').addEventListener('change',e=>loadImage(e.target.files[0],selectedFace));

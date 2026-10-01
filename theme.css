@@ -43,3 +43,9 @@ header{background:var(--paper)}.panel-tabs,.segments,#image-editor .segments{bac
 
 /* Guided face inference keeps its two choices visible without adding another dialog. */
 .face-guess>button{width:100%;margin-bottom:7px}#front-guide{display:grid;gap:9px}#front-guide[hidden]{display:none}#front-guide .note{margin:0}#front-guide .field{font-size:12px}#guess-from-front{background:var(--lime);border-color:#e2d64f;color:var(--ink);font-size:12px;padding:10px 8px;white-space:normal}#cancel-front-guide{font-size:12px}#guess-actions{display:flex;gap:7px;flex-wrap:wrap}#guess-actions[hidden]{display:none}#guess-actions button{flex:1;padding:8px;white-space:normal}#apply-guess{background:#fff;border-color:#949ba5}#face-tabs button:disabled,#base-face-tabs button:disabled{opacity:.4}
+
+/* A secondary footer action, outside the editing and export controls. */
+footer .reset-all{flex:none;white-space:nowrap;border:0;background:transparent;color:#656b73;font:inherit;font-size:11px;padding:4px 2px;min-height:24px;text-decoration:underline;text-underline-offset:3px}
+footer .reset-all:hover{color:var(--ink);background:#e1e3e6}
+footer .reset-all:disabled{opacity:.45;cursor:default}
+@media(max-width:700px){footer .reset-all{display:block;margin-top:12px;min-height:36px;font-size:12px}}
