@@ -79,13 +79,22 @@ function tuckFlapGeometry(T,w,d,u,top=true){
  for(const [a,b] of edges){const start=positions.length/3;for(const [q,lower] of [[a,false],[b,false],[b,true],[a,true]]){positions.push(...point(...q,lower));uvs.push(0,0);}indices.push(start,start+1,start+2,start,start+2,start+3);}
  const geo=new T.BufferGeometry();geo.setAttribute('position',new T.Float32BufferAttribute(positions,3));geo.setAttribute('uv',new T.Float32BufferAttribute(uvs,2));geo.setIndex(indices);geo.addGroup(0,faceCount,0);geo.addGroup(faceCount,indices.length-faceCount,1);geo.computeVertexNormals();return geo;
 }
+// Graphic card-box templates: 16-card tuck is about 10 mm, 32-card about 12 mm.
+function tuckProfile(w,h,d,u){const thick=d/u>10;return {notchRadius:Math.min(9*u,w*.3),notchDepth:Math.min((thick?8:6)*u,h*.2),tongueHeight:Math.min((thick?12:10)*u,h*.2),tongueCorner:Math.min(7*u,w/6),dustLength:Math.min((d/u-.6)*u,w*.22)};}
+function tuckTongueGeometry(T,w,height,corner,u){
+ const x=w/2-.2*u,r=Math.min(corner,height*.8,x/2),s=new T.Shape();
+ s.moveTo(-x,0);s.lineTo(x,0);s.lineTo(x,-height+r);s.quadraticCurveTo(x,-height,x-r,-height);s.lineTo(-x+r,-height);s.quadraticCurveTo(-x,-height,-x,-height+r);s.lineTo(-x,0);
+ const g=new T.ExtrudeGeometry(s,{depth:.28*u,bevelEnabled:false,curveSegments:12});g.translate(0,0,-.14*u);return g;
+}
 // Recess visible through the thumb cut: curved paper edge and graded contact shading.
 function tuckNotchGeometry(T,n,depth,hh,back,u){
  const steps=48,rows=8,inset=1.1*u,thickness=.28*u;
- const edge=[],edgeIndices=[],positions=[],colors=[],indices=[];
+ const edge=[],edgeIndices=[],positions=[],colors=[],indices=[],lipPositions=[],lipIndices=[];
  for(let i=0;i<=steps;i++){
   const angle=Math.PI*i/steps,x=-n*Math.cos(angle),y=hh-depth*Math.sin(angle);
   edge.push(x,y,back,x,y,back+thickness);
+  const fade=Math.sin(angle)**.35;lipPositions.push(x,y,back-.015*u,x,y-.45*u*fade,back-.015*u);
+  if(i<steps){const a=i*2;lipIndices.push(a,a+1,a+2,a+1,a+3,a+2);}
   if(i<steps){const a=i*2;edgeIndices.push(a,a+1,a+2,a+1,a+3,a+2);}
   for(let j=0;j<=rows;j++){
    const t=j/rows,shade=.42+.58*(1-Math.exp(-t*6));
@@ -97,7 +106,7 @@ function tuckNotchGeometry(T,n,depth,hh,back,u){
  const geometry=(p,idx)=>{const g=new T.BufferGeometry();g.setAttribute('position',new T.Float32BufferAttribute(p,3));g.setIndex(idx);g.computeVertexNormals();return g;};
  const rim=geometry(edge,edgeIndices),recess=geometry(positions,indices);
  recess.setAttribute('color',new T.Float32BufferAttribute(colors,3));
- return {rim,recess,inset,thickness};
+ return {rim,recess,lip:geometry(lipPositions,lipIndices),inset,thickness};
 }
 // Orbit the key light and its reflection panel together, retaining the original rig at defaults.
 function lightPosition(base,azimuth=0,elevation=0,distance=100){
@@ -106,5 +115,5 @@ function lightPosition(base,azimuth=0,elevation=0,distance=100){
  const el=Math.max(-85,Math.min(85,Math.atan2(y,Math.hypot(x,z))*180/Math.PI+elevation))*Math.PI/180;
  return [r*Math.cos(el)*Math.sin(az),r*Math.sin(el),r*Math.cos(el)*Math.cos(az)];
 }
-const api={lightPosition,tuckFlapGeometry,tuckNotchGeometry,orbitCamera,spinPose,groundUp,viewPresets,flatPose,finishes,references,layout,hollow,arrange,reference,dragRotation,companionRotation};if(typeof module==='object'&&module.exports)module.exports=api;else root.BoxFeatures=api;
+const api={lightPosition,tuckFlapGeometry,tuckProfile,tuckTongueGeometry,tuckNotchGeometry,orbitCamera,spinPose,groundUp,viewPresets,flatPose,finishes,references,layout,hollow,arrange,reference,dragRotation,companionRotation};if(typeof module==='object'&&module.exports)module.exports=api;else root.BoxFeatures=api;
 })(globalThis);

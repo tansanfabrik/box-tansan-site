@@ -87,7 +87,7 @@ function faceMaterial(face){
  if(crop.finish?.image&&crop.finish.kind!=='none')BoxPrintFinish.apply(THREE,material,texture(sourceImage,crop,face,crop.finish),crop.finish.kind);
  return material;
 }
-function rebuildBox(){
+function rebuildBox(render=true){
  $('stage-dimensions').textContent=box.width+' × '+box.height+' × '+box.depth+' mm';
  if(!model)return;finishLidAnimation();syncSceneOptions();syncBasePeek();disposeModel();model.rotation.set(0,0,0);model.position.set(0,0,0);
  const u=330/Math.max(box.width,box.height,box.depth),w=box.width*u,h=box.height*u,d=box.depth*u;
@@ -113,7 +113,7 @@ function rebuildBox(){
  referenceMesh=BoxFeatures.reference(THREE,$('size-reference').value,u);if(referenceMesh)boxGroup.add(referenceMesh);
 
  $('stage').dataset.boxType=box.type;$('stage').dataset.basePeek=String(box.type==='lid');$('stage').dataset.basePeekMm=String(box.type==='lid'?box.basePeekMM:0);$('stage').dataset.surfaceColor=box.color;$('stage').dataset.baseSurfaceColor=box.baseColor;
- syncCamera();checkRatios();draw();fitFeaturePreview();draw();
+ syncCamera();checkRatios();if(render)draw();else syncModel();fitFeaturePreview();if(render)draw();
 }
 function normalizeRect(rect,image=sourceImage){const W=image.naturalWidth,H=image.naturalHeight;let [x,y,w,h]=rect.map(Math.round);x=clamp(x,0,W-2);y=clamp(y,0,H-2);w=clamp(w,2,W-x);h=clamp(h,2,H-y);return[x,y,w,h];}
 function setLayout(kind){
@@ -271,7 +271,7 @@ function roundedBox(w,h,d,r,materials,z,name,foldsOnly=false,notch=0,notchDepth=
 }
 // Closed tuck carton: a single paper shell, thumb notch, and closure seams.
 function tuckBox(w,h,d,r,mats,u){
- const n=box.tuckNotch?Math.min(9.5*u,w*.3):0,notchDepth=Math.min(8*u,h*.2,n),hw=w/2,hh=h/2;
+ const profile=BoxFeatures.tuckProfile(w,h,d,u),n=box.tuckNotch?profile.notchRadius:0,notchDepth=Math.min(profile.notchDepth,n),hw=w/2,hh=h/2;
  roundedBox(w,h,d,r,mats,0,'tuck',true,n,notchDepth);
  const shell=model.children[model.children.length-1];
  for(const top of [true,false]){
@@ -285,17 +285,19 @@ function tuckBox(w,h,d,r,mats,u){
  }
  if(box.tuckNotch){
   const geometry=BoxFeatures.tuckNotchGeometry(THREE,n,notchDepth,hh,-d/2,u);
-  const tongueH=Math.min(14*u,h*.2),inner=new THREE.Mesh(new THREE.BoxGeometry(w*.88,tongueH,geometry.thickness),paper(null,box.color));
-  const tongueHinge=new THREE.Group();tongueHinge.name='tuck-tongue-hinge';tongueHinge.position.set(0,0,-d+geometry.inset+.06*u);
-  inner.position.set(0,-tongueH/2,0);inner.name='tuck-inner-flap';inner.castShadow=inner.receiveShadow=true;tongueHinge.add(inner);shell.getObjectByName('tuck-top-hinge').add(tongueHinge);
   const rimMaterial=paper(null,box.color);rimMaterial.color.multiplyScalar(.65);rimMaterial.side=THREE.DoubleSide;
   const rim=new THREE.Mesh(geometry.rim,rimMaterial);rim.name='tuck-notch-paper-edge';rim.castShadow=rim.receiveShadow=true;shell.add(rim);
+  const lip=new THREE.Mesh(geometry.lip,new THREE.MeshBasicMaterial({color:0x15151a,transparent:true,opacity:.38,side:THREE.DoubleSide,depthWrite:false,toneMapped:false}));lip.name='tuck-notch-contact-edge';shell.add(lip);
   const recessMaterial=paper(null,box.color);recessMaterial.vertexColors=true;recessMaterial.side=THREE.DoubleSide;
   const recess=new THREE.Mesh(geometry.recess,recessMaterial);recess.name='tuck-notch-recess';recess.receiveShadow=true;shell.add(recess);
  }
- if(!box.tuckNotch){
-  const tongueH=Math.min(14*u,h*.2),tongueHinge=new THREE.Group();tongueHinge.name='tuck-tongue-hinge';tongueHinge.position.set(0,0,-d+1.16*u);
-  const inner=new THREE.Mesh(new THREE.BoxGeometry(w*.88,tongueH,.28*u),paper(null,box.color));inner.position.y=-tongueH/2;inner.castShadow=inner.receiveShadow=true;tongueHinge.add(inner);shell.getObjectByName('tuck-top-hinge').add(tongueHinge);
+ // Rounded tuck tab stays attached to the lid via its own scored fold.
+ const tongueHinge=new THREE.Group();tongueHinge.name='tuck-tongue-hinge';tongueHinge.position.set(0,.05*u,-d+.34*u);
+ const inner=new THREE.Mesh(BoxFeatures.tuckTongueGeometry(THREE,w,profile.tongueHeight,profile.tongueCorner,u),paper(null,box.color));inner.position.z=.76*u;inner.name='tuck-inner-flap';inner.castShadow=inner.receiveShadow=true;tongueHinge.add(inner);
+ const bridge=new THREE.Mesh(new THREE.BoxGeometry(w-.4*u,.28*u,.76*u),paper(null,box.color));bridge.position.z=.38*u;bridge.name='tuck-tab-fold';bridge.castShadow=bridge.receiveShadow=true;tongueHinge.add(bridge);shell.getObjectByName('tuck-top-hinge').add(tongueHinge);
+ // Small side flaps seen under the lid in the supplied net.
+ for(const sign of [-1,1]){
+  const dust=new THREE.Mesh(new THREE.BoxGeometry(profile.dustLength,.28*u,Math.max(.5*u,d-.8*u)),paper(null,box.interiorColor));dust.position.set(sign*(hw-profile.dustLength/2-.25*u),hh-.36*u,0);dust.name='tuck-dust-flap';dust.castShadow=dust.receiveShadow=true;shell.add(dust);
  }
  // Lining is independent of the printed exterior and leaves the top opening clear.
  for(const face of ['front','back','left','right','bottom']){
@@ -422,14 +424,15 @@ function stageFlat(){cancelAnimationFrame(animation);Object.assign(state,BoxFeat
 $('paper-finish').addEventListener('change',()=>{if(state.lighting==='neutral'){state.lighting='studio';applyLighting(true);}rebuildBox();save();});
 let lidAnimation=0;
 const lidMovingNames=new Set(['lid','base','tuck','tuck-top-hinge','tuck-tongue-hinge']);
-function finishLidAnimation(){cancelAnimationFrame(lidAnimation);lidAnimation=0;for(const root of [model,companion])root?.traverse(o=>{if(o.userData.lidTarget){o.position.copy(o.userData.lidTarget.position);o.quaternion.copy(o.userData.lidTarget.quaternion);delete o.userData.lidTarget;}});syncTuckRecess();}
+function finishLidAnimation(){cancelAnimationFrame(lidAnimation);lidAnimation=0;stage.dataset.lidAnimating='false';for(const root of [model,companion])root?.traverse(o=>{if(o.userData.lidTarget){o.position.copy(o.userData.lidTarget.position);o.quaternion.copy(o.userData.lidTarget.quaternion);delete o.userData.lidTarget;}});syncTuckRecess();}
 function syncTuckRecess(){for(const root of [model,companion]){const hinge=root?.getObjectByName('tuck-top-hinge'),recess=root?.getObjectByName('tuck-notch-recess');if(recess&&hinge)recess.visible=Math.abs(hinge.rotation.x)<rad(12);}}
 function animateLidChange(){
  cancelAnimationFrame(lidAnimation);lidAnimation=0;
  const previous=new Map();model.traverse(o=>{if(lidMovingNames.has(o.name))previous.set(o.name,{position:o.position.clone(),quaternion:o.quaternion.clone()});});
  if($('lid-pose').value!=='closed'){$('box-arrangement').value='single';if(box.type==='lid')stageFlat();}
- rebuildBox();
+ rebuildBox(false);
  const tracks=[];for(const root of [model,companion])root.traverse(o=>{const from=previous.get(o.name);if(from){const to={position:o.position.clone(),quaternion:o.quaternion.clone()};o.userData.lidTarget=to;tracks.push({o,from,to});}});
+ for(const {o,from} of tracks){o.position.copy(from.position);o.quaternion.copy(from.quaternion);}syncTuckRecess();draw();
  const duration=matchMedia('(prefers-reduced-motion: reduce)').matches?0:700,start=performance.now();
  function frame(now){const t=duration?Math.min(1,(now-start)/duration):1,e=t*t*(3-2*t);for(const {o,from,to} of tracks){o.position.lerpVectors(from.position,to.position,e);o.quaternion.slerpQuaternions(from.quaternion,to.quaternion,e);}syncTuckRecess();draw();stage.dataset.lidAnimating=String(t<1);if(t<1)lidAnimation=requestAnimationFrame(frame);else{finishLidAnimation();draw();save();}}lidAnimation=requestAnimationFrame(frame);
 }
