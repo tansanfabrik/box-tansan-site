@@ -580,7 +580,15 @@ async function runExport(kind){
 exportButton.addEventListener('click',()=>runExport('single'));
 $('export-three').addEventListener('click',()=>runExport('three'));
 $('export-pair').addEventListener('click',()=>runExport('pair'));
-function syncGifSpeed(){const timing=BoxStudio.gifTiming($('gif-speed').value),seconds=timing.durationMS/1000;$('gif-speed-value').textContent=timing.speed+'×・1周'+seconds+'秒';$('export-gif').title='1周'+seconds+'秒の回転GIFを作成';}
+function syncGifSpeed(){
+ const timing=BoxStudio.gifTiming($('gif-speed').value),seconds=timing.durationMS/1000,speed=timing.speed;
+ $('gif-speed-value').textContent=speed+'×・1周'+seconds+'秒';
+ $('export-gif').title='1周'+seconds+'秒の回転GIFを作成';
+ const comment=speed<=.3?'ゆっくり確認':speed<=.75?'じっくり見せる':speed<=1.5?'見やすい速さ':speed<=2.5?'少し速め':speed<=3.5?'文字が読みづらい':'早すぎて見えない';
+ $('gif-speed-comment').textContent=comment;
+ $('gif-speed-example').style.setProperty('--gif-preview-duration',seconds+'s');
+ $('gif-speed-example').title='速度見本：1周'+seconds+'秒';
+}
 $('gif-speed').addEventListener('input',()=>{syncGifSpeed();save();});
 $('export-gif').addEventListener('click',()=>runExport('gif'));
 $('export-layers').addEventListener('click',()=>runExport('layers'));
