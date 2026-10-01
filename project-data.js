@@ -43,7 +43,7 @@
    for(const [face,c] of Object.entries(s.crops)){
     if(!faces.includes(face)||!c||!Array.isArray(c.rect)||c.rect.length!==4||!c.rect.every(Number.isFinite)||![0,90,180,270].includes(c.rotation)||!Number.isFinite(c.inset)||c.inset<0)return fail();
     const id=imageId(c.asset),a=out.assets[id],[x,y,w,h]=c.rect;
-    if(x<0||y<0||w<2||h<2||x+w>a.width+1||y+h>a.height+1||c.inset>Math.min(w,h)/2)return fail();
+    if(x<0||y<0||w<2||h<2||x+w>a.width+.001||y+h>a.height+.001||c.inset>Math.min(w,h)/2)return fail();
     result.crops[face]={rect:[...c.rect],rotation:c.rotation,inset:c.inset,asset:id,name:text(c.name)};
    }return result;
   };

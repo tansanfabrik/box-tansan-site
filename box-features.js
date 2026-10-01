@@ -57,5 +57,22 @@ function spinPose(T,pose,angle,quarter=0){
  q.premultiply(new T.Quaternion().setFromAxisAngle(new T.Vector3(...groundUp),rad(angle)));
  return dragRotation(T,q,new T.Quaternion(),0,0,quarter);
 }
-const api={spinPose,groundUp,viewPresets,flatPose,finishes,references,layout,hollow,arrange,reference,dragRotation,companionRotation};if(typeof module==='object'&&module.exports)module.exports=api;else root.BoxFeatures=api;
+// A thin, slightly bowed closure flap with real cut-paper edges.
+function tuckFlapGeometry(T,w,d,u,top=true){
+ const nx=16,nz=12,sign=top?1:-1,thickness=.28*u,positions=[],uvs=[],indices=[],edges=[];
+ const point=(i,j,lower=false)=>{
+  const t=j/nz,z=d/2-.06*u-t*(d-.34*u);
+  const trim=.16*u+Math.max(0,(t-.85)/.15)*.65*u,x=(i/nx*2-1)*(w/2-trim);
+  const y=sign*(-.08*u+.13*u*Math.sin(t*Math.PI/2)+(lower?-thickness:0));
+  return[x,y,z];
+ };
+ for(let j=0;j<=nz;j++)for(let i=0;i<=nx;i++){const p=point(i,j);positions.push(...p);uvs.push((p[0]+w/2)/w,(sign===1?-p[2]+d/2:p[2]+d/2)/d);}
+ for(let j=0;j<nz;j++)for(let i=0;i<nx;i++){const a=j*(nx+1)+i,b=a+1,c=a+nx+1,e=c+1;indices.push(...(top?[a,b,c,b,e,c]:[a,c,b,b,c,e]));}
+ const faceCount=indices.length;
+ for(let i=0;i<nx;i++)edges.push([[i,0],[i+1,0]],[[i+1,nz],[i,nz]]);
+ for(let j=0;j<nz;j++)edges.push([[0,j+1],[0,j]],[[nx,j],[nx,j+1]]);
+ for(const [a,b] of edges){const start=positions.length/3;for(const [q,lower] of [[a,false],[b,false],[b,true],[a,true]]){positions.push(...point(...q,lower));uvs.push(0,0);}indices.push(start,start+1,start+2,start,start+2,start+3);}
+ const geo=new T.BufferGeometry();geo.setAttribute('position',new T.Float32BufferAttribute(positions,3));geo.setAttribute('uv',new T.Float32BufferAttribute(uvs,2));geo.setIndex(indices);geo.addGroup(0,faceCount,0);geo.addGroup(faceCount,indices.length-faceCount,1);geo.computeVertexNormals();return geo;
+}
+const api={tuckFlapGeometry,spinPose,groundUp,viewPresets,flatPose,finishes,references,layout,hollow,arrange,reference,dragRotation,companionRotation};if(typeof module==='object'&&module.exports)module.exports=api;else root.BoxFeatures=api;
 })(globalThis);

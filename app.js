@@ -30,12 +30,12 @@ function message(text,error=false){status.textContent=text;status.classList.togg
 let sourceImage=null, sourceName='', uploadGeneration=0, selectedFace='front';
 const faceNames={front:'表面',back:'裏面',left:'左面',right:'右面',top:'上面',bottom:'下面','base-left':'身の左面','base-right':'身の右面','base-top':'身の上面','base-bottom':'身の下面'};
 let autoLayoutDimensions=null,restoredColors=false;
-let crops={},box={width:95,height:122,depth:22,radius:1,color:'#f1eee8',baseColor:'#f1eee8',interiorColor:'#e7e1d5',basePeekMM:2.4,baseArtwork:false,type:'lid'};
+let crops={},box={width:95,height:122,depth:22,radius:1,color:'#f1eee8',baseColor:'#f1eee8',interiorColor:'#e7e1d5',basePeekMM:2.4,baseArtwork:false,tuckNotch:true,type:'lid'};
 let frontGuide=null,guessGeneration=0,guessing=false;
 let faceGuess=null,cropDrag=null,cropView=null,ground=null,floorGrid=null,sampleMode=false,cancelExport=false,exportSamples=256,gifPairOffsets=null,referenceMesh=null,sceneBoxCount=1,previewScale=1;
 const outputIds=['output-bg','background-color','output-aspect','placement','resolution','upright','gif-speed','paper-finish','lid-pose','box-arrangement','size-reference','dimension-caption'];
 function readOutput(){return Object.fromEntries(outputIds.map(id=>[id,$(id)?.type==='checkbox'?$(id).checked:$(id)?.value]));}
-function restoreSettings(){try{const saved=JSON.parse(localStorage.getItem('box-studio-settings-v2'))||{};const b=saved.box||{};for(const [key,min,max] of [['width',30,400],['height',30,400],['depth',3,250],['radius',.2,4]])if(Number.isFinite(b[key]))box[key]=clamp(b[key],min,max);if(/^#[0-9a-f]{6}$/i.test(b.color)){box.color=b.color;restoredColors=true;}box.baseColor=/^#[0-9a-f]{6}$/i.test(b.baseColor)?b.baseColor:box.color;if(/^#[0-9a-f]{6}$/i.test(b.interiorColor))box.interiorColor=b.interiorColor;box.baseArtwork=b.baseArtwork===true;if(['lid','tuck'].includes(b.type))box.type=b.type;if(Number.isFinite(b.basePeekMM))box.basePeekMM=Math.max(0,b.basePeekMM);else if(typeof b.basePeek==='boolean')box.basePeekMM=b.basePeek?box.depth*.04:0;for(const id of outputIds){const el=$(id),value=id==='size-reference'&&saved.output?.[id]==='card'?'hand':saved.output?.[id];if(el.type==='checkbox'&&typeof value==='boolean')el.checked=value;else if(el.tagName==='SELECT'&&[...el.options].some(o=>o.value===value)||el.type==='color'&&/^#[0-9a-f]{6}$/i.test(value))el.value=value;else if(id==='gif-speed'&&Number.isFinite(Number(value))&&Number(value)>0)el.value=clamp(Number(value),.25,2);}}catch(e){}
+function restoreSettings(){try{const saved=JSON.parse(localStorage.getItem('box-studio-settings-v2'))||{};const b=saved.box||{};for(const [key,min,max] of [['width',30,400],['height',30,400],['depth',3,250],['radius',.2,4]])if(Number.isFinite(b[key]))box[key]=clamp(b[key],min,max);if(/^#[0-9a-f]{6}$/i.test(b.color)){box.color=b.color;restoredColors=true;}box.baseColor=/^#[0-9a-f]{6}$/i.test(b.baseColor)?b.baseColor:box.color;if(/^#[0-9a-f]{6}$/i.test(b.interiorColor))box.interiorColor=b.interiorColor;box.baseArtwork=b.baseArtwork===true;box.tuckNotch=b.tuckNotch!==false;if(['lid','tuck'].includes(b.type))box.type=b.type;if(Number.isFinite(b.basePeekMM))box.basePeekMM=Math.max(0,b.basePeekMM);else if(typeof b.basePeek==='boolean')box.basePeekMM=b.basePeek?box.depth*.04:0;for(const id of outputIds){const el=$(id),value=id==='size-reference'&&saved.output?.[id]==='card'?'hand':saved.output?.[id];if(el.type==='checkbox'&&typeof value==='boolean')el.checked=value;else if(el.tagName==='SELECT'&&[...el.options].some(o=>o.value===value)||el.type==='color'&&/^#[0-9a-f]{6}$/i.test(value))el.value=value;else if(id==='gif-speed'&&Number.isFinite(Number(value))&&Number(value)>0)el.value=clamp(Number(value),.25,2);}}catch(e){}
  for(const key of ['width','height','depth'])$('box-'+key).value=box[key];syncSurfaceColors();syncBasePeek();$('rounding').value=box.radius;$('rounding-value').textContent=box.radius.toFixed(1)+' mm';syncBoxType();syncSizePreset();syncGifSpeed();}
 function syncSurfaceColors(){$('box-color').value=box.color;$('base-color').value=box.baseColor;$('interior-color').value=box.interiorColor;}
 function faceColor(face){return box.type==='lid'&&(face==='back'||face.startsWith('base-'))?box.baseColor:box.color;}
@@ -76,7 +76,7 @@ function texture(image,crop,face){
  ctx.drawImage(image,x+inset,y+inset,sw,sh,-sw*scale/2,-sh*scale/2,sw*scale,sh*scale);
  const t=new THREE.CanvasTexture(c);t.colorSpace=THREE.SRGBColorSpace;t.anisotropy=renderer.capabilities.getMaxAnisotropy();return t;
 }
-function disposeModel(){companion.clear();model.traverse(o=>{if(o.isMesh){o.geometry.dispose();if(o.material.map)o.material.map.dispose();o.material.dispose();}});model.clear();}
+function disposeModel(){companion.clear();const materials=new Set(),maps=new Set();model.traverse(o=>{if(o.isMesh){o.geometry.dispose();for(const m of Array.isArray(o.material)?o.material:[o.material]){materials.add(m);if(m.map)maps.add(m.map);}}});for(const map of maps)map.dispose();for(const material of materials)material.dispose();model.clear();}
 function rebuildBox(){
  $('stage-dimensions').textContent=box.width+' × '+box.height+' × '+box.depth+' mm';
  if(!model)return;syncSceneOptions();syncBasePeek();disposeModel();model.rotation.set(0,0,0);model.position.set(0,0,0);
@@ -259,10 +259,14 @@ function roundedBox(w,h,d,r,materials,z,name,foldsOnly=false,notch=0,notchDepth=
 }
 // Closed tuck carton: a single paper shell, thumb notch, and closure seams.
 function tuckBox(w,h,d,r,mats,u){
- const n=Math.min(9.5*u,w*.3),notchDepth=Math.min(8*u,h*.2,n),hw=w/2,hh=h/2;
+ const n=box.tuckNotch?Math.min(9.5*u,w*.3):0,notchDepth=Math.min(8*u,h*.2,n),hw=w/2,hh=h/2;
  roundedBox(w,h,d,r,mats,0,'tuck',true,n,notchDepth);
  const shell=model.children[model.children.length-1];
- const inner=new THREE.Mesh(new THREE.PlaneGeometry(n*2.1,notchDepth+.4*u),paper(null,box.color));inner.material.color.multiplyScalar(.78);inner.rotation.y=Math.PI;inner.position.set(0,hh-(notchDepth+.4*u)/2,-d/2+.3*u);inner.name='tuck-inner-flap';shell.add(inner);
+ for(const top of [true,false]){
+  const face=top?'top':'bottom',flap=shell.getObjectByName('tuck-'+face),edge=paper(null,'#ded7ca');edge.side=THREE.DoubleSide;
+  flap.geometry.dispose();flap.geometry=BoxFeatures.tuckFlapGeometry(THREE,w,d,u,top);flap.material=[flap.material,edge];flap.position.y=(top?1:-1)*hh;
+ }
+ if(box.tuckNotch){const tongueH=Math.min(14*u,h*.2),inner=new THREE.Mesh(new THREE.BoxGeometry(w*.88,tongueH,.28*u),paper(null,box.interiorColor));inner.rotation.y=Math.PI;inner.position.set(0,hh-tongueH/2,-d/2+.5*u);inner.name='tuck-inner-flap';shell.add(inner);}
  // Narrow shaded paper overlaps, not dieline artwork.
  for(const [x,y,z,width] of [[-(hw+n)/2,hh-.10*u,-d/2-.01*u,hw-n-r],[(hw+n)/2,hh-.10*u,-d/2-.01*u,hw-n-r],[0,-hh+.10*u,-d/2-.01*u,w-2*r]]){
   const material=new THREE.MeshBasicMaterial({color:0x393630,transparent:true,opacity:.18,side:THREE.DoubleSide,depthWrite:false});
@@ -490,7 +494,7 @@ async function capture(width,height,{cam,solid=false,png=true,layer=null}={}){
  const transparent=!!layer||$('output-bg').value==='transparent'&&!solid;if(transparent&&layer!=='shadow'&&(x0<2||y0<2||x1>=width-2||y1>=height-2))throw new Error('余白を確認できませんでした。ぼかしを弱めて再度お試しください。');
  const metadata={boxCount:state.paired?2:sceneBoxCount,pairGapMM:state.paired?state.pairGapMM:0,oppositeRotation:state.paired?companionState():null,width,height,transparentPixels:clear,opaquePixels:opaque,antialiasedPixels:soft,bounds:[x0,y0,x1,y1],cornerAlpha:[pixels[3],pixels[(width-1)*4+3],pixels[width*(height-1)*4+3],pixels[pixels.length-1]],rotation:{x:state.x,y:state.y,z:state.z},camera:{azimuth:state.cameraAzimuth,elevation:state.cameraElevation,distance:state.cameraDistance},upright:$('upright').value,lighting:{preset:state.lighting,brightness:state.brightness,direction:state.lightDirection,details:{...state.details}},focus:{method:'thin-lens',fStop:state.focusBlur?BoxLens.fStop(state.focusBlur):null,focalLengthMM:85,position:state.focusPosition,blur:state.focusBlur,samples:state.focusBlur?exportSamples:0},boxType:box.type,basePeek:box.type==='lid',basePeekMM:box.type==='lid'?box.basePeekMM:0,surfaceColor:box.color,baseSurfaceColor:box.baseColor,interiorColor:box.interiorColor,sourcePDF:activePDF?{page:activePDF.page,pages:activePDF.doc.numPages}:null,dimensionsMM:{width:box.width,height:box.height,depth:box.depth,totalDepth:box.depth+(box.type==='lid'?.2+box.basePeekMM:0)},baseArtwork:box.type==='lid'&&box.baseArtwork,assignedFaces:Object.keys(crops).filter(face=>!face.startsWith('base-')||box.type==='lid'&&box.baseArtwork),background:transparent?'transparent':$('output-bg').value==='transparent'?'solid':$('output-bg').value,backgroundColor:$('background-color').value,sample:sampleMode};
  const blob=png?await new Promise((resolve,reject)=>canvas.toBlob(b=>b?resolve(b):reject(new Error('PNGを作成できませんでした。')),'image/png')):null;
- metadata.shadowBlur=state.shadowBlur;metadata.groundNormal=[...BoxFeatures.groundUp];metadata.groundPosition=ground.position.toArray();metadata.finish=$('paper-finish').value;metadata.lidPose=$('lid-pose').value;metadata.arrangement=$('box-arrangement').value;metadata.reference=$('size-reference').value;metadata.dimensionCaption=$('dimension-caption').checked&&layer!=='shadow';metadata.layer=layer||'combined';metadata.floorGrid=false;
+ metadata.tuckNotch=box.type==='tuck'&&box.tuckNotch;metadata.shadowBlur=state.shadowBlur;metadata.groundNormal=[...BoxFeatures.groundUp];metadata.groundPosition=ground.position.toArray();metadata.finish=$('paper-finish').value;metadata.lidPose=$('lid-pose').value;metadata.arrangement=$('box-arrangement').value;metadata.reference=$('size-reference').value;metadata.dimensionCaption=$('dimension-caption').checked&&layer!=='shadow';metadata.layer=layer||'combined';metadata.floorGrid=false;
  return{canvas,pixels,blob,metadata};
 }
 function showReview(blob,name,items,title){
@@ -688,13 +692,14 @@ function syncBoxType(){
  syncBaseArtwork();
  syncBasePeek();
  $('box-type').value=box.type;$('base-peek-row').hidden=box.type==='tuck';$('base-peek').disabled=box.type==='tuck'||exporting;
- $('tuck-note').hidden=box.type!=='tuck';$('lid-color-label').textContent=box.type==='lid'?'蓋':'箱';$('base-color-row').hidden=box.type!=='lid';
+ $('tuck-notch-row').hidden=box.type!=='tuck';$('tuck-notch').value=box.tuckNotch?'yes':'no';$('tuck-note').hidden=box.type!=='tuck';$('lid-color-label').textContent=box.type==='lid'?'蓋':'箱';$('base-color-row').hidden=box.type!=='lid';
  for(const option of $('box-preset').options)option.hidden=option.value!=='custom'&&presetType(option.value)!==box.type;
 }
 function syncSizePreset(){const preset=BoxSamples.find(box);$('box-preset').value=preset?.id||'custom';$('preset-dimensions').textContent=[box.width,box.height,box.depth].join(' × ')+' mm';$('preset-name').textContent=preset?.label||'自由に指定';}
 function applyBoxPreset(id){const values=boxPresets[id];if(!values){$('preset-name').textContent='自由に指定';return;}box.type=presetType(id);['width','height','depth'].forEach((key,i)=>{box[key]=values[i];$('box-'+key).value=values[i];});syncBoxType();syncSizePreset();if(sampleMode)loadSample();else rebuildBox();}
 $('box-preset').addEventListener('change',()=>applyBoxPreset($('box-preset').value));
 const rememberedShapes={};
+$('tuck-notch').addEventListener('change',()=>{box.tuckNotch=$('tuck-notch').value==='yes';rebuildBox();save();});
 $('box-type').addEventListener('change',()=>{
  rememberedShapes[box.type]={width:box.width,height:box.height,depth:box.depth,radius:box.radius};box.type=$('box-type').value;
  const previous=rememberedShapes[box.type];
@@ -757,7 +762,7 @@ for(const tablist of document.querySelectorAll('[role="tablist"]')){
 // Project files share the complete scene settings with reusable composition files.
 const projectSchema={
  state:{paired:'boolean',pairGapMM:[0,100],cameraAzimuth:[-180,180],cameraElevation:[-75,75],cameraDistance:[70,180],x:[-180,180],y:[-180,180],z:[-180,180],zoom:[.7,3],view:{values:['angle','angle-back','overhead','front','back','side','custom']},lighting:{values:Object.keys(lightingStyles)},brightness:[65,145],lightDirection:[-100,100],details:detailLimits,focusPosition:{values:['near','middle','far']},focusBlur:[0,100],shadowBlur:[0,100]},
- box:{width:[30,400],height:[30,400],depth:[3,250],radius:[.2,4],color:'color',baseColor:'color',interiorColor:'color',basePeekMM:[0,100],baseArtwork:'boolean',type:{values:['lid','tuck']}},
+ box:{width:[30,400],height:[30,400],depth:[3,250],radius:[.2,4],color:'color',baseColor:'color',interiorColor:'color',basePeekMM:[0,100],baseArtwork:'boolean',tuckNotch:'boolean',type:{values:['lid','tuck']}},
  output:Object.fromEntries(outputIds.map(id=>{const el=$(id);return[id,el.type==='checkbox'?'boolean':el.type==='color'?'color':{values:el.tagName==='SELECT'?[...el.options].map(o=>o.value):Array.from({length:8},(_,i)=>String(.25+i*.25))}];}))
 };
 function projectSnapshot(){return{config:{state:BoxProjectData.copy({...state,y:wrap(state.y)}),box:{...box},output:readOutput()},sourceImage,sourceName,sampleMode,selectedFace,crops:Object.fromEntries(Object.entries(crops).map(([f,c])=>[f,{...c,rect:[...c.rect]}]))};}
