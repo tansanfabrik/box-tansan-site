@@ -175,7 +175,19 @@ function applyFaceSource(img,name,face){
  if(!sourceImage)sourceImage=img;sampleMode=false;selectedFace=face;crops[face]={rect:[0,0,img.naturalWidth,img.naturalHeight],rotation:0,inset:0,image:img,name};
  $('mapping').hidden=false;$('preview-badge').textContent=faceNames[face]+'を差し替えました';$('file-info').textContent=faceNames[face]+'：'+name;$('file-info').dataset.autoLayout='faces';refreshCrop();rebuildBox();$('result').hidden=true;
 }
-async function loadImage(file,targetFace=null){
+let replacementRatioChanged=false;
+function replaceArtwork(img,name,targetFace){
+ const old=targetFace?(crops[targetFace]?.image||sourceImage):sourceImage;
+ const oldSize=[old.naturalWidth,old.naturalHeight],newSize=[img.naturalWidth,img.naturalHeight];
+ replacementRatioChanged=Math.abs((newSize[0]/newSize[1])/(oldSize[0]/oldSize[1])-1)>.02;
+ for(const [face,crop] of Object.entries(crops)){
+  if(targetFace?face===targetFace:(crop.image||sourceImage)===old){crops[face]=BoxProjectData.rescaleCrop(crop,oldSize,newSize);crops[face].image=img;crops[face].name=name;}
+ }
+ if(targetFace&&!crops[targetFace])crops[targetFace]={rect:[0,0,...newSize],rotation:0,inset:0,image:img,name};
+ if(!targetFace){sourceImage=img;sourceName=name;for(const crop of Object.values(crops))if(crop.image===img)delete crop.image;}
+ sampleMode=false;clearAutoLayoutNotice();$('file-info').textContent=name+' · 配置を引き継いで差し替え';$('preview-badge').textContent='配置を保って更新しました';$('result').hidden=true;refreshCrop();rebuildBox();
+}
+async function loadImage(file,targetFace=null,preserve=false){
  if(!file||!ready||exporting)return;
  const isPDF=file.type==='application/pdf'||/\.pdf$/i.test(file.name);
  if(!isPDF&&!['image/png','image/jpeg','image/webp'].includes(file.type)){message('PDF・PNG・JPEG・WebPを選んでください。',true);$('upload').value='';return;}
@@ -191,11 +203,11 @@ async function loadImage(file,targetFace=null){
    if(img.naturalWidth<2||img.naturalHeight<2||img.naturalWidth*img.naturalHeight>65000000||Math.max(img.naturalWidth,img.naturalHeight)>16000)throw new Error('画像の縦横を16,000 px以下・合計6,500万画素以下にしてください。');
   }
   if(generation!==uploadGeneration||signal.aborted)return;
-  const name=isPDF?file.name+' · 1 / '+candidate.doc.numPages+' ページ':file.name;if(targetFace)applyFaceSource(img,name,targetFace);else applySource(img,name);
+  const name=isPDF?file.name+' · 1 / '+candidate.doc.numPages+' ページ':file.name;if(preserve&&sourceImage)replaceArtwork(img,name,targetFace);else if(targetFace)applyFaceSource(img,name,targetFace);else applySource(img,name);
   const previous=activePDF;activePDF=candidate||null;candidate=null;releasePDF(previous);importSucceeded=true;save();
-  message((targetFace?faceNames[targetFace]+'を読み込みました。':$('file-info').dataset.autoLayout==='single'?'1枚のデザインとして読み込みました。':'展開図として読み込みました。')+'箱のサイズは「箱のかたち」タブで変更できます。');
+  message(preserve?'画像を差し替えました。配置・箱のサイズ・構図を引き継いでいます。'+(replacementRatioChanged?'画像の縦横比が変わったため、面の範囲を確認してください。':''):(targetFace?faceNames[targetFace]+'を読み込みました。':$('file-info').dataset.autoLayout==='single'?'1枚のデザインとして読み込みました。':'展開図として読み込みました。')+'箱のサイズは「箱のかたち」タブで変更できます。');
  }catch(error){if(generation===uploadGeneration&&!signal.aborted){console.error(error);message(isPDF?BoxPhotoPDF.describeError(error):(error.message||'画像を読み込めませんでした。'),true);}}
- finally{if(generation===uploadGeneration&&importSucceeded)openImageEditor();if(url)URL.revokeObjectURL(url);releasePDF(candidate);if(generation===uploadGeneration){importing=false;syncPDFControls();$('upload').value='';$('face-upload').value='';}}
+ finally{if(generation===uploadGeneration&&importSucceeded&&(!preserve||replacementRatioChanged))openImageEditor();if(url)URL.revokeObjectURL(url);releasePDF(candidate);if(generation===uploadGeneration){importing=false;syncPDFControls();$('upload').value='';$('face-upload').value='';$('replace-artwork').value='';$('replace-face').value='';}}
 }
 async function selectPDFPage(requested){
  if(!activePDF||importing||exporting)return;
@@ -548,6 +560,10 @@ $('reset-all').addEventListener('click',()=>{
 });
 $('reset-view').addEventListener('click',()=>{state.cameraAzimuth=0;state.cameraElevation=0;state.cameraDistance=100;state.zoom=1;fitPreviewZoom();select('angle');});
 $('upload').addEventListener('change',e=>loadImage(e.target.files[0]));
+$('replace-artwork-button').addEventListener('click',()=>$('replace-artwork').click());
+$('replace-artwork').addEventListener('change',e=>loadImage(e.target.files[0],null,true));
+$('replace-face-button').addEventListener('click',()=>$('replace-face').click());
+$('replace-face').addEventListener('change',e=>loadImage(e.target.files[0],selectedFace,true));
 $('face-upload').addEventListener('change',e=>loadImage(e.target.files[0],selectedFace));
 const dropzone=$('dropzone');
 ['dragenter','dragover'].forEach(name=>dropzone.addEventListener(name,e=>{e.preventDefault();dropzone.classList.add('over');}));
@@ -738,6 +754,47 @@ for(const tablist of document.querySelectorAll('[role="tablist"]')){
  const choose=button=>{for(const tab of tabs){const active=tab===button;tab.setAttribute('aria-selected',String(active));tab.tabIndex=active?0:-1;$(tab.getAttribute('aria-controls')).hidden=!active;}drawCrop();};
  for(const tab of tabs){tab.addEventListener('click',()=>choose(tab));tab.addEventListener('keydown',e=>{const step=e.key==='ArrowRight'?1:e.key==='ArrowLeft'?-1:0;if(!step)return;e.preventDefault();const next=tabs[(tabs.indexOf(tab)+step+tabs.length)%tabs.length];choose(next);next.focus();});}
 }
+// Project files share the complete scene settings with reusable composition files.
+const projectSchema={
+ state:{paired:'boolean',pairGapMM:[0,100],cameraAzimuth:[-180,180],cameraElevation:[-75,75],cameraDistance:[70,180],x:[-180,180],y:[-180,180],z:[-180,180],zoom:[.7,3],view:{values:['angle','angle-back','overhead','front','back','side','custom']},lighting:{values:Object.keys(lightingStyles)},brightness:[65,145],lightDirection:[-100,100],details:detailLimits,focusPosition:{values:['near','middle','far']},focusBlur:[0,100],shadowBlur:[0,100]},
+ box:{width:[30,400],height:[30,400],depth:[3,250],radius:[.2,4],color:'color',baseColor:'color',interiorColor:'color',basePeekMM:[0,100],baseArtwork:'boolean',type:{values:['lid','tuck']}},
+ output:Object.fromEntries(outputIds.map(id=>{const el=$(id);return[id,el.type==='checkbox'?'boolean':el.type==='color'?'color':{values:el.tagName==='SELECT'?[...el.options].map(o=>o.value):Array.from({length:8},(_,i)=>String(.25+i*.25))}];}))
+};
+function projectSnapshot(){return{config:{state:BoxProjectData.copy({...state,y:wrap(state.y)}),box:{...box},output:readOutput()},sourceImage,sourceName,sampleMode,selectedFace,crops:Object.fromEntries(Object.entries(crops).map(([f,c])=>[f,{...c,rect:[...c.rect]}]))};}
+function projectComposition(snapshot,config){
+ const next={...snapshot,config:BoxProjectData.copy(snapshot.config)};
+ next.config.state=BoxProjectData.copy(config.state);
+ for(const id of outputIds)if(!['upright','paper-finish'].includes(id))next.config.output[id]=config.output[id];
+ return next;
+}
+function applyProjectSnapshot(snapshot,keepPDF=false){
+ cancelAnimationFrame(animation);stopFocusPreview();clearFaceGuess();frontGuide=null;clearAutoLayoutNotice();
+ state=BoxProjectData.copy(snapshot.config.state);box={...snapshot.config.box};
+ sourceImage=snapshot.sourceImage;sourceName=snapshot.sourceName;sampleMode=snapshot.sampleMode;selectedFace=snapshot.selectedFace;
+ crops=Object.fromEntries(Object.entries(snapshot.crops).map(([f,c])=>[f,{...c,rect:[...c.rect]}]));
+ for(const id of outputIds){const el=$(id);if(el.type==='checkbox')el.checked=snapshot.config.output[id];else el.value=snapshot.config.output[id];}
+ if(!keepPDF){releasePDF(activePDF);activePDF=null;$('result').hidden=true;$('result-image').removeAttribute('src');if(lastURL){URL.revokeObjectURL(lastURL);lastURL=null;}}
+ for(const key of ['width','height','depth'])$('box-'+key).value=box[key];
+ syncSurfaceColors();syncBoxType();syncSizePreset();$('rounding').value=box.radius;$('rounding-value').textContent=box.radius.toFixed(1)+' mm';syncGifSpeed();syncFocusUI();
+ $('mapping').hidden=false;$('file-info').textContent=sourceName+' · '+sourceImage.naturalWidth+' × '+sourceImage.naturalHeight+' px';$('file-info').dataset.autoLayout='project';$('upload-label').textContent='画像・PDFを差し替える';$('preview-badge').textContent=sourceName+(sampleMode?' · SAMPLE':'');
+ applyLighting(true);rebuildBox();refreshCrop();updateUI();syncPDFControls();
+}
+async function projectThumbnail(snapshot){
+ const original=projectSnapshot(),oldRatio=renderer.getPixelRatio(),size=renderer.getSize(new THREE.Vector2()),oldSamples=exportSamples;
+ try{
+  applyProjectSnapshot(snapshot,true);exportSamples=64;cancelExport=false;
+  const [w,h]=dimensionsFor(512),frame=await capture(w,h);const data=frame.canvas.toDataURL('image/png');frame.canvas.width=frame.canvas.height=1;return data;
+ }finally{applyProjectSnapshot(original,true);exportSamples=oldSamples;renderer.setPixelRatio(oldRatio);renderer.setSize(size.x,size.y,false);}
+}
+BoxProjects.install({schema:projectSchema,snapshot:projectSnapshot,withComposition:projectComposition,apply:applyProjectSnapshot,thumbnail:projectThumbnail,message,
+ busy:()=>!ready||importing||exporting||resetting,
+ closePanels:()=>{$('shooting-settings').close();$('image-editor').close();$('review-dialog').close();},
+ run:async action=>{
+  stopFocusPreview();cancelAnimationFrame(animation);release();const controls=[...document.querySelectorAll('button,input,select')].map(el=>[el,el.disabled]);exporting=true;cancelExport=false;controls.forEach(([el])=>el.disabled=true);
+  try{return await action();}finally{exporting=false;controls.forEach(([el,disabled])=>{if(el.isConnected)el.disabled=disabled;});syncBoxType();syncPDFControls();syncLightingControls();syncFocusUI();refreshCrop();resize();save();}
+ }
+});
+
 restoreSettings();BoxRangeInputs.sync();
 new ResizeObserver(resize).observe(stage);init().then(()=>loadSample(restoredColors));
 
