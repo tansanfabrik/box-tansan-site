@@ -160,6 +160,7 @@ function cropPoint(e){const image=faceImage(),rect=$('crop-canvas').getBoundingC
 function updateCrop(){clearFaceGuess();sampleMode=false;refreshCrop();rebuildBox();}
 let activePDF=null,importController=null,importing=false;
 function syncPDFControls(){
+ syncFinishControls();
  $('reset-all').disabled=!ready||importing||exporting||resetting;
  syncFrontGuide();
  $('pdf-controls').hidden=!activePDF||!!activePDF.face&&activePDF.face!==selectedFace;
@@ -589,9 +590,15 @@ document.querySelectorAll('[data-face]').forEach(button=>button.addEventListener
 function syncFinishControls(){
  const crop=crops[selectedFace],finish=crop?.finish;
  $('finish-face-name').textContent=faceNames[selectedFace];$('finish-kind').value=finish?.kind||'none';$('finish-alignment').value=finish?.alignment||'source';
- $('finish-upload-button').disabled=!crop||importing||exporting;$('finish-kind').disabled=!crop||importing||exporting;$('finish-alignment').disabled=!finish||importing||exporting;$('finish-remove').disabled=!finish||importing||exporting;
+ $('finish-edit-button').disabled=!crop||importing||exporting;$('finish-upload-button').disabled=!crop||importing||exporting;$('finish-kind').disabled=!crop||importing||exporting;$('finish-alignment').disabled=!finish||importing||exporting;$('finish-remove').disabled=!finish||importing||exporting;
  $('finish-file-name').textContent=finish?.name||'黒い部分を加工します。白・透明の部分は加工しません。';
 }
+$('finish-edit-button').addEventListener('click',()=>{
+ const face=selectedFace,crop=crops[face];if(!crop||importing||exporting)return;
+ BoxFinishEditor.open({image:faceImage(),crop,faceName:faceNames[face],kind:$('finish-kind').value,onApply:finish=>{
+  if(crops[face]!==crop)return;crop.finish=finish;if(state.lighting==='neutral'){state.lighting='studio';applyLighting(true);}updateCrop();
+ }});
+});
 $('finish-upload-button').addEventListener('click',()=>$('finish-upload').click());
 $('finish-upload').addEventListener('change',async e=>{
  const file=e.target.files[0];e.target.value='';const face=selectedFace,crop=crops[face];if(!file||!crop||importing||exporting)return;
