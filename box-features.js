@@ -57,6 +57,11 @@ function spinPose(T,pose,angle,quarter=0){
  q.premultiply(new T.Quaternion().setFromAxisAngle(new T.Vector3(...groundUp),rad(angle)));
  return dragRotation(T,q,new T.Quaternion(),0,0,quarter);
 }
+// Move the camera around the floor normal; geometry, lights and their shadows stay fixed.
+function orbitCamera(T,base,angle,pivot=new T.Vector3()){
+ const q=new T.Quaternion().setFromAxisAngle(new T.Vector3(...groundUp),-T.MathUtils.degToRad(angle)),cam=base.clone();
+ cam.position.sub(pivot).applyQuaternion(q).add(pivot);cam.quaternion.premultiply(q);cam.up.applyQuaternion(q);cam.updateMatrixWorld(true);return cam;
+}
 // A thin, slightly bowed closure flap with real cut-paper edges.
 function tuckFlapGeometry(T,w,d,u,top=true){
  const nx=16,nz=12,sign=top?1:-1,thickness=.28*u,positions=[],uvs=[],indices=[],edges=[];
@@ -74,5 +79,5 @@ function tuckFlapGeometry(T,w,d,u,top=true){
  for(const [a,b] of edges){const start=positions.length/3;for(const [q,lower] of [[a,false],[b,false],[b,true],[a,true]]){positions.push(...point(...q,lower));uvs.push(0,0);}indices.push(start,start+1,start+2,start,start+2,start+3);}
  const geo=new T.BufferGeometry();geo.setAttribute('position',new T.Float32BufferAttribute(positions,3));geo.setAttribute('uv',new T.Float32BufferAttribute(uvs,2));geo.setIndex(indices);geo.addGroup(0,faceCount,0);geo.addGroup(faceCount,indices.length-faceCount,1);geo.computeVertexNormals();return geo;
 }
-const api={tuckFlapGeometry,spinPose,groundUp,viewPresets,flatPose,finishes,references,layout,hollow,arrange,reference,dragRotation,companionRotation};if(typeof module==='object'&&module.exports)module.exports=api;else root.BoxFeatures=api;
+const api={tuckFlapGeometry,orbitCamera,spinPose,groundUp,viewPresets,flatPose,finishes,references,layout,hollow,arrange,reference,dragRotation,companionRotation};if(typeof module==='object'&&module.exports)module.exports=api;else root.BoxFeatures=api;
 })(globalThis);

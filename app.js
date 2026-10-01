@@ -493,15 +493,15 @@ function syncCaptionPreview(){
 }
 $('dimension-caption').addEventListener('change',()=>{syncCaptionPreview();save();});
 function dimensionsFor(longEdge){const ratio={square:1,portrait:4/5,story:9/16,wide:16/9}[$('output-aspect').value]||1;return ratio>=1?[longEdge,Math.round(longEdge/ratio)]:[Math.round(longEdge*ratio),longEdge];}
-function exportCameraFor(width,height,bounds){
- const cam=camera.clone();cam.aspect=width/height;cam.zoom=1;cam.clearViewOffset();cam.updateProjectionMatrix();const b={...(bounds||outputBounds(cam))};
+function exportCameraFor(width,height,bounds,baseCamera=camera){
+ const cam=baseCamera.clone();cam.aspect=width/height;cam.zoom=1;cam.clearViewOffset();cam.updateProjectionMatrix();const b={...(bounds||outputBounds(cam))};
  if(focusSupported&&state.focusBlur&&!bounds){const lens=focusSettings(cam,256);for(let i=0;i<8;i++){const x=Math.cos(i*Math.PI/4)*lens.radius,y=Math.sin(i*Math.PI/4)*lens.radius,c=cam.clone();c.translateX(x);c.translateY(y);c.projectionMatrix.fromArray(BoxLens.shiftProjection(cam.projectionMatrix.elements,x,y,lens.focusDistance));c.projectionMatrixInverse.copy(c.projectionMatrix).invert();c.updateMatrixWorld(true);const a=outputBounds(c);b.x0=Math.min(b.x0,a.x0);b.x1=Math.max(b.x1,a.x1);b.y0=Math.min(b.y0,a.y0);b.y1=Math.max(b.y1,a.y1);}}
  const margin=$('output-bg').value==='shadow'?.72:.82,span=Math.max(b.x1-b.x0,b.y1-b.y0)/(2*margin),cx=(b.x0+b.x1)/2,cy=(b.y0+b.y1)/2;cam.setViewOffset(width,height,width*(.5+cx/2-span/2),height*(.5-cy/2-span/2),width*span,height*span);return cam;
 }
-async function capture(width,height,{cam,solid=false,png=true,layer=null}={}){
+async function capture(width,height,{cam,solid=false,png=true,layer=null,fixedScene=false}={}){
  if(cancelExport)throw new Error('書き出しを中止しました。');
  const limit=Math.min(renderer.capabilities.maxTextureSize,renderer.getContext().getParameter(renderer.getContext().MAX_RENDERBUFFER_SIZE));if(Math.max(width,height)>limit)throw new Error('この端末では指定サイズに対応していません。2048 pxを選んでください。');
- syncModel();syncBackground(solid);cam=cam||exportCameraFor(width,height);renderer.setPixelRatio(1);renderer.setSize(width,height,false);
+ if(!fixedScene)syncModel();syncBackground(solid);cam=cam||exportCameraFor(width,height);renderer.setPixelRatio(1);renderer.setSize(width,height,false);
  const canvas=document.createElement('canvas');canvas.width=width;canvas.height=height;const ctx=canvas.getContext('2d',{willReadFrequently:true}),materialStates=new Map();
  // Keep the box in the shadow pass while omitting its color and depth from the shadow-only image.
  try{
@@ -539,13 +539,28 @@ async function runExport(kind){
    if(cancelExport)throw new Error('書き出しを中止しました。');
    showReview(await BoxStudio.zip(items),'box-and-shadow.zip',items,'箱と影を別々に · '+width+' × '+height+' px');
   }else if(kind==='gif'){
-   message('回転GIFを準備しています…');const {GIFEncoder,quantize,applyPalette}=await import('./vendor/gifenc.mjs');const gif=GIFEncoder(),timing=BoxStudio.gifTiming($('gif-speed').value);lockGifPairCenters(original);
-   // Fit the complete rotation once so the apparent size never pumps between frames.
+   const orbit=originalBackground==='shadow';message(orbit?'箱と影を固定して、カメラを回すGIFを準備しています…':'回転GIFを準備しています…');
+   const {GIFEncoder,quantize,applyPalette}=await import('./vendor/gifenc.mjs'),gif=GIFEncoder(),timing=BoxStudio.gifTiming($('gif-speed').value);
+   if(orbit)syncModel();else lockGifPairCenters(original);
+   // A single framing covers the full orbit, including projected shadows, without breathing.
    const base=camera.clone();base.aspect=width/height;base.zoom=1;base.clearViewOffset();base.updateProjectionMatrix();const union={x0:Infinity,y0:Infinity,x1:-Infinity,y1:-Infinity};
-   for(let i=0;i<36;i++){Object.assign(state,BoxFeatures.spinPose(THREE,original,i*10,BoxStudio.uprightTurn(box,$('upright').value)));syncModel();const b=outputBounds(base);union.x0=Math.min(union.x0,b.x0);union.x1=Math.max(union.x1,b.x1);union.y0=Math.min(union.y0,b.y0);union.y1=Math.max(union.y1,b.y1);}
-   const cam=exportCameraFor(width,height,union);let metadata;
-   for(let i=0;i<timing.frames;i++){if(cancelExport)throw new Error('書き出しを中止しました。');Object.assign(state,BoxFeatures.spinPose(THREE,original,i*360/timing.frames,BoxStudio.uprightTurn(box,$('upright').value)));const frame=await capture(width,height,{cam,solid:true,png:false});const palette=quantize(frame.pixels,256,{format:'rgb565'});const index=applyPalette(frame.pixels,palette,'rgb565');gif.writeFrame(index,width,height,{palette,delay:timing.delays[i],repeat:0});metadata=frame.metadata;frame.canvas.width=frame.canvas.height=1;message('回転GIFを作成しています… '+Math.round((i+1)/timing.frames*100)+'%');await tick();}
-   gif.finish();const blob=new Blob([gif.bytes()],{type:'image/gif'});metadata={...metadata,durationMS:timing.durationMS,frames:timing.frames,rotationSpeed:timing.speed,pairCenterOffsets:gifPairOffsets?[...gifPairOffsets]:null};const seconds=timing.durationMS/1000;showReview(blob,'box-rotation-'+seconds+'s.gif',[{blob,metadata,label:seconds+'秒ループ'}],'回転GIF · '+seconds+'秒ループ');
+   for(let i=0;i<72;i++){
+    const angle=i*5;let view=base;
+    if(orbit)view=BoxFeatures.orbitCamera(THREE,base,angle);
+    else{Object.assign(state,BoxFeatures.spinPose(THREE,original,angle,BoxStudio.uprightTurn(box,$('upright').value)));syncModel();}
+    const b=outputBounds(view);union.x0=Math.min(union.x0,b.x0);union.x1=Math.max(union.x1,b.x1);union.y0=Math.min(union.y0,b.y0);union.y1=Math.max(union.y1,b.y1);
+   }
+   const fitted=exportCameraFor(width,height,union,base);let metadata;
+   for(let i=0;i<timing.frames;i++){
+    if(cancelExport)throw new Error('書き出しを中止しました。');const angle=i*360/timing.frames;
+    const cam=orbit?BoxFeatures.orbitCamera(THREE,fitted,angle):fitted;
+    if(!orbit)Object.assign(state,BoxFeatures.spinPose(THREE,original,angle,BoxStudio.uprightTurn(box,$('upright').value)));
+    const frame=await capture(width,height,{cam,solid:true,png:false,fixedScene:orbit});
+    const palette=quantize(frame.pixels,256,{format:'rgb565'}),index=applyPalette(frame.pixels,palette,'rgb565');gif.writeFrame(index,width,height,{palette,delay:timing.delays[i],repeat:0});metadata=frame.metadata;
+    if(orbit)metadata.camera={...metadata.camera,azimuth:wrap(original.cameraAzimuth-angle),position:cam.position.toArray()};
+    frame.canvas.width=frame.canvas.height=1;message((orbit?'カメラを回してGIFを作成しています… ':'回転GIFを作成しています… ')+Math.round((i+1)/timing.frames*100)+'%');await tick();
+   }
+   gif.finish();const blob=new Blob([gif.bytes()],{type:'image/gif'});metadata={...metadata,durationMS:timing.durationMS,frames:timing.frames,rotationSpeed:timing.speed,gifMotion:orbit?'camera-orbit':'box-turntable',pairCenterOffsets:gifPairOffsets?[...gifPairOffsets]:null};const seconds=timing.durationMS/1000;showReview(blob,'box-rotation-'+seconds+'s.gif',[{blob,metadata,label:seconds+'秒ループ'}],'回転GIF · '+seconds+'秒ループ'+(orbit?' · カメラが周回':''));
   }else{
    const cuts=kind==='three'?[{label:'斜め',name:'01-angle.png',pose:presets.angle},{label:'正面',name:'02-front.png',pose:presets.front},{label:'裏面',name:'03-back.png',pose:presets.back}]:kind==='pair'?[{label:'現在の角度',name:'01-current.png',pose:original},{label:'同じ角度の反対面',name:'02-reverse.png',pose:{...original,...companionState()}}]:[{label:'現在の向き',name:'box-image.png',pose:original}];
    for(const cut of cuts){Object.assign(state,cut.pose);syncModel();message(cut.label+'を描画しています…');await tick();const frame=await capture(width,height);frame.canvas.width=frame.canvas.height=1;items.push({blob:frame.blob,metadata:frame.metadata,label:cut.label,name:cut.name});}
