@@ -2,8 +2,8 @@
 'use strict';
 const finishes={matte:{roughness:.88,specularIntensity:.18,clearcoat:0,clearcoatRoughness:.85},semi:{roughness:.57,specularIntensity:.38,clearcoat:.12,clearcoatRoughness:.48},gloss:{roughness:.22,specularIntensity:.8,clearcoat:1,clearcoatRoughness:.1}};
 const groundUp=[0,1,0];
-const viewPresets={angle:{x:0,y:30,z:0,cameraAzimuth:0,cameraElevation:0},'angle-back':{x:0,y:-150,z:0,cameraAzimuth:0,cameraElevation:0},overhead:{x:0,y:30,z:0,cameraAzimuth:0,cameraElevation:20},front:{x:0,y:0,z:0,cameraAzimuth:0,cameraElevation:0},back:{x:0,y:180,z:0,cameraAzimuth:0,cameraElevation:0},side:{x:90,y:0,z:90,cameraAzimuth:0,cameraElevation:0}};
 const flatPose={x:90,y:0,z:-25,cameraAzimuth:0,cameraElevation:35};
+const viewPresets={angle:{x:0,y:30,z:0,cameraAzimuth:0,cameraElevation:0},'angle-back':{x:0,y:-150,z:0,cameraAzimuth:0,cameraElevation:0},overhead:{x:0,y:30,z:0,cameraAzimuth:0,cameraElevation:20},'flat-overhead':{...flatPose},'low-angle':{x:0,y:30,z:0,cameraAzimuth:0,cameraElevation:-20},front:{x:0,y:0,z:0,cameraAzimuth:0,cameraElevation:0},back:{x:0,y:180,z:0,cameraAzimuth:0,cameraElevation:0},side:{x:90,y:0,z:90,cameraAzimuth:0,cameraElevation:0}};
 const references={hand:{label:'手のひらの目安 約110 × 180 mm（指を含む）',width:110,height:180,depth:0},bottle:{label:'500mlボトルの目安 約65 × 210 mm',width:65,height:210,depth:65},phone:{label:'スマホの目安 72 × 147 × 8 mm',width:72,height:147,depth:8}};
 function layout(kind,w,h,d,gap){const match=/^(stack|flat)([3-5])$/.exec(kind);if(!match)return[[0,0,0]];const n=Number(match[2]);if(match[1]==='stack')return Array.from({length:n},(_,i)=>[0,0,(i-(n-1)/2)*d]);const cols=n===4?2:3,rows=Math.ceil(n/cols);return Array.from({length:n},(_,i)=>{const row=Math.floor(i/cols),count=Math.min(cols,n-row*cols);return[(i%cols-(count-1)/2)*(w+gap),((rows-1)/2-row)*(h+gap),0];});}
 // Convert the existing exterior into an open tray with a paper lining and thickness at its rim.

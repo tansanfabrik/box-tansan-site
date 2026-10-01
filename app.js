@@ -58,7 +58,7 @@ function syncBackground(forceSolid=false){
  if(ground){ground.visible=mode==='shadow';const normal=new THREE.Vector3(...BoxFeatures.groundUp),point=new THREE.Vector3();let min=Infinity;
   boxGroup.traverseVisible(mesh=>{if(!mesh.isMesh)return;const pos=mesh.geometry.attributes.position;for(let i=0;i<pos.count;i++){point.fromBufferAttribute(pos,i).applyMatrix4(mesh.matrixWorld);min=Math.min(min,point.dot(normal));}});
   ground.quaternion.setFromUnitVectors(new THREE.Vector3(0,0,1),normal);ground.position.copy(normal).multiplyScalar(min-.4);
-  if(floorGrid){floorGrid.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),normal);floorGrid.position.copy(ground.position).addScaledVector(normal,.05);floorGrid.visible=ground.visible&&!exporting;}
+  if(floorGrid){floorGrid.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),normal);floorGrid.position.copy(ground.position).addScaledVector(normal,.05);floorGrid.visible=ground.visible&&!exporting&&camera.position.clone().sub(ground.position).dot(normal)>0;}
  }
 }
 
@@ -429,7 +429,7 @@ async function init(){
  }catch(e){console.error(e);message('3D表示を読み込めませんでした。WebGLが利用できるブラウザで開き直してください。',true);}
 }
 const presets=BoxFeatures.viewPresets;
-function select(view){if(exporting)return;$('placement').value='standing';cancelAnimationFrame(animation);const from={...state},target={...presets[view]},duration=matchMedia('(prefers-reduced-motion: reduce)').matches?0:450,start=performance.now();target.y=from.y+wrap(target.y-from.y);state.view=view;
+function select(view){if(exporting)return;$('placement').value=view==='flat-overhead'?'flat':'standing';cancelAnimationFrame(animation);const from={...state},target={...presets[view]},duration=matchMedia('(prefers-reduced-motion: reduce)').matches?0:450,start=performance.now();target.y=from.y+wrap(target.y-from.y);state.view=view;
  function frame(now){const t=duration?Math.min(1,(now-start)/duration):1,e=t*t*(3-2*t);for(const k of ['x','y','z','cameraAzimuth','cameraElevation'])state[k]=from[k]+(target[k]-from[k])*e;draw();if(t<1)animation=requestAnimationFrame(frame);else{state.y=wrap(state.y);draw();save();}}animation=requestAnimationFrame(frame);
 }
 buttons.forEach(b=>b.addEventListener('click',()=>select(b.dataset.view)));
@@ -831,7 +831,7 @@ for(const tablist of document.querySelectorAll('[role="tablist"]')){
 }
 // Project files share the complete scene settings with reusable composition files.
 const projectSchema={
- state:{paired:'boolean',pairGapMM:[0,100],cameraAzimuth:[-180,180],cameraElevation:[-75,75],cameraDistance:[70,180],x:[-180,180],y:[-180,180],z:[-180,180],zoom:[.7,3],view:{values:['angle','angle-back','overhead','front','back','side','custom']},lighting:{values:Object.keys(lightingStyles)},brightness:[65,145],lightDirection:[-100,100],details:detailLimits,focusPosition:{values:['near','middle','far']},focusBlur:[0,100],shadowBlur:[0,100]},
+ state:{paired:'boolean',pairGapMM:[0,100],cameraAzimuth:[-180,180],cameraElevation:[-75,75],cameraDistance:[70,180],x:[-180,180],y:[-180,180],z:[-180,180],zoom:[.7,3],view:{values:[...Object.keys(presets),'custom']},lighting:{values:Object.keys(lightingStyles)},brightness:[65,145],lightDirection:[-100,100],details:detailLimits,focusPosition:{values:['near','middle','far']},focusBlur:[0,100],shadowBlur:[0,100]},
  box:{width:[30,400],height:[30,400],depth:[3,250],radius:[.2,4],color:'color',baseColor:'color',interiorColor:'color',basePeekMM:[0,100],baseArtwork:'boolean',tuckNotch:'boolean',type:{values:['lid','tuck']}},
  output:Object.fromEntries(outputIds.map(id=>{const el=$(id);return[id,el.type==='checkbox'?'boolean':el.type==='color'?'color':{values:el.tagName==='SELECT'?[...el.options].map(o=>o.value):Array.from({length:8},(_,i)=>String(.25+i*.25))}];}))
 };
