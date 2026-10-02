@@ -49,19 +49,20 @@
     if(c.finish!=null){const f=c.finish;if(!['none','varnish','gold','silver'].includes(f.kind)||!['source','face'].includes(f.alignment))return fail();result.crops[face].finish={kind:f.kind,alignment:f.alignment,name:text(f.name),asset:imageId(f.asset)};}
    }return result;
   };
-  out.current=snapshot(doc.current);out.designs=doc.designs.map(d=>{if(!d)return fail();const size=pngSize(d.thumbnail);if(size.some(n=>n>1024)||d.thumbnail.length>2*1024*1024)return fail();return{name:text(d.name)||'デザイン',thumbnail:d.thumbnail,snapshot:snapshot(d.snapshot)};});return out;
+  out.current=snapshot(doc.current);const slots=new Set();out.designs=doc.designs.map((d,i)=>{if(!d)return fail();const slot=d.slot===undefined?i:d.slot;if(!Number.isInteger(slot)||slot<0||slot>5||slots.has(slot))return fail();slots.add(slot);const size=pngSize(d.thumbnail);if(size.some(n=>n>1024)||d.thumbnail.length>2*1024*1024)return fail();return{slot,name:text(d.name)||'デザイン',thumbnail:d.thumbnail,snapshot:snapshot(d.snapshot)};});return out;
  }
  async function encode(current,designs,name){
   const images=[],ids=new Map();
   function id(image){if(!ids.has(image)){ids.set(image,images.length);images.push(image);}return ids.get(image);}
   function snapshot(s){return{config:copy(s.config),source:id(s.sourceImage),sourceName:s.sourceName,sampleMode:s.sampleMode,selectedFace:s.selectedFace,crops:Object.fromEntries(Object.entries(s.crops).map(([f,c])=>[f,{rect:[...c.rect],rotation:c.rotation,inset:c.inset,asset:id(c.image||s.sourceImage),name:c.name||'',...(c.finish?.image?{finish:{kind:c.finish.kind,alignment:c.finish.alignment,name:c.finish.name||'',asset:id(c.finish.image)}}:{})}]))};}
-  const doc={format:FORMAT,version:VERSION,kind:'project',name,current:snapshot(current),designs:designs.map(d=>({name:d.name,thumbnail:d.thumbnail,snapshot:snapshot(d.snapshot)})),assets:[]};
+  const doc={format:FORMAT,version:VERSION,kind:'project',name,current:snapshot(current),designs:designs.map((d,i)=>({slot:d.slot??i,name:d.name,thumbnail:d.thumbnail,snapshot:snapshot(d.snapshot)})),assets:[]};
   let pixels=0;for(const image of images){pixels+=image.naturalWidth*image.naturalHeight;if(pixels>200000000)throw new Error('画像の合計が大きすぎます。比較案を減らすか、画像を小さくして保存してください。');const c=document.createElement('canvas');c.width=image.naturalWidth;c.height=image.naturalHeight;c.getContext('2d').drawImage(image,0,0);const data=c.toDataURL('image/png');c.width=c.height=1;doc.assets.push({data,pdfImport:image.pdfImport||''});await new Promise(r=>setTimeout(r,0));}return doc;
  }
- async function decode(doc){
-  const images=[];for(const a of doc.assets){const image=new Image();image.src=a.data;await image.decode();if(image.naturalWidth!==a.width||image.naturalHeight!==a.height)return fail();if(a.pdfImport)image.pdfImport=a.pdfImport;images.push(image);}
+ async function decode(doc,{currentOnly=false}={}){
+  const used=new Set([doc.current.source]);for(const c of Object.values(doc.current.crops)){used.add(c.asset);if(c.finish)used.add(c.finish.asset);}
+  const images=[];for(let i=0;i<doc.assets.length;i++){if(currentOnly&&!used.has(i))continue;const a=doc.assets[i];const image=new Image();image.src=a.data;await image.decode();if(image.naturalWidth!==a.width||image.naturalHeight!==a.height)return fail();if(a.pdfImport)image.pdfImport=a.pdfImport;images[i]=image;}
   const snapshot=s=>({...s,sourceImage:images[s.source],crops:Object.fromEntries(Object.entries(s.crops).map(([f,c])=>{const crop={rect:[...c.rect],rotation:c.rotation,inset:c.inset,name:c.name};if(c.asset!==s.source)crop.image=images[c.asset];if(c.finish)crop.finish={kind:c.finish.kind,alignment:c.finish.alignment,name:c.finish.name,image:images[c.finish.asset]};return[f,crop];}))});
-  return{current:snapshot(doc.current),designs:doc.designs.map(d=>({...d,snapshot:snapshot(d.snapshot)}))};
+  return{current:snapshot(doc.current),designs:currentOnly?[]:doc.designs.map(d=>({...d,snapshot:snapshot(d.snapshot)}))};
  }
  const api={FORMAT,VERSION,MAX_BYTES,copy,cleanConfig,pngSize,rescaleCrop,validate,encode,decode};
  if(typeof module!=='undefined')module.exports=api;else root.BoxProjectData=api;

@@ -101,3 +101,8 @@ footer .reset-all:disabled{opacity:.45;cursor:default}
 #finish-edit-canvas{position:absolute}
 #review-dialog .image-review-viewport{position:relative;height:min(55dvh,500px);overflow:hidden;display:block}
 #review-dialog #result-image{position:absolute;max-width:none;max-height:none;object-fit:fill;user-select:none}
+
+#project-dialog .comparison-empty{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;padding:12px;box-sizing:border-box}
+#project-dialog .comparison-empty button{font-size:12px;padding:8px 10px;max-width:100%}
+#project-dialog .comparison-empty small{font-size:10px;line-height:1.5;text-align:center;padding:0 5px}
+.comparison-card.file-over{outline:2px solid #2f6bff;background:#eef4ff}
