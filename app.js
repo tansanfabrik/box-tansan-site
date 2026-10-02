@@ -131,7 +131,9 @@ function setLayout(kind){
  }
  selectedFace='front';refreshCrop();rebuildBox();message('画像上で各面の範囲を調整できます。選び直すと、その範囲だけが箱に反映されます。');
 }
+let finishPreviewHeld=false;
 function refreshCrop(){
+ endFinishPreview();
  if(faceGuess&&(faceGuess.image!==faceImage()||faceGuess.dimensions!==[box.type,box.width,box.height,box.depth].join(',')))clearFaceGuess();
  syncFrontGuide();syncBaseArtwork();checkRatios();showPDFResult();
  document.querySelectorAll('[data-face]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.face===selectedFace)));
@@ -146,8 +148,10 @@ function drawCrop(){
  const image=faceImage();if(!image)return;const c=$('crop-canvas'),width=c.clientWidth,height=c.clientHeight;if(!width||!height)return;
  const ratio=Math.min(devicePixelRatio||1,2);c.width=Math.round(width*ratio);c.height=Math.round(height*ratio);const ctx=c.getContext('2d');ctx.scale(ratio,ratio);
  const scale=Math.min((width-12)/image.naturalWidth,(height-12)/image.naturalHeight),ox=(width-image.naturalWidth*scale)/2,oy=(height-image.naturalHeight*scale)/2;
- cropView={scale,ox,oy};ctx.drawImage(image,ox,oy,image.naturalWidth*scale,image.naturalHeight*scale);
- if($('finish-overlay').checked&&crops[selectedFace]?.finish)BoxPrintFinish.paintOverlay(ctx,crops[selectedFace].finish,crops[selectedFace],image,scale,ox,oy);
+ cropView={scale,ox,oy};
+ if(finishPreviewHeld){ctx.fillStyle='#fff';ctx.fillRect(ox,oy,image.naturalWidth*scale,image.naturalHeight*scale);ctx.globalAlpha=.16;}
+ ctx.drawImage(image,ox,oy,image.naturalWidth*scale,image.naturalHeight*scale);ctx.globalAlpha=1;
+ if(($('finish-overlay').checked||finishPreviewHeld)&&crops[selectedFace]?.finish)BoxPrintFinish.paintOverlay(ctx,crops[selectedFace].finish,crops[selectedFace],image,scale,ox,oy);
  const active=crops[selectedFace];if(active){const [x,y,w,h]=active.rect;const px=ox+x*scale,py=oy+y*scale,pw=w*scale,ph=h*scale;
  ctx.fillStyle='#1f30254d';ctx.beginPath();ctx.rect(0,0,width,height);ctx.rect(px,py,pw,ph);ctx.fill('evenodd');ctx.strokeStyle='#0071e3';ctx.lineWidth=2;ctx.strokeRect(px,py,pw,ph);
  ctx.fillStyle='#fff';ctx.strokeStyle='#0071e3';ctx.lineWidth=2;for(const [key,hx,hy] of BoxCrop.handles([px,py,pw,ph])){const size=key.length===2?9:7;ctx.fillRect(hx-size/2,hy-size/2,size,size);ctx.strokeRect(hx-size/2,hy-size/2,size,size);}
@@ -679,8 +683,8 @@ document.querySelectorAll('[data-face]').forEach(button=>button.addEventListener
 function syncFinishControls(){
  const crop=crops[selectedFace],finish=crop?.finish;
  $('finish-face-name').textContent=faceNames[selectedFace];$('finish-kind').value=finish?.kind||'none';$('finish-alignment').value=finish?.alignment||'source';
- $('finish-edit-button').disabled=!crop||importing||exporting;$('finish-upload-button').disabled=!crop||importing||exporting;$('finish-kind').disabled=!crop||importing||exporting;$('finish-alignment').disabled=!finish||importing||exporting;$('finish-remove').disabled=!finish||importing||exporting;
- $('finish-file-name').textContent=finish?.name||'黒い部分を加工します。白・透明の部分は加工しません。';
+ $('finish-edit-button').disabled=!crop||importing||exporting;$('finish-upload-button').disabled=!crop||importing||exporting;$('finish-kind').disabled=!crop||importing||exporting;$('finish-alignment').disabled=!finish||importing||exporting;$('finish-preview').disabled=!finish||importing||exporting;
+ $('finish-file-name').textContent=finish?.name||'加工用画像はまだ読み込まれていません。';
 }
 $('finish-edit-button').addEventListener('click',()=>{
  const face=selectedFace,crop=crops[face];if(!crop||importing||exporting)return;
@@ -703,7 +707,34 @@ $('finish-upload').addEventListener('change',async e=>{
 $('finish-kind').addEventListener('change',()=>{const c=crops[selectedFace];if(!c)return;if(c.finish){c.finish={...c.finish,kind:$('finish-kind').value};if(c.finish.kind!=='none'&&state.lighting==='neutral'){state.lighting='studio';applyLighting(true);}updateCrop();}else $('finish-file-name').textContent='加工用画像を読み込むと、黒い部分に選んだ加工を反映します。';});
 $('finish-alignment').addEventListener('change',()=>{const c=crops[selectedFace];if(c?.finish){c.finish={...c.finish,alignment:$('finish-alignment').value};updateCrop();}});
 $('finish-overlay').addEventListener('change',drawCrop);
-$('finish-remove').addEventListener('click',()=>{const c=crops[selectedFace];if(c?.finish){delete c.finish;updateCrop();}});
+// Inspection is transient: never change the processing plate or saved settings.
+const finishPreviewButton=$('finish-preview');
+let finishPreviewPointer=null,finishPreviewKey=null;
+function beginFinishPreview(){
+ if(finishPreviewButton.disabled||!crops[selectedFace]?.finish)return;
+ finishPreviewHeld=true;finishPreviewButton.setAttribute('aria-pressed','true');drawCrop();
+}
+function endFinishPreview(){
+ const wasHeld=finishPreviewHeld;finishPreviewHeld=false;finishPreviewKey=null;
+ const pointer=finishPreviewPointer;finishPreviewPointer=null;
+ if(pointer!==null&&finishPreviewButton.hasPointerCapture(pointer))finishPreviewButton.releasePointerCapture(pointer);
+ finishPreviewButton.setAttribute('aria-pressed','false');if(wasHeld)drawCrop();
+}
+finishPreviewButton.addEventListener('pointerdown',e=>{
+ if(e.button!==0||finishPreviewPointer!==null||finishPreviewButton.disabled)return;
+ finishPreviewButton.focus({preventScroll:true});finishPreviewPointer=e.pointerId;
+ finishPreviewButton.setPointerCapture(e.pointerId);beginFinishPreview();e.preventDefault();
+});
+for(const type of ['pointerup','pointercancel','lostpointercapture'])finishPreviewButton.addEventListener(type,e=>{if(e.pointerId===finishPreviewPointer)endFinishPreview();});
+finishPreviewButton.addEventListener('keydown',e=>{if(e.key!==' '&&e.key!=='Enter')return;e.preventDefault();if(!e.repeat){finishPreviewKey=e.key;beginFinishPreview();}});
+finishPreviewButton.addEventListener('keyup',e=>{if(e.key===finishPreviewKey){e.preventDefault();endFinishPreview();}});
+finishPreviewButton.addEventListener('click',e=>e.preventDefault());
+finishPreviewButton.addEventListener('contextmenu',e=>e.preventDefault());
+finishPreviewButton.addEventListener('blur',endFinishPreview);
+window.addEventListener('blur',endFinishPreview);
+document.addEventListener('visibilitychange',()=>{if(document.hidden)endFinishPreview();});
+$('image-editor').addEventListener('close',endFinishPreview);
+$('finish-options').addEventListener('toggle',()=>{if(!$('finish-options').open)endFinishPreview();});
 $('rotate-crop').addEventListener('click',()=>{if(crops[selectedFace]){crops[selectedFace].rotation=(crops[selectedFace].rotation+90)%360;updateCrop();}});
 $('clear-face').addEventListener('click',()=>{delete crops[selectedFace];updateCrop();});
 $('inset').addEventListener('input',()=>{if(crops[selectedFace]){crops[selectedFace].inset=Number($('inset').value);updateCrop();}});

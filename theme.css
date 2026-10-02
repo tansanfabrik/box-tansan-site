@@ -89,3 +89,5 @@ footer .reset-all:disabled{opacity:.45;cursor:default}
 @media(max-width:700px){#finish-editor{width:98vw;max-width:98vw;height:96dvh;max-height:96dvh;border-radius:12px}.finish-edit-toolbar{grid-template-columns:repeat(3,minmax(0,1fr));padding:10px;gap:8px}.finish-edit-toolbar label:nth-child(-n+2){grid-column:span 1}.finish-edit-toolbar select{font-size:11px;padding:6px}.finish-edit-footer{padding:10px}.finish-edit-footer .note{font-size:10px}#finish-editor .finish-edit-heading{padding:12px}#finish-edit-title{font-size:15px}.finish-edit-actions{gap:5px}.finish-edit-actions button{padding:7px;font-size:11px}}
 
 #stage #stage-caption{position:absolute;inset:0;z-index:4;pointer-events:none}#stage #stage-caption[hidden]{display:none}#stage.caption-preview-enabled #stage-dimensions,#stage.caption-preview-enabled #stage-hint,#stage.caption-preview-enabled #reference-badge{display:none}
+
+#finish-preview{touch-action:none;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none}#finish-preview[aria-pressed="true"]{background:#e2edff!important;border-color:#2f6bff;color:#124bba;box-shadow:inset 0 0 0 1px #2f6bff}
