@@ -1,7 +1,7 @@
 (()=>{
  'use strict';
  const pairs=[];
- const units={rotation:'°',tilt:'°',roll:'°',zoom:'%', 'camera-horizontal':'°','camera-height':'°','camera-distance':'%',rounding:'mm','base-peek':'mm','pair-gap':'mm','gif-speed':'×',brightness:'%','light-direction':'°','light-key':'%','light-fill':'%','light-rim':'%','light-ambient':'%','light-keyAzimuth':'°','light-keyElevation':'°','light-keyDistance':'%','light-elevation':'°','light-temperature':'K','light-spread':'%','shadow-blur':'%','focus-blur':'%',inset:'px'};
+ const units={rotation:'°',tilt:'°',roll:'°',zoom:'%', 'camera-horizontal':'°','camera-height':'°','camera-distance':'%',rounding:'mm','base-peek':'mm','pair-gap':'mm','gif-speed':'×','gif-angle':'°',brightness:'%','light-direction':'°','light-key':'%','light-fill':'%','light-rim':'%','light-ambient':'%','light-keyAzimuth':'°','light-keyElevation':'°','light-keyDistance':'%','light-elevation':'°','light-temperature':'K','light-spread':'%','shadow-blur':'%','focus-blur':'%',inset:'px'};
  for(const range of document.querySelectorAll('input[type="range"]')){
   const old=range.closest('label');if(!old)continue;
   // Keep the stored value in actual multiples; only the visible thumb uses a curved scale.

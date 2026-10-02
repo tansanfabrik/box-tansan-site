@@ -46,7 +46,9 @@ header .brand img{height:32px}.header-actions{gap:6px}.header-actions button,.bu
 .gif-speed-box .left{transform:rotateY(-90deg) translateZ(9px)}
 .gif-speed-box .right{transform:rotateY(90deg) translateZ(9px)}
 @keyframes gif-speed-turn{from{transform:rotateY(0)}to{transform:rotateY(360deg)}}
-@media(prefers-reduced-motion:reduce){.gif-speed-box{animation:none;transform:rotateY(30deg)}}
+.gif-speed-example.is-rock .gif-speed-box{animation-name:gif-speed-rock;animation-timing-function:cubic-bezier(.37,0,.63,1)}
+@keyframes gif-speed-rock{0%,100%{transform:rotateY(calc(var(--gif-rock-half) * -1))}50%{transform:rotateY(var(--gif-rock-half))}}
+@media(prefers-reduced-motion:reduce){.gif-speed-example .gif-speed-box{animation:none;transform:rotateY(30deg)}}
 @media(max-width:370px){.gif-speed-control{grid-template-columns:minmax(0,1fr) 68px;gap:5px}.gif-speed-example small{font-size:9px}.gif-export-row{gap:6px}}
 
 @media(max-width:700px){.gif-export-row #export-gif{padding:8px;gap:5px}.gif-export-row .save-label small{display:none}.gif-speed-control .slider-row{font-size:11px;gap:4px}.gif-speed-control output{font-size:10px}}
@@ -73,3 +75,5 @@ input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-
 
 /* The active work area shares its yellow number with the step navigation. */
 .step-active>.section-heading>.step,.step-active>.control-title>b{background:var(--lime);color:var(--ink)}
+
+.gif-motion-options{margin:8px 0;max-width:500px}.gif-motion-options summary{cursor:pointer;font-size:12px;color:var(--muted)}.gif-motion-options>.field{margin-top:10px}.gif-motion-options #gif-angle-control{margin-top:12px}.gif-motion-options [hidden]{display:none}

@@ -6,16 +6,32 @@ const flatPose={x:90,y:0,z:-25,cameraAzimuth:0,cameraElevation:35};
 const viewPresets={angle:{x:0,y:30,z:0,cameraAzimuth:0,cameraElevation:0},'angle-right':{x:0,y:-30,z:0,cameraAzimuth:0,cameraElevation:0},'angle-back':{x:0,y:-150,z:0,cameraAzimuth:0,cameraElevation:0},overhead:{x:0,y:30,z:0,cameraAzimuth:0,cameraElevation:20},'flat-overhead':{...flatPose},'top':{x:90,y:0,z:0,cameraAzimuth:0,cameraElevation:90},'low-angle':{x:0,y:-25,z:8,cameraAzimuth:0,cameraElevation:-20},front:{x:0,y:0,z:0,cameraAzimuth:0,cameraElevation:0},back:{x:0,y:180,z:0,cameraAzimuth:0,cameraElevation:0},side:{x:90,y:0,z:90,cameraAzimuth:0,cameraElevation:0}};
 const references={hand:{label:'手のひらの目安 約110 × 180 mm（指を含む）',width:110,height:180,depth:0},bottle:{label:'500mlボトルの目安 約65 × 210 mm',width:65,height:210,depth:65},phone:{label:'スマホの目安 72 × 147 × 8 mm',width:72,height:147,depth:8}};
 function layout(kind,w,h,d,gap){const match=/^(stack|flat)([3-5])$/.exec(kind);if(!match)return[[0,0,0]];const n=Number(match[2]);if(match[1]==='stack')return Array.from({length:n},(_,i)=>[0,0,(i-(n-1)/2)*d]);const cols=n===4?2:3,rows=Math.ceil(n/cols);return Array.from({length:n},(_,i)=>{const row=Math.floor(i/cols),count=Math.min(cols,n-row*cols);return[(i%cols-(count-1)/2)*(w+gap),((rows-1)/2-row)*(h+gap),0];});}
+// Lift clear of the base before any sideways travel or rotation, then lower.
+function lidTravel(T,from,to,w,h,d,baseTop,gap){
+ const half=new T.Vector3(w/2,h/2,d/2),q=new T.Quaternion(),matrix=new T.Matrix4();let extent=0;
+ const angle=from.quaternion.angleTo(to.quaternion),radius=half.length();
+ for(let i=0;i<=100;i++){q.slerpQuaternions(from.quaternion,to.quaternion,i/100);matrix.makeRotationFromQuaternion(q);const e=matrix.elements;extent=Math.max(extent,Math.abs(e[2])*half.x+Math.abs(e[6])*half.y+Math.abs(e[10])*half.z);}
+ const height=Math.max(from.position.z,to.position.z,baseTop+extent+radius*angle/200+gap);
+ const ease=t=>t*t*(3-2*t);
+ return progress=>{
+  const t=Math.min(1,Math.max(0,progress)),position=from.position.clone(),quaternion=from.quaternion.clone();
+  if(t<.25)position.z=T.MathUtils.lerp(from.position.z,height,ease(t*4));
+  else if(t<.75){const f=ease((t-.25)*2);position.lerpVectors(from.position,to.position,f);position.z=height;quaternion.slerpQuaternions(from.quaternion,to.quaternion,f);}
+  else{position.copy(to.position);position.z=T.MathUtils.lerp(height,to.position.z,ease((t-.75)*4));quaternion.copy(to.quaternion);}
+  return{position,quaternion};
+ };
+}
 // Convert the existing exterior into an open tray with a paper lining and thickness at its rim.
-function hollow(T,group,w,h,d,openPositive,u,interiorColor=0xe7e1d5){
+function hollow(T,group,w,h,d,openPositive,u,interiorColor=0xe7e1d5,radius=0){
  const removed=group.getObjectByName(group.name+'-'+(openPositive?'front':'back'));if(removed){group.remove(removed);removed.geometry.dispose();for(const key of ['map','metalnessMap','roughnessMap','clearcoatMap','clearcoatRoughnessMap'])removed.material[key]?.dispose();removed.material.dispose();}
  const t=Math.min(1.2*u,d/5),inner=new T.MeshStandardMaterial({color:interiorColor,roughness:.95,side:T.DoubleSide});
  const plane=(W,H,x,y,z,rx,ry,name)=>{const m=new T.Mesh(new T.PlaneGeometry(W,H),inner);m.position.set(x,y,z);m.rotation.set(rx,ry,0);m.name=name;m.castShadow=m.receiveShadow=true;group.add(m);};
+ const inset=Math.max(t,radius);
  const floorZ=openPositive?-d/2+t:d/2-t,wallZ=openPositive?t/2:-t/2,rimZ=openPositive?d/2:-d/2;
- plane(w-2*t,h-2*t,0,0,floorZ,0,0,'plain-inner-floor');
+ plane(w-2*inset,h-2*inset,0,0,floorZ,0,0,'plain-inner-floor');
  for(const sign of [-1,1]){
-  plane(d-t,h-2*t,sign*(w/2-t),0,wallZ,0,Math.PI/2,'inner-side');
-  plane(w-2*t,d-t,0,sign*(h/2-t),wallZ,Math.PI/2,0,'inner-side');
+  plane(d-t,h-2*inset,sign*(w/2-t),0,wallZ,0,Math.PI/2,'inner-side');
+  plane(w-2*inset,d-t,0,sign*(h/2-t),wallZ,Math.PI/2,0,'inner-side');
   plane(t,h-2*t,sign*(w/2-t/2),0,rimZ,0,0,'paper-rim');
   plane(w,t,0,sign*(h/2-t/2),rimZ,0,0,'paper-rim');
  }
@@ -84,7 +100,11 @@ function tuckProfile(w,h,d,u){const thick=d/u>10;return {notchRadius:Math.min(9*
 function tuckTongueGeometry(T,w,height,corner,u){
  const x=w/2-.2*u,r=Math.min(corner,height*.8,x/2),s=new T.Shape();
  s.moveTo(-x,0);s.lineTo(x,0);s.lineTo(x,-height+r);s.quadraticCurveTo(x,-height,x-r,-height);s.lineTo(-x+r,-height);s.quadraticCurveTo(-x,-height,-x,-height+r);s.lineTo(-x,0);
- const g=new T.ExtrudeGeometry(s,{depth:.28*u,bevelEnabled:false,curveSegments:12});g.translate(0,0,-.14*u);return g;
+ const g=new T.ExtrudeGeometry(s,{depth:.28*u,bevelEnabled:false,curveSegments:12});g.translate(0,0,-.14*u);
+ // Only the outward (-Z) face is printed. The reverse and cut edge are paper.
+ g.clearGroups();const normal=g.attributes.normal;let start=0,last=normal.getZ(0)<-.5?0:1;
+ for(let i=3;i<normal.count;i+=3){const material=normal.getZ(i)<-.5?0:1;if(material!==last){g.addGroup(start,i-start,last);start=i;last=material;}}
+ g.addGroup(start,normal.count-start,last);return g;
 }
 // Recess visible through the thumb cut: curved paper edge and graded contact shading.
 function tuckNotchGeometry(T,n,depth,hh,back,u){
@@ -115,5 +135,5 @@ function lightPosition(base,azimuth=0,elevation=0,distance=100){
  const el=Math.max(-85,Math.min(85,Math.atan2(y,Math.hypot(x,z))*180/Math.PI+elevation))*Math.PI/180;
  return [r*Math.cos(el)*Math.sin(az),r*Math.sin(el),r*Math.cos(el)*Math.cos(az)];
 }
-const api={lightPosition,tuckFlapGeometry,tuckProfile,tuckTongueGeometry,tuckNotchGeometry,orbitCamera,spinPose,groundUp,viewPresets,flatPose,finishes,references,layout,hollow,arrange,reference,dragRotation,companionRotation};if(typeof module==='object'&&module.exports)module.exports=api;else root.BoxFeatures=api;
+const api={lidTravel,lightPosition,tuckFlapGeometry,tuckProfile,tuckTongueGeometry,tuckNotchGeometry,orbitCamera,spinPose,groundUp,viewPresets,flatPose,finishes,references,layout,hollow,arrange,reference,dragRotation,companionRotation};if(typeof module==='object'&&module.exports)module.exports=api;else root.BoxFeatures=api;
 })(globalThis);

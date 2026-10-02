@@ -34,6 +34,8 @@
  // Reserve the last quarter of the GIF slider for fast turns (5x–15x).
  function gifSpeedPosition(speed){const s=Math.min(15,Math.max(.1,Number(speed)||.1));return s<=5?(s-.1)/4.9*75:75+(s-5)/10*25;}
  function gifSpeedAtPosition(position){const p=Math.min(100,Math.max(0,Number(position)||0)),s=p<=75?.1+p/75*4.9:5+(p-75)/25*10;return Math.round(s*20)/20;}
+ // A full cosine cycle joins smoothly at the left endpoint, centered on the chosen pose.
+ function gifRotationAngle(progress,mode,span=60){return mode==='rock'?-Math.min(180,Math.max(10,Number(span)||60))/2*Math.cos(2*Math.PI*progress):360*progress;}
  function gifTiming(value){
   const speed=Number.isFinite(Number(value))&&Number(value)>0?Math.min(15,Math.max(.1,Number(value))):1,totalCS=Math.round(300/speed);
   // Slower turns gain frames; faster turns keep every delay at least 20ms for GIF players.
@@ -47,7 +49,7 @@
  async function zip(files){const parts=[],central=[];let offset=0;for(const file of files){const bytes=new Uint8Array(await file.blob.arrayBuffer()),name=new TextEncoder().encode(file.name),crc=crc32(bytes);const h=new Uint8Array(30+name.length),v=new DataView(h.buffer);v.setUint32(0,0x04034b50,true);v.setUint16(4,20,true);v.setUint16(6,0x800,true);v.setUint32(14,crc,true);v.setUint32(18,bytes.length,true);v.setUint32(22,bytes.length,true);v.setUint16(26,name.length,true);h.set(name,30);parts.push(h,bytes);const d=new Uint8Array(46+name.length),dv=new DataView(d.buffer);dv.setUint32(0,0x02014b50,true);dv.setUint16(4,20,true);dv.setUint16(6,20,true);dv.setUint16(8,0x800,true);dv.setUint32(16,crc,true);dv.setUint32(20,bytes.length,true);dv.setUint32(24,bytes.length,true);dv.setUint16(28,name.length,true);dv.setUint32(42,offset,true);d.set(name,46);central.push(d);offset+=h.length+bytes.length;}
   const size=central.reduce((n,p)=>n+p.length,0),end=new Uint8Array(22),e=new DataView(end.buffer);e.setUint32(0,0x06054b50,true);e.setUint16(8,files.length,true);e.setUint16(10,files.length,true);e.setUint32(12,size,true);e.setUint32(16,offset,true);return new Blob([...parts,...central,end],{type:'application/zip'});
  }
- function lidProfile(depth,extension){const baseDepth=depth*.99+extension;return{lidDepth:depth,lidCenter:0,baseDepth,baseCenter:-depth/2-extension+baseDepth/2};}
+ function lidProfile(depth,extension,clearance=0){const baseDepth=depth*.99+extension-clearance;return{lidDepth:depth,lidCenter:0,baseDepth,baseCenter:-depth/2-extension+baseDepth/2};}
  function basePeekLimit(depth){return Math.floor(Math.min(10,depth*.4)*10)/10;}
  function oppositeYaw(yaw){return ((yaw+360)%360+360)%360-180;}
  // A rotating vertex projects as c + a*cos(yaw) + b*sin(yaw).
@@ -56,5 +58,5 @@
   let radius=0;for(let i=0;i<zero.length;i++){const c=(zero[i]+half[i])/2,a=(zero[i]-half[i])/2,b=quarter[i]-c;radius=Math.max(radius,Math.abs(c)+Math.hypot(a,b));}return radius;
  }
  function pairCenters(a,b,gap){const total=a[1]-a[0]+b[1]-b[0]+gap;return[-total/2-a[0],total/2-b[1]];}
- const api={faceBox,faceRatio,uprightTurn,uprightCrop,ratioMismatch,fitRect,looksLikeCross,crossPixels,faceResolution,gifSpeedPosition,gifSpeedAtPosition,gifTiming,zip,crc32,lidProfile,basePeekLimit,oppositeYaw,rotationHalfWidth,pairCenters};if(typeof module==='object'&&module.exports)module.exports=api;else root.BoxStudio=api;
+ const api={faceBox,faceRatio,uprightTurn,uprightCrop,ratioMismatch,fitRect,looksLikeCross,crossPixels,faceResolution,gifSpeedPosition,gifSpeedAtPosition,gifRotationAngle,gifTiming,zip,crc32,lidProfile,basePeekLimit,oppositeYaw,rotationHalfWidth,pairCenters};if(typeof module==='object'&&module.exports)module.exports=api;else root.BoxStudio=api;
 })(globalThis);

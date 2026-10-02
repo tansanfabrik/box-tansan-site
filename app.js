@@ -33,9 +33,9 @@ let autoLayoutDimensions=null,restoredColors=false;
 let crops={},box={width:95,height:122,depth:22,radius:1,color:'#f1eee8',baseColor:'#f1eee8',interiorColor:'#e7e1d5',basePeekMM:2.4,baseArtwork:false,tuckNotch:true,type:'lid'};
 let frontGuide=null,guessGeneration=0,guessing=false;
 let faceGuess=null,cropDrag=null,cropView=null,ground=null,floorGrid=null,sampleMode=false,cancelExport=false,exportSamples=256,gifPairOffsets=null,referenceMesh=null,sceneBoxCount=1,previewScale=1;
-const outputIds=['output-bg','background-color','output-aspect','placement','resolution','upright','gif-speed','paper-finish','lid-pose','box-arrangement','size-reference','dimension-caption'];
+const outputIds=['output-bg','background-color','output-aspect','placement','resolution','upright','gif-speed','gif-mode','gif-angle','paper-finish','lid-pose','box-arrangement','size-reference','dimension-caption'];
 function readOutput(){return Object.fromEntries(outputIds.map(id=>[id,$(id)?.type==='checkbox'?$(id).checked:$(id)?.value]));}
-function restoreSettings(){try{const saved=JSON.parse(localStorage.getItem('box-studio-settings-v2'))||{};const b=saved.box||{};for(const [key,min,max] of [['width',30,400],['height',30,400],['depth',3,250],['radius',.2,4]])if(Number.isFinite(b[key]))box[key]=clamp(b[key],min,max);if(/^#[0-9a-f]{6}$/i.test(b.color)){box.color=b.color;restoredColors=true;}box.baseColor=/^#[0-9a-f]{6}$/i.test(b.baseColor)?b.baseColor:box.color;if(/^#[0-9a-f]{6}$/i.test(b.interiorColor))box.interiorColor=b.interiorColor;box.baseArtwork=b.baseArtwork===true;box.tuckNotch=b.tuckNotch!==false;if(['lid','tuck'].includes(b.type))box.type=b.type;if(Number.isFinite(b.basePeekMM))box.basePeekMM=Math.max(0,b.basePeekMM);else if(typeof b.basePeek==='boolean')box.basePeekMM=b.basePeek?box.depth*.04:0;for(const id of outputIds){const el=$(id),value=id==='size-reference'&&saved.output?.[id]==='card'?'hand':saved.output?.[id];if(el.type==='checkbox'&&typeof value==='boolean')el.checked=value;else if(el.tagName==='SELECT'&&[...el.options].some(o=>o.value===value)||el.type==='color'&&/^#[0-9a-f]{6}$/i.test(value))el.value=value;else if(id==='gif-speed'&&Number.isFinite(Number(value))&&Number(value)>0)el.value=clamp(Number(value),.1,15);}}catch(e){}
+function restoreSettings(){try{const saved=JSON.parse(localStorage.getItem('box-studio-settings-v2'))||{};const b=saved.box||{};for(const [key,min,max] of [['width',30,400],['height',30,400],['depth',3,250],['radius',.2,4]])if(Number.isFinite(b[key]))box[key]=clamp(b[key],min,max);if(/^#[0-9a-f]{6}$/i.test(b.color)){box.color=b.color;restoredColors=true;}box.baseColor=/^#[0-9a-f]{6}$/i.test(b.baseColor)?b.baseColor:box.color;if(/^#[0-9a-f]{6}$/i.test(b.interiorColor))box.interiorColor=b.interiorColor;box.baseArtwork=b.baseArtwork===true;box.tuckNotch=b.tuckNotch!==false;if(['lid','tuck'].includes(b.type))box.type=b.type;if(Number.isFinite(b.basePeekMM))box.basePeekMM=Math.max(0,b.basePeekMM);else if(typeof b.basePeek==='boolean')box.basePeekMM=b.basePeek?box.depth*.04:0;for(const id of outputIds){const el=$(id),value=id==='size-reference'&&saved.output?.[id]==='card'?'hand':saved.output?.[id];if(el.type==='checkbox'&&typeof value==='boolean')el.checked=value;else if(el.tagName==='SELECT'&&[...el.options].some(o=>o.value===value)||el.type==='color'&&/^#[0-9a-f]{6}$/i.test(value))el.value=value;else if(id==='gif-speed'&&Number.isFinite(Number(value))&&Number(value)>0)el.value=clamp(Number(value),.1,15);else if(id==='gif-angle'&&Number.isFinite(Number(value))&&Number(value)>0)el.value=Math.round(clamp(Number(value),10,180));}}catch(e){}
  for(const key of ['width','height','depth'])$('box-'+key).value=box[key];syncSurfaceColors();syncBasePeek();$('rounding').value=box.radius;$('rounding-value').textContent=box.radius.toFixed(1)+' mm';syncBoxType();syncSizePreset();syncGifSpeed();}
 function syncSurfaceColors(){$('box-color').value=box.color;$('base-color').value=box.baseColor;$('interior-color').value=box.interiorColor;}
 function faceColor(face){return box.type==='lid'&&(face==='back'||face.startsWith('base-'))?box.baseColor:box.color;}
@@ -97,16 +97,17 @@ function rebuildBox(render=true){
   tuckBox(w,h,d,radius,mats,u);
  }else{
   // Keep the lid and its artwork unchanged; extend the base behind the back plane.
-  const profile=BoxStudio.lidProfile(d,(.2+box.basePeekMM)*u),baseD=profile.baseDepth,lidD=profile.lidDepth;
+  const profile=BoxStudio.lidProfile(d,(.2+box.basePeekMM)*u,Math.max(Math.min(1.2*u,d/5),Math.min(box.radius*u,w/6,h/6,d/6))),baseD=profile.baseDepth,lidD=profile.lidDepth;
   roundedBox(w*.985,h*.985,baseD,Math.min(radius*.8,baseD/6),axes.map(a=>{if(a.name==='back')return mats[5];const face='base-'+a.name,crop=box.baseArtwork&&crops[face];const material=crop?faceMaterial(face):paper(null,box.baseColor);if(state.lighting==='neutral'&&a.name!=='front')material.color.multiplyScalar(.88);return material;}),profile.baseCenter,'base');
   roundedBox(w,h,lidD,radius,mats.map((m,i)=>i===5?paper(null,box.color):m),profile.lidCenter,'lid');
  }
  if(box.type==='lid'){
-  const base=model.getObjectByName('base'),lid=model.getObjectByName('lid'),profile=BoxStudio.lidProfile(d,(.2+box.basePeekMM)*u);
-  BoxFeatures.hollow(THREE,base,w*.985,h*.985,profile.baseDepth,true,u,box.interiorColor);BoxFeatures.hollow(THREE,lid,w,h,profile.lidDepth,false,u,box.interiorColor);
+  const base=model.getObjectByName('base'),lid=model.getObjectByName('lid'),profile=BoxStudio.lidProfile(d,(.2+box.basePeekMM)*u,Math.max(Math.min(1.2*u,d/5),Math.min(box.radius*u,w/6,h/6,d/6)));
+  BoxFeatures.hollow(THREE,base,w*.985,h*.985,profile.baseDepth,true,u,box.interiorColor,radius*.8);BoxFeatures.hollow(THREE,lid,w,h,profile.lidDepth,false,u,box.interiorColor,radius);
   if($('lid-pose').value==='lifted'){lid.rotation.x=rad(-22);lid.rotation.z=rad(-12);lid.position.z+=d+h*.3;lid.position.x-=w*.16;}
   else if($('lid-pose').value==='beside'){lid.position.x=(w+w*Math.cos(rad(8))+h*Math.sin(rad(8)))/2+18*u;lid.position.z=-.2*u-box.basePeekMM*u;lid.rotation.z=rad(-8);}
  }
+ syncClosedLining();
  sceneBoxCount=BoxFeatures.arrange(THREE,model,$('box-arrangement').value,w,h,d+(box.type==='lid'?.2+box.basePeekMM:0)*u,u);
  for(const child of model.children)companion.add(child.clone(true));
  if(referenceMesh){boxGroup.remove(referenceMesh);referenceMesh.traverse(m=>{if(m.isMesh){m.geometry.dispose();m.material.dispose();}});}
@@ -278,15 +279,14 @@ function tuckBox(w,h,d,r,mats,u){
  const profile=BoxFeatures.tuckProfile(w,h,d,u),n=box.tuckNotch?profile.notchRadius:0,notchDepth=Math.min(profile.notchDepth,n),hw=w/2,hh=h/2;
  roundedBox(w,h,d,r,mats,0,'tuck',true,n,notchDepth);
  const shell=model.children[model.children.length-1];
- for(const top of [true,false]){
-  const face=top?'top':'bottom',flap=shell.getObjectByName('tuck-'+face),edge=paper(null,'#ded7ca');edge.side=THREE.DoubleSide;
-  flap.geometry.dispose();flap.geometry=BoxFeatures.tuckFlapGeometry(THREE,w,d,u,top);flap.material=[flap.material,edge];flap.position.y=(top?1:-1)*hh;
-  if(top){
-   const hinge=new THREE.Group();hinge.name='tuck-top-hinge';hinge.position.set(0,hh,d/2-.06*u);
-   shell.remove(flap);flap.position.set(0,0,-d/2+.06*u);hinge.add(flap);shell.add(hinge);
-   const underside=new THREE.Mesh(flap.geometry.clone(),paper(null,box.interiorColor));underside.material.side=THREE.BackSide;underside.position.copy(flap.position);underside.position.y-=.28*u;underside.name='tuck-flap-lining';underside.receiveShadow=true;hinge.add(underside);
-  }
- }
+ // Use the original clean top surface while closed. The articulated paper is
+ // visible only while opening or when open; never draw both surfaces together.
+ const closedTop=shell.getObjectByName('tuck-top');closedTop.name='tuck-top-closed';
+ const edge=paper(null,box.interiorColor);edge.side=THREE.DoubleSide;
+ const flap=new THREE.Mesh(BoxFeatures.tuckFlapGeometry(THREE,w,d,u,true),[closedTop.material,edge]);flap.name='tuck-top';flap.castShadow=flap.receiveShadow=true;
+ const hinge=new THREE.Group();hinge.name='tuck-top-hinge';hinge.position.set(0,hh,d/2-.06*u);
+ flap.position.set(0,0,-d/2+.06*u);hinge.add(flap);shell.add(hinge);
+ const underside=new THREE.Mesh(flap.geometry.clone(),paper(null,box.interiorColor));underside.material.side=THREE.BackSide;underside.position.copy(flap.position);underside.position.y-=.28*u;underside.name='tuck-flap-lining';underside.receiveShadow=true;hinge.add(underside);
  if(box.tuckNotch){
   const geometry=BoxFeatures.tuckNotchGeometry(THREE,n,notchDepth,hh,-d/2,u);
   const rimMaterial=paper(null,box.color);rimMaterial.color.multiplyScalar(.65);rimMaterial.side=THREE.DoubleSide;
@@ -297,11 +297,11 @@ function tuckBox(w,h,d,r,mats,u){
  }
  // Rounded tuck tab stays attached to the lid via its own scored fold.
  const tongueHinge=new THREE.Group();tongueHinge.name='tuck-tongue-hinge';tongueHinge.position.set(0,.05*u,-d+.34*u);
- const inner=new THREE.Mesh(BoxFeatures.tuckTongueGeometry(THREE,w,profile.tongueHeight,profile.tongueCorner,u),paper(null,box.color));inner.position.z=.76*u;inner.name='tuck-inner-flap';inner.castShadow=inner.receiveShadow=true;tongueHinge.add(inner);
- const bridge=new THREE.Mesh(new THREE.BoxGeometry(w-.4*u,.28*u,.76*u),paper(null,box.color));bridge.position.z=.38*u;bridge.name='tuck-tab-fold';bridge.castShadow=bridge.receiveShadow=true;tongueHinge.add(bridge);shell.getObjectByName('tuck-top-hinge').add(tongueHinge);
+ const inner=new THREE.Mesh(BoxFeatures.tuckTongueGeometry(THREE,w,profile.tongueHeight,profile.tongueCorner,u),[paper(null,box.color),paper(null,box.interiorColor)]);inner.position.z=.76*u;inner.name='tuck-inner-flap';inner.castShadow=inner.receiveShadow=true;tongueHinge.add(inner);
+ const bridge=new THREE.Mesh(new THREE.BoxGeometry(w-.4*u,.28*u,.76*u),[paper(null,box.interiorColor),paper(null,box.interiorColor),paper(null,box.color),paper(null,box.interiorColor),paper(null,box.interiorColor),paper(null,box.color)]);bridge.position.z=.38*u;bridge.name='tuck-tab-fold';bridge.castShadow=bridge.receiveShadow=true;tongueHinge.add(bridge);shell.getObjectByName('tuck-top-hinge').add(tongueHinge);
  // Small side flaps seen under the lid in the supplied net.
  for(const sign of [-1,1]){
-  const dust=new THREE.Mesh(new THREE.BoxGeometry(profile.dustLength,.28*u,Math.max(.5*u,d-.8*u)),paper(null,box.interiorColor));dust.position.set(sign*(hw-profile.dustLength/2-.25*u),hh-.36*u,0);dust.name='tuck-dust-flap';dust.castShadow=dust.receiveShadow=true;shell.add(dust);
+  const dustHinge=new THREE.Group();dustHinge.name=sign<0?'tuck-dust-left-hinge':'tuck-dust-right-hinge';dustHinge.position.set(sign*(hw-.25*u),hh-.52*u,0);const dust=new THREE.Mesh(new THREE.BoxGeometry(profile.dustLength,.28*u,Math.max(.5*u,d-.8*u)),paper(null,box.interiorColor));dust.position.x=-sign*profile.dustLength/2;dust.name='tuck-dust-flap';dust.castShadow=dust.receiveShadow=true;dustHinge.add(dust);shell.add(dustHinge);dustHinge.rotation.z=$('lid-pose').value!=='closed'?-sign*rad(110):0;dustHinge.visible=$('lid-pose').value!=='closed';
  }
  // Lining is independent of the printed exterior and leaves the top opening clear.
  for(const face of ['front','back','left','right','bottom']){
@@ -314,7 +314,7 @@ function tuckBox(w,h,d,r,mats,u){
  for(let i=0;i<foldPosition.count;i++)foldUV.setXY(i,(foldPosition.getX(i)+w/2)/w,clamp(1+(foldPosition.getY(i)-.18*u)/h,0,1));
  const fold=new THREE.Mesh(foldGeometry,mats[4].clone());fold.position.set(0,hh,d/2-.06*u);fold.name='tuck-front-fold';fold.castShadow=fold.receiveShadow=true;shell.add(fold);
  const opened=$('lid-pose').value!=='closed';shell.getObjectByName('tuck-top-hinge').rotation.x=opened?rad(110):0;shell.getObjectByName('tuck-tongue-hinge').rotation.x=opened?rad(80):0;
- const recess=shell.getObjectByName('tuck-notch-recess');if(recess)recess.visible=!opened;
+ const recess=shell.getObjectByName('tuck-notch-recess');if(recess)recess.visible=!opened;closedTop.visible=!opened;hinge.visible=opened;fold.visible=opened;
  // Narrow shaded paper overlaps, not dieline artwork.
  for(const [x,y,z,width] of [[-(hw+n)/2,hh-.10*u,-d/2-.01*u,hw-n-r],[(hw+n)/2,hh-.10*u,-d/2-.01*u,hw-n-r],[0,-hh+.10*u,-d/2-.01*u,w-2*r]]){
   const material=new THREE.MeshBasicMaterial({color:0x393630,transparent:true,opacity:.18,side:THREE.DoubleSide,depthWrite:false});
@@ -427,18 +427,26 @@ function fitShadowCamera(){
 function stageFlat(){cancelAnimationFrame(animation);Object.assign(state,BoxFeatures.flatPose,{view:'custom'});$('placement').value='flat';}
 $('paper-finish').addEventListener('change',()=>{if(state.lighting==='neutral'){state.lighting='studio';applyLighting(true);}rebuildBox();save();});
 let lidAnimation=0;
-const lidMovingNames=new Set(['lid','base','tuck','tuck-top-hinge','tuck-tongue-hinge']);
+const lidMovingNames=new Set(['lid','base','tuck','tuck-top-hinge','tuck-tongue-hinge','tuck-dust-left-hinge','tuck-dust-right-hinge']);
 function finishLidAnimation(){cancelAnimationFrame(lidAnimation);lidAnimation=0;stage.dataset.lidAnimating='false';for(const root of [model,companion])root?.traverse(o=>{if(o.userData.lidTarget){o.position.copy(o.userData.lidTarget.position);o.quaternion.copy(o.userData.lidTarget.quaternion);delete o.userData.lidTarget;}});syncTuckRecess();}
-function syncTuckRecess(){for(const root of [model,companion]){const hinge=root?.getObjectByName('tuck-top-hinge'),recess=root?.getObjectByName('tuck-notch-recess');if(recess&&hinge)recess.visible=Math.abs(hinge.rotation.x)<rad(12);}}
+function syncClosedLining(){for(const root of [model,companion])root?.traverse(o=>{if(['plain-inner-floor','inner-side','paper-rim'].includes(o.name))o.visible=$('lid-pose').value!=='closed'||!!o.parent.userData.lidTarget;});}
+function syncTuckRecess(){syncClosedLining();for(const root of [model,companion])root?.traverse(shell=>{
+ if(shell.name!=='tuck')return;
+ const hinge=shell.getObjectByName('tuck-top-hinge');if(!hinge)return;
+ const articulated=!!hinge.userData.lidTarget||Math.abs(hinge.rotation.x)>.0001;
+ hinge.visible=articulated;
+ for(const name of ['tuck-top-closed','tuck-front-fold','tuck-dust-left-hinge','tuck-dust-right-hinge']){const part=shell.getObjectByName(name);if(part)part.visible=name==='tuck-top-closed'?!articulated:articulated;}
+ const recess=shell.getObjectByName('tuck-notch-recess');if(recess)recess.visible=Math.abs(hinge.rotation.x)<rad(12);
+ });}
 function animateLidChange(){
  cancelAnimationFrame(lidAnimation);lidAnimation=0;
  const previous=new Map();model.traverse(o=>{if(lidMovingNames.has(o.name))previous.set(o.name,{position:o.position.clone(),quaternion:o.quaternion.clone()});});
  if($('lid-pose').value!=='closed'){$('box-arrangement').value='single';if(box.type==='lid')stageFlat();}
  rebuildBox(false);
- const tracks=[];for(const root of [model,companion])root.traverse(o=>{const from=previous.get(o.name);if(from){const to={position:o.position.clone(),quaternion:o.quaternion.clone()};o.userData.lidTarget=to;tracks.push({o,from,to});}});
+ const tracks=[];for(const root of [model,companion])root.traverse(o=>{const from=previous.get(o.name);if(from){const to={position:o.position.clone(),quaternion:o.quaternion.clone()};o.userData.lidTarget=to;const u=330/Math.max(box.width,box.height,box.depth),w=box.width*u,h=box.height*u,d=box.depth*u,profile=BoxStudio.lidProfile(d,(.2+box.basePeekMM)*u,Math.max(Math.min(1.2*u,d/5),Math.min(box.radius*u,w/6,h/6,d/6)));const travel=box.type==='lid'&&o.name==='lid'?BoxFeatures.lidTravel(THREE,from,to,w,h,d,profile.baseCenter+profile.baseDepth/2,2*u):null;tracks.push({o,from,to,travel});}});
  for(const {o,from} of tracks){o.position.copy(from.position);o.quaternion.copy(from.quaternion);}syncTuckRecess();draw();
- const duration=matchMedia('(prefers-reduced-motion: reduce)').matches?0:700,start=performance.now();
- function frame(now){const t=duration?Math.min(1,(now-start)/duration):1,e=t*t*(3-2*t);for(const {o,from,to} of tracks){o.position.lerpVectors(from.position,to.position,e);o.quaternion.slerpQuaternions(from.quaternion,to.quaternion,e);}syncTuckRecess();draw();stage.dataset.lidAnimating=String(t<1);if(t<1)lidAnimation=requestAnimationFrame(frame);else{finishLidAnimation();draw();save();}}lidAnimation=requestAnimationFrame(frame);
+ const duration=matchMedia('(prefers-reduced-motion: reduce)').matches?0:(box.type==='lid'?1000:700),start=performance.now();
+ function frame(now){const t=duration?Math.min(1,(now-start)/duration):1,e=t*t*(3-2*t);for(const {o,from,to,travel} of tracks){if(travel){const pose=travel(t);o.position.copy(pose.position);o.quaternion.copy(pose.quaternion);}else{o.position.lerpVectors(from.position,to.position,e);o.quaternion.slerpQuaternions(from.quaternion,to.quaternion,e);}}syncTuckRecess();draw();stage.dataset.lidAnimating=String(t<1);if(t<1)lidAnimation=requestAnimationFrame(frame);else{finishLidAnimation();draw();save();}}lidAnimation=requestAnimationFrame(frame);
 }
 $('lid-pose').addEventListener('change',animateLidChange);
 $('box-arrangement').addEventListener('change',()=>{if($('box-arrangement').value!=='single'){state.paired=false;$('lid-pose').value='closed';stageFlat();}rebuildBox();save();});
@@ -579,7 +587,7 @@ function showReview(blob,name,items,title){
  if(cancelExport)throw new Error('書き出しを中止しました。');
  if(lastURL)URL.revokeObjectURL(lastURL);for(const url of reviewURLs)URL.revokeObjectURL(url);reviewURLs.length=0;
  lastURL=URL.createObjectURL(blob);const link=$('download');link.href=lastURL;link.download=name;link.textContent=name.endsWith('.zip')?'ZIPを保存 ↓':name.endsWith('.gif')?'GIFを保存 ↓':'PNGを保存 ↓';$('result-title').textContent=title;
- $('batch-previews').replaceChildren();const first=items[0];$('result-image').src=name.endsWith('.gif')?lastURL:URL.createObjectURL(first.blob);if(!name.endsWith('.gif'))reviewURLs.push($('result-image').src);$('result-image').alt=name.endsWith('.gif')?'1周'+(first.metadata.durationMS/1000)+'秒で回転する箱のサンプル':'保存する箱の画像';$('result-image').dataset.pngValidation=JSON.stringify(first.metadata);$('result').dataset.cuts=JSON.stringify(items.map(i=>({label:i.label,...i.metadata})));
+ $('batch-previews').replaceChildren();const first=items[0];$('result-image').src=name.endsWith('.gif')?lastURL:URL.createObjectURL(first.blob);if(!name.endsWith('.gif'))reviewURLs.push($('result-image').src);$('result-image').alt=name.endsWith('.gif')?(first.metadata.gifMode==='rock'?'1往復':'1周')+(first.metadata.durationMS/1000)+'秒で回転する箱のサンプル':'保存する箱の画像';$('result-image').dataset.pngValidation=JSON.stringify(first.metadata);$('result').dataset.cuts=JSON.stringify(items.map(i=>({label:i.label,...i.metadata})));
  if(items.length>1)for(const item of items){const figure=document.createElement('figure'),img=document.createElement('img'),caption=document.createElement('figcaption');img.src=URL.createObjectURL(item.blob);reviewURLs.push(img.src);img.alt=item.label;caption.textContent=item.label;figure.append(img,caption);$('batch-previews').append(figure);}
  $('result').hidden=false;if(!$('review-dialog').open)$('review-dialog').showModal();
 }
@@ -596,7 +604,7 @@ async function runExport(kind){
    showReview(await BoxStudio.zip(items),'box-and-shadow.zip',items,'箱と影を別々に · '+width+' × '+height+' px');
   }else if(kind==='gif'){
    const orbit=originalBackground==='shadow';message(orbit?'箱と影を固定して、カメラを回すGIFを準備しています…':'回転GIFを準備しています…');
-   const {GIFEncoder,quantize,applyPalette}=await import('./vendor/gifenc.mjs'),gif=GIFEncoder(),timing=BoxStudio.gifTiming($('gif-speed').value);
+   const {GIFEncoder,quantize,applyPalette}=await import('./vendor/gifenc.mjs'),gif=GIFEncoder(),timing=BoxStudio.gifTiming($('gif-speed').value),gifMode=$('gif-mode').value,swingAngle=Number($('gif-angle').value);
    if(orbit)syncModel();else lockGifPairCenters(original);
    // Shadow GIFs use the live projection verbatim, including zoom and aspect.
    // Shadows or boxes may leave this chosen frame; never pull back to fit them.
@@ -604,14 +612,14 @@ async function runExport(kind){
    if(!orbit){
     const base=camera.clone();base.aspect=width/height;base.zoom=1;base.clearViewOffset();base.updateProjectionMatrix();const union={x0:Infinity,y0:Infinity,x1:-Infinity,y1:-Infinity};
     for(let i=0;i<72;i++){
-     Object.assign(state,BoxFeatures.spinPose(THREE,original,i*5,BoxStudio.uprightTurn(box,$('upright').value)));syncModel();
+     Object.assign(state,BoxFeatures.spinPose(THREE,original,BoxStudio.gifRotationAngle(i/72,gifMode,swingAngle),BoxStudio.uprightTurn(box,$('upright').value)));syncModel();
      const b=outputBounds(base);union.x0=Math.min(union.x0,b.x0);union.x1=Math.max(union.x1,b.x1);union.y0=Math.min(union.y0,b.y0);union.y1=Math.max(union.y1,b.y1);
     }
     fitted=exportCameraFor(width,height,union,base);
    }
    let metadata;
    for(let i=0;i<timing.frames;i++){
-    if(cancelExport)throw new Error('書き出しを中止しました。');const angle=i*360/timing.frames;
+    if(cancelExport)throw new Error('書き出しを中止しました。');const angle=BoxStudio.gifRotationAngle(i/timing.frames,gifMode,swingAngle);
     const cam=orbit?BoxFeatures.orbitCamera(THREE,fitted,angle):fitted;
     if(!orbit)Object.assign(state,BoxFeatures.spinPose(THREE,original,angle,BoxStudio.uprightTurn(box,$('upright').value)));
     const frame=await capture(width,height,{cam,solid:true,png:false,fixedScene:orbit});
@@ -619,7 +627,7 @@ async function runExport(kind){
     if(orbit)metadata.camera={...metadata.camera,azimuth:wrap(original.cameraAzimuth-angle),position:cam.position.toArray()};
     frame.canvas.width=frame.canvas.height=1;message((orbit?'カメラを回してGIFを作成しています… ':'回転GIFを作成しています… ')+Math.round((i+1)/timing.frames*100)+'%');await tick();
    }
-   gif.finish();const blob=new Blob([gif.bytes()],{type:'image/gif'});metadata={...metadata,durationMS:timing.durationMS,frames:timing.frames,rotationSpeed:timing.speed,gifMotion:orbit?'camera-orbit':'box-turntable',gifFraming:orbit?'live-preview':'auto-fit',cameraZoom:fitted.zoom,cameraAspect:fitted.aspect,pairCenterOffsets:gifPairOffsets?[...gifPairOffsets]:null};const seconds=timing.durationMS/1000;showReview(blob,'box-rotation-'+seconds+'s.gif',[{blob,metadata,label:seconds+'秒ループ'}],'回転GIF · '+seconds+'秒ループ'+(orbit?' · ライブビューの画角':''));
+   gif.finish();const blob=new Blob([gif.bytes()],{type:'image/gif'});metadata={...metadata,durationMS:timing.durationMS,frames:timing.frames,rotationSpeed:timing.speed,gifMode,swingAngle:gifMode==='rock'?swingAngle:null,gifMotion:orbit?'camera-orbit':'box-turntable',gifFraming:orbit?'live-preview':'auto-fit',cameraZoom:fitted.zoom,cameraAspect:fitted.aspect,pairCenterOffsets:gifPairOffsets?[...gifPairOffsets]:null};const seconds=timing.durationMS/1000;showReview(blob,(gifMode==='rock'?'box-rock-':'box-rotation-')+seconds+'s.gif',[{blob,metadata,label:seconds+'秒ループ'}],(gifMode==='rock'?'往復回転GIF':'回転GIF')+' · '+seconds+'秒ループ'+(orbit?' · ライブビューの画角':''));
   }else{
    const cuts=kind==='three'?[{label:'斜め',name:'01-angle.png',pose:presets.angle},{label:'正面',name:'02-front.png',pose:presets.front},{label:'裏面',name:'03-back.png',pose:presets.back}]:kind==='pair'?[{label:'現在の角度',name:'01-current.png',pose:original},{label:'同じ角度の反対面',name:'02-reverse.png',pose:{...original,...companionState()}}]:[{label:'現在の向き',name:'box-image.png',pose:original}];
    for(const cut of cuts){Object.assign(state,cut.pose);syncModel();message(cut.label+'を描画しています…');await tick();const frame=await capture(width,height);frame.canvas.width=frame.canvas.height=1;items.push({blob:frame.blob,metadata:frame.metadata,label:cut.label,name:cut.name});}
@@ -634,15 +642,19 @@ exportButton.addEventListener('click',()=>runExport('single'));
 $('export-three').addEventListener('click',()=>runExport('three'));
 $('export-pair').addEventListener('click',()=>runExport('pair'));
 function syncGifSpeed(){
- const timing=BoxStudio.gifTiming($('gif-speed').value),seconds=timing.durationMS/1000,speed=timing.speed;
- $('gif-speed-value').textContent=speed+'×・1周'+seconds+'秒';
- $('export-gif').title='1周'+seconds+'秒の回転GIFを作成';
+ const timing=BoxStudio.gifTiming($('gif-speed').value),seconds=timing.durationMS/1000,speed=timing.speed,rock=$('gif-mode').value==='rock',cycle=rock?'1往復':'1周',span=Number($('gif-angle').value);
+ $('gif-angle-control').hidden=!rock;
+ $('gif-angle-value').textContent=span+'°（左右'+span/2+'°）';
+ $('gif-speed-example').classList.toggle('is-rock',rock);
+ $('gif-speed-example').style.setProperty('--gif-rock-half',span/2+'deg');
+ $('gif-speed-value').textContent=speed+'×・'+cycle+seconds+'秒';
+ $('export-gif').title=cycle+seconds+'秒の回転GIFを作成';
  const comment=speed<=.3?'ゆっくり確認':speed<=.75?'じっくり見せる':speed<=1.5?'見やすい速さ':speed<=2.5?'少し速め':speed<=3.5?'文字が読みづらい':'早すぎて見えない';
  $('gif-speed-comment').textContent=comment;
  $('gif-speed-example').style.setProperty('--gif-preview-duration',seconds+'s');
- $('gif-speed-example').title='速度見本：1周'+seconds+'秒';
+ $('gif-speed-example').title='速度見本：'+cycle+seconds+'秒';
 }
-$('gif-speed').addEventListener('input',()=>{syncGifSpeed();save();});
+for(const id of ['gif-speed','gif-mode','gif-angle'])$(id).addEventListener(id==='gif-mode'?'change':'input',()=>{syncGifSpeed();save();});
 $('export-gif').addEventListener('click',()=>runExport('gif'));
 $('export-layers').addEventListener('click',()=>runExport('layers'));
 $('cancel-export').addEventListener('click',()=>cancelExport=true);
@@ -923,7 +935,7 @@ for(const tablist of document.querySelectorAll('[role="tablist"]')){
 const projectSchema={
  state:{paired:'boolean',pairGapMM:[0,100],cameraAzimuth:[-180,180],cameraElevation:[-75,90],cameraDistance:[70,180],x:[-180,180],y:[-180,180],z:[-180,180],zoom:[.7,3],view:{values:[...Object.keys(presets),'custom']},lighting:{values:Object.keys(lightingStyles)},brightness:[65,145],lightDirection:[-100,100],details:{...detailLimits,...Object.fromEntries(['keyAzimuth','keyElevation','keyDistance'].map(k=>[k,{range:detailLimits[k],default:detailDefaults[k]}]))},focusPosition:{values:['near','middle','far']},focusBlur:[0,100],shadowBlur:[0,100]},
  box:{width:[30,400],height:[30,400],depth:[3,250],radius:[.2,4],color:'color',baseColor:'color',interiorColor:'color',basePeekMM:[0,100],baseArtwork:'boolean',tuckNotch:'boolean',type:{values:['lid','tuck']}},
- output:Object.fromEntries(outputIds.map(id=>{const el=$(id);return[id,el.type==='checkbox'?'boolean':el.type==='color'?'color':{values:el.tagName==='SELECT'?[...el.options].map(o=>o.value):Array.from({length:299},(_,i)=>String(Number((.1+i*.05).toFixed(2))))}];}))
+ output:Object.fromEntries(outputIds.map(id=>{const el=$(id);return[id,el.type==='checkbox'?'boolean':el.type==='color'?'color':{...(id==='gif-mode'?{default:'rotate'}:id==='gif-angle'?{default:'60'}:{}),values:id==='gif-angle'?Array.from({length:171},(_,i)=>String(10+i)):el.tagName==='SELECT'?[...el.options].map(o=>o.value):Array.from({length:299},(_,i)=>String(Number((.1+i*.05).toFixed(2))))}];}))
 };
 function projectSnapshot(){return{config:{state:BoxProjectData.copy({...state,y:wrap(state.y)}),box:{...box},output:readOutput()},sourceImage,sourceName,sampleMode,selectedFace,crops:Object.fromEntries(Object.entries(crops).map(([f,c])=>[f,{...c,rect:[...c.rect],...(c.finish?{finish:{...c.finish}}:{})}]))};}
 function projectComposition(snapshot,config){
