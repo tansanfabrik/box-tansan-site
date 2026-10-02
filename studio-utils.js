@@ -31,9 +31,11 @@
   const mmHeight=face==='top'||face==='bottom'?box.depth:box.height;
   return {width:Math.round(width),height:Math.round(height),dpi:Math.round(Math.min(width/mmWidth,height/mmHeight)*25.4)};
  }
- // Reserve the last quarter of the GIF slider for fast turns (5x–15x).
- function gifSpeedPosition(speed){const s=Math.min(15,Math.max(.1,Number(speed)||.1));return s<=5?(s-.1)/4.9*75:75+(s-5)/10*25;}
- function gifSpeedAtPosition(position){const p=Math.min(100,Math.max(0,Number(position)||0)),s=p<=75?.1+p/75*4.9:5+(p-75)/25*10;return Math.round(s*20)/20;}
+ // Give the first half to comfortable speeds, then accelerate toward 15x.
+ // The curve still reaches 5x at 75%, reserving the last quarter for fast turns.
+ const gifFastPower=Math.log(3.5/13.5)/Math.log(.5);
+ function gifSpeedPosition(speed){const s=Math.min(15,Math.max(.1,Number(speed)||.1));return s<=1.5?(s-.1)/1.4*50:50+50*Math.pow((s-1.5)/13.5,1/gifFastPower);}
+ function gifSpeedAtPosition(position){const p=Math.min(100,Math.max(0,Number(position)||0)),s=p<=50?.1+p/50*1.4:1.5+13.5*Math.pow((p-50)/50,gifFastPower);return Math.round(s*10)/10;}
  // A full cosine cycle joins smoothly at the left endpoint, centered on the chosen pose.
  function gifRotationAngle(progress,mode,span=60){return mode==='rock'?-Math.min(180,Math.max(10,Number(span)||60))/2*Math.cos(2*Math.PI*progress):360*progress;}
  function gifTiming(value){

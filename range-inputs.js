@@ -27,9 +27,9 @@
    function setSpeed(speed){range.value=String(speed);range.dispatchEvent(new Event('input',{bubbles:true}));range.dispatchEvent(new Event('change',{bubbles:true}));}
    slider.addEventListener('input',()=>setSpeed(BoxStudio.gifSpeedAtPosition(slider.value)));
    slider.addEventListener('keydown',e=>{
-    const delta={ArrowRight:.05,ArrowUp:.05,ArrowLeft:-.05,ArrowDown:-.05,PageUp:1,PageDown:-1}[e.key];
+    const delta={ArrowRight:.1,ArrowUp:.1,ArrowLeft:-.1,ArrowDown:-.1,PageUp:1,PageDown:-1}[e.key];
     if(delta===undefined&&e.key!=='Home'&&e.key!=='End')return;e.preventDefault();
-    setSpeed(e.key==='Home'?.1:e.key==='End'?15:Math.max(.1,Math.min(15,Math.round((Number(range.value)+delta)*20)/20)));
+    setSpeed(e.key==='Home'?.1:e.key==='End'?15:Math.max(.1,Math.min(15,Math.round((Number(range.value)+delta)*10)/10)));
    });
   }
   number.addEventListener('change',commit);number.addEventListener('blur',commit);number.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();commit();}else if(e.key==='Escape'){e.preventDefault();sync(true);number.blur();}});

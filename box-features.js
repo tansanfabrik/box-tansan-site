@@ -78,6 +78,21 @@ function orbitCamera(T,base,angle,pivot=new T.Vector3()){
  const q=new T.Quaternion().setFromAxisAngle(new T.Vector3(...groundUp),-T.MathUtils.degToRad(angle)),cam=base.clone();
  cam.position.sub(pivot).applyQuaternion(q).add(pivot);cam.quaternion.premultiply(q);cam.up.applyQuaternion(q);cam.updateMatrixWorld(true);return cam;
 }
+// Camera-space orientation shared by the small GIF example and the export motion.
+// Orbiting the camera by -angle is equivalent to turning the object by +angle.
+function gifPreviewRotation(T,pose,cameraRotation,angle,quarter=0){
+ const turned=spinPose(T,pose,angle,quarter),rad=T.MathUtils.degToRad;
+ const object=new T.Quaternion().setFromEuler(new T.Euler(rad(-turned.x),rad(turned.y),rad(-turned.z+quarter),'XYZ'));
+ return cameraRotation.clone().invert().multiply(object);
+}
+function viewTransition(from,to,progress,placeFirst=false){
+ const t=Math.min(1,Math.max(0,progress)),ease=t=>t*t*(3-2*t),result={};
+ for(const key of ['x','y','z','cameraAzimuth','cameraElevation']){
+  const camera=key.startsWith('camera'),phase=placeFirst?(camera?Math.max(0,(t-.5)*2):Math.min(1,t*2)):t;
+  result[key]=from[key]+(to[key]-from[key])*ease(phase);
+ }
+ return result;
+}
 // A thin, slightly bowed closure flap with real cut-paper edges.
 function tuckFlapGeometry(T,w,d,u,top=true){
  const nx=16,nz=12,sign=top?1:-1,thickness=.28*u,positions=[],uvs=[],indices=[],edges=[];
@@ -135,5 +150,5 @@ function lightPosition(base,azimuth=0,elevation=0,distance=100){
  const el=Math.max(-85,Math.min(85,Math.atan2(y,Math.hypot(x,z))*180/Math.PI+elevation))*Math.PI/180;
  return [r*Math.cos(el)*Math.sin(az),r*Math.sin(el),r*Math.cos(el)*Math.cos(az)];
 }
-const api={lidTravel,lightPosition,tuckFlapGeometry,tuckProfile,tuckTongueGeometry,tuckNotchGeometry,orbitCamera,spinPose,groundUp,viewPresets,flatPose,finishes,references,layout,hollow,arrange,reference,dragRotation,companionRotation};if(typeof module==='object'&&module.exports)module.exports=api;else root.BoxFeatures=api;
+const api={gifPreviewRotation,viewTransition,lidTravel,lightPosition,tuckFlapGeometry,tuckProfile,tuckTongueGeometry,tuckNotchGeometry,orbitCamera,spinPose,groundUp,viewPresets,flatPose,finishes,references,layout,hollow,arrange,reference,dragRotation,companionRotation};if(typeof module==='object'&&module.exports)module.exports=api;else root.BoxFeatures=api;
 })(globalThis);

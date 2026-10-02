@@ -491,8 +491,8 @@ async function init(){
  }catch(e){console.error(e);message('3D表示を読み込めませんでした。WebGLが利用できるブラウザで開き直してください。',true);}
 }
 const presets=BoxFeatures.viewPresets;
-function select(view){if(exporting)return;$('placement').value=['flat-overhead','top'].includes(view)?'flat':'standing';cancelAnimationFrame(animation);const from={...state},target={...presets[view]},duration=matchMedia('(prefers-reduced-motion: reduce)').matches?0:450,start=performance.now();target.y=from.y+wrap(target.y-from.y);state.view=view;
- function frame(now){const t=duration?Math.min(1,(now-start)/duration):1,e=t*t*(3-2*t);for(const k of ['x','y','z','cameraAzimuth','cameraElevation'])state[k]=from[k]+(target[k]-from[k])*e;draw();if(t<1)animation=requestAnimationFrame(frame);else{state.y=wrap(state.y);draw();save();}}animation=requestAnimationFrame(frame);
+function select(view){if(exporting)return;$('placement').value=['flat-overhead','top'].includes(view)?'flat':'standing';cancelAnimationFrame(animation);const from={...state},target={...presets[view]},duration=matchMedia('(prefers-reduced-motion: reduce)').matches?0:(view==='top'?1000:450),start=performance.now();target.y=from.y+wrap(target.y-from.y);state.view=view;
+ function frame(now){const t=duration?Math.min(1,(now-start)/duration):1;Object.assign(state,BoxFeatures.viewTransition(from,target,t,view==='top'));draw();if(t<1)animation=requestAnimationFrame(frame);else{state.y=wrap(state.y);draw();save();}}animation=requestAnimationFrame(frame);
 }
 buttons.forEach(b=>b.addEventListener('click',()=>select(b.dataset.view)));
 stage.addEventListener('pointerdown',e=>{
@@ -641,8 +641,31 @@ async function runExport(kind){
 exportButton.addEventListener('click',()=>runExport('single'));
 $('export-three').addEventListener('click',()=>runExport('three'));
 $('export-pair').addEventListener('click',()=>runExport('pair'));
+// Use a six-face CSS model: no extra WebGL context or export scene mutations.
+function startGifExample(){
+ const host=$('gif-speed-example'),cube=host.querySelector('.gif-speed-box'),matrix=new THREE.Matrix4();
+ const reduced=matchMedia('(prefers-reduced-motion: reduce)');let visible=true,last=0,phase=0,signature='';
+ new IntersectionObserver(entries=>{visible=entries[0].isIntersecting;}).observe(host);
+ function frame(now){
+  const elapsed=last?Math.min(100,now-last):0;last=now;
+  if(ready&&!exporting&&!comparisonActive&&!document.hidden&&visible){
+   const quarter=BoxStudio.uprightTurn(box,$('upright').value),mode=$('gif-mode').value,span=Number($('gif-angle').value);
+   const next=[state.x,state.y,state.z,state.cameraAzimuth,state.cameraElevation,quarter,mode,span].join(',');
+   if(next!==signature){signature=next;phase=0;}else if(!reduced.matches)phase=(phase+elapsed/BoxStudio.gifTiming($('gif-speed').value).durationMS)%1;
+   const angle=reduced.matches?0:BoxStudio.gifRotationAngle(phase,mode,span);
+   const q=BoxFeatures.gifPreviewRotation(THREE,state,camera.quaternion,angle,quarter);
+   // CSS uses downward Y, while the scene uses upward Y.
+   q.set(-q.x,q.y,-q.z,q.w);matrix.makeRotationFromQuaternion(q);
+   cube.style.transform='matrix3d('+matrix.elements.join(',')+')';
+  }
+  requestAnimationFrame(frame);
+ }
+ requestAnimationFrame(frame);
+}
 function syncGifSpeed(){
+ $('gif-speed').value=String(BoxStudio.gifSpeedAtPosition(BoxStudio.gifSpeedPosition($('gif-speed').value)));
  const timing=BoxStudio.gifTiming($('gif-speed').value),seconds=timing.durationMS/1000,speed=timing.speed,rock=$('gif-mode').value==='rock',cycle=rock?'1往復':'1周',span=Number($('gif-angle').value);
+ for(const radio of document.querySelectorAll('input[name=gif-motion]'))radio.checked=radio.value===$('gif-mode').value;
  $('gif-angle-control').hidden=!rock;
  $('gif-angle-value').textContent=span+'°（左右'+span/2+'°）';
  $('gif-speed-example').classList.toggle('is-rock',rock);
@@ -655,6 +678,7 @@ function syncGifSpeed(){
  $('gif-speed-example').title='速度見本：'+cycle+seconds+'秒';
 }
 for(const id of ['gif-speed','gif-mode','gif-angle'])$(id).addEventListener(id==='gif-mode'?'change':'input',()=>{syncGifSpeed();save();});
+for(const radio of document.querySelectorAll('input[name=gif-motion]'))radio.addEventListener('change',()=>{if(radio.checked){$('gif-mode').value=radio.value;$('gif-mode').dispatchEvent(new Event('change',{bubbles:true}));}});
 $('export-gif').addEventListener('click',()=>runExport('gif'));
 $('export-layers').addEventListener('click',()=>runExport('layers'));
 $('cancel-export').addEventListener('click',()=>cancelExport=true);
@@ -987,7 +1011,7 @@ BoxProjects.install({schema:projectSchema,snapshot:projectSnapshot,withCompositi
 });
 
 restoreSettings();BoxRangeInputs.sync();
-new ResizeObserver(resize).observe(stage);init().then(()=>loadSample(restoredColors));
+new ResizeObserver(resize).observe(stage);init().then(()=>{startGifExample();return loadSample(restoredColors);});
 
 })();
 
