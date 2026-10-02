@@ -21,10 +21,49 @@ function lidTravel(T,from,to,w,h,d,baseTop,gap){
   return{position,quaternion};
  };
 }
+// Work in the base's coordinates: arrange() recenters each pose differently.
+function relativeLidTravel(T,from,to,baseFrom,baseTo,w,h,d,baseDepth,gap){
+ const relative=p=>({position:p.position.clone(),quaternion:p.quaternion.clone()});
+ const a=relative(from),b=relative(to);a.position.sub(baseFrom.position);b.position.sub(baseTo.position);
+ const travel=lidTravel(T,a,b,w,h,d,baseDepth/2,gap);
+ return t=>{const pose=travel(t),f=t*t*(3-2*t);pose.position.add(new T.Vector3().lerpVectors(baseFrom.position,baseTo.position,f));return pose;};
+}
+function liftedLidPose(T,w,h,d,baseTop,gap){
+ const quaternion=new T.Quaternion().setFromEuler(new T.Euler(-22*Math.PI/180,0,-12*Math.PI/180)),e=new T.Matrix4().makeRotationFromQuaternion(quaternion).elements;
+ const extent=(Math.abs(e[2])*w+Math.abs(e[6])*h+Math.abs(e[10])*d)/2;
+ return {position:new T.Vector3(-w*.16,0,baseTop+extent+Math.max(gap,h*.1)),quaternion};
+}
+// First curl the inserted tab inside the cavity, withdraw it, then unfold it
+// above the rim. The dust flaps open only after the main lid has cleared them.
+function tuckOpeningPose(progress){
+ const p=Math.min(1,Math.max(0,progress)),ease=(a,b)=>{const t=Math.min(1,Math.max(0,(p-a)/(b-a)));return t*t*(3-2*t);};
+ return {lid:(90*ease(.18,.5)+20*ease(.78,.9))*Math.PI/180,fold:80*ease(.67,.78)*Math.PI/180,curl:ease(0,.18)*(1-ease(.5,.67)),dust:110*ease(.78,1)*Math.PI/180};
+}
+// One continuous sheet joins the closure panel and tab; no rectangular bridge.
+// Group 0 is its printed exterior, group 1 is the lining and thin cut edges.
+function tuckTabGeometry(T,w,height,corner,u,fold=0,curl=0){
+ const radius=.16*u,thickness=.28*u,bend=Math.PI/2-fold,rows=48,cols=20,positions=[],indices=[],uv=[];
+ const half=w/2-.81*u,r=Math.min(corner,height*.8,half/2),arc=curl*Math.PI;
+ const row=j=>{if(j<=8){const a=bend*j/8;return {y:radius*(Math.cos(a)-1),z:-radius*Math.sin(a),angle:a,width:half};}
+  const t=(j-8)/(rows-8),l=t*height,rollRadius=height/Math.PI,straight=Math.min(l,height-rollRadius*arc),a=bend+(l-straight)/rollRadius;
+  let y=radius*(Math.cos(bend)-1),z=-radius*Math.sin(bend);
+  y-=straight*Math.sin(bend);z-=straight*Math.cos(bend);
+  y+=rollRadius*(Math.cos(a)-Math.cos(bend));z-=rollRadius*(Math.sin(a)-Math.sin(bend));
+  const end=Math.max(0,l-(height-r));return {y,z,angle:a,width:half-r+Math.sqrt(Math.max(0,r*r-end*end))};
+ };
+ for(let side=0;side<2;side++)for(let j=0;j<=rows;j++){const q=row(j);for(let i=0;i<=cols;i++){positions.push((i/cols*2-1)*q.width,q.y-side*thickness*Math.cos(q.angle),q.z+side*thickness*Math.sin(q.angle));uv.push(i/cols,j/rows);}}
+ const layer=(rows+1)*(cols+1);
+ for(let side=0;side<2;side++)for(let j=0;j<rows;j++)for(let i=0;i<cols;i++){const a=side*layer+j*(cols+1)+i,b=a+1,c=a+cols+1,d=c+1;indices.push(...(side?[a,c,b,b,c,d]:[a,b,c,b,d,c]));}
+ const exterior=rows*cols*6;
+ // Leave the root open: it meets the closure panel's matching paper thickness.
+ const edge=(a,b)=>indices.push(a,a+layer,b,b,a+layer,b+layer);
+ for(let j=0;j<rows;j++){edge(j*(cols+1),(j+1)*(cols+1));edge((j+1)*(cols+1)+cols,j*(cols+1)+cols);}for(let i=0;i<cols;i++)edge(rows*(cols+1)+i,rows*(cols+1)+i+1);
+ const g=new T.BufferGeometry();g.setAttribute('position',new T.Float32BufferAttribute(positions,3));g.setAttribute('uv',new T.Float32BufferAttribute(uv,2));g.setIndex(indices);g.addGroup(0,exterior,0);g.addGroup(exterior,indices.length-exterior,1);g.computeVertexNormals();return g;
+}
 // Convert the existing exterior into an open tray with a paper lining and thickness at its rim.
 function hollow(T,group,w,h,d,openPositive,u,interiorColor=0xe7e1d5,radius=0){
  const removed=group.getObjectByName(group.name+'-'+(openPositive?'front':'back'));if(removed){group.remove(removed);removed.geometry.dispose();for(const key of ['map','metalnessMap','roughnessMap','clearcoatMap','clearcoatRoughnessMap'])removed.material[key]?.dispose();removed.material.dispose();}
- const t=Math.min(1.2*u,d/5),inner=new T.MeshStandardMaterial({color:interiorColor,roughness:.95,side:T.DoubleSide});
+ const t=Math.min(1.2*u,d/5,w*.005,h*.005),inner=new T.MeshStandardMaterial({color:interiorColor,roughness:.95,side:T.DoubleSide});
  const plane=(W,H,x,y,z,rx,ry,name)=>{const m=new T.Mesh(new T.PlaneGeometry(W,H),inner);m.position.set(x,y,z);m.rotation.set(rx,ry,0);m.name=name;m.castShadow=m.receiveShadow=true;group.add(m);};
  const inset=Math.max(t,radius);
  const floorZ=openPositive?-d/2+t:d/2-t,wallZ=openPositive?t/2:-t/2,rimZ=openPositive?d/2:-d/2;
@@ -111,7 +150,7 @@ function tuckFlapGeometry(T,w,d,u,top=true){
  const geo=new T.BufferGeometry();geo.setAttribute('position',new T.Float32BufferAttribute(positions,3));geo.setAttribute('uv',new T.Float32BufferAttribute(uvs,2));geo.setIndex(indices);geo.addGroup(0,faceCount,0);geo.addGroup(faceCount,indices.length-faceCount,1);geo.computeVertexNormals();return geo;
 }
 // Graphic card-box templates: 16-card tuck is about 10 mm, 32-card about 12 mm.
-function tuckProfile(w,h,d,u){const thick=d/u>10;return {notchRadius:Math.min(9*u,w*.3),notchDepth:Math.min((thick?8:6)*u,h*.2),tongueHeight:Math.min((thick?12:10)*u,h*.2),tongueCorner:Math.min(7*u,w/6),dustLength:Math.min((d/u-.6)*u,w*.22)};}
+function tuckProfile(w,h,d,u){const thick=d/u>10;return {notchRadius:Math.min(9*u,w*.3),notchDepth:Math.min((thick?8:6)*u,h*.2),tongueHeight:Math.min((thick?12:10)*u,h*.2,Math.max(.1*u,d-.6*u)*Math.PI/2),tongueCorner:Math.min(7*u,w/6),dustLength:Math.min((d/u-.6)*u,w*.22)};}
 function tuckTongueGeometry(T,w,height,corner,u){
  const x=w/2-.2*u,r=Math.min(corner,height*.8,x/2),s=new T.Shape();
  s.moveTo(-x,0);s.lineTo(x,0);s.lineTo(x,-height+r);s.quadraticCurveTo(x,-height,x-r,-height);s.lineTo(-x+r,-height);s.quadraticCurveTo(-x,-height,-x,-height+r);s.lineTo(-x,0);
@@ -150,5 +189,5 @@ function lightPosition(base,azimuth=0,elevation=0,distance=100){
  const el=Math.max(-85,Math.min(85,Math.atan2(y,Math.hypot(x,z))*180/Math.PI+elevation))*Math.PI/180;
  return [r*Math.cos(el)*Math.sin(az),r*Math.sin(el),r*Math.cos(el)*Math.cos(az)];
 }
-const api={gifPreviewRotation,viewTransition,lidTravel,lightPosition,tuckFlapGeometry,tuckProfile,tuckTongueGeometry,tuckNotchGeometry,orbitCamera,spinPose,groundUp,viewPresets,flatPose,finishes,references,layout,hollow,arrange,reference,dragRotation,companionRotation};if(typeof module==='object'&&module.exports)module.exports=api;else root.BoxFeatures=api;
+const api={relativeLidTravel,liftedLidPose,tuckOpeningPose,tuckTabGeometry,gifPreviewRotation,viewTransition,lidTravel,lightPosition,tuckFlapGeometry,tuckProfile,tuckTongueGeometry,tuckNotchGeometry,orbitCamera,spinPose,groundUp,viewPresets,flatPose,finishes,references,layout,hollow,arrange,reference,dragRotation,companionRotation};if(typeof module==='object'&&module.exports)module.exports=api;else root.BoxFeatures=api;
 })(globalThis);

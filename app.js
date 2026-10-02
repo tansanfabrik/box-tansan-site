@@ -104,7 +104,7 @@ function rebuildBox(render=true){
  if(box.type==='lid'){
   const base=model.getObjectByName('base'),lid=model.getObjectByName('lid'),profile=BoxStudio.lidProfile(d,(.2+box.basePeekMM)*u,Math.max(Math.min(1.2*u,d/5),Math.min(box.radius*u,w/6,h/6,d/6)));
   BoxFeatures.hollow(THREE,base,w*.985,h*.985,profile.baseDepth,true,u,box.interiorColor,radius*.8);BoxFeatures.hollow(THREE,lid,w,h,profile.lidDepth,false,u,box.interiorColor,radius);
-  if($('lid-pose').value==='lifted'){lid.rotation.x=rad(-22);lid.rotation.z=rad(-12);lid.position.z+=d+h*.3;lid.position.x-=w*.16;}
+  if($('lid-pose').value==='lifted'){const pose=BoxFeatures.liftedLidPose(THREE,w,h,d,profile.baseCenter+profile.baseDepth/2,2*u);lid.position.copy(pose.position);lid.quaternion.copy(pose.quaternion);}
   else if($('lid-pose').value==='beside'){lid.position.x=(w+w*Math.cos(rad(8))+h*Math.sin(rad(8)))/2+18*u;lid.position.z=-.2*u-box.basePeekMM*u;lid.rotation.z=rad(-8);}
  }
  syncClosedLining();
@@ -298,11 +298,11 @@ function tuckBox(w,h,d,r,mats,u){
  }
  // Rounded tuck tab stays attached to the lid via its own scored fold.
  const tongueHinge=new THREE.Group();tongueHinge.name='tuck-tongue-hinge';tongueHinge.position.set(0,.05*u,-d+.34*u);
- const inner=new THREE.Mesh(BoxFeatures.tuckTongueGeometry(THREE,w,profile.tongueHeight,profile.tongueCorner,u),[paper(null,box.color),paper(null,box.interiorColor)]);inner.position.z=.76*u;inner.name='tuck-inner-flap';inner.castShadow=inner.receiveShadow=true;tongueHinge.add(inner);
- const bridge=new THREE.Mesh(new THREE.BoxGeometry(w-.4*u,.28*u,.76*u),[paper(null,box.interiorColor),paper(null,box.interiorColor),paper(null,box.color),paper(null,box.interiorColor),paper(null,box.interiorColor),paper(null,box.color)]);bridge.position.z=.38*u;bridge.name='tuck-tab-fold';bridge.castShadow=bridge.receiveShadow=true;tongueHinge.add(bridge);shell.getObjectByName('tuck-top-hinge').add(tongueHinge);
+ const inner=new THREE.Mesh(BoxFeatures.tuckTabGeometry(THREE,w,profile.tongueHeight,profile.tongueCorner,u),[paper(null,box.color),paper(null,box.interiorColor)]);inner.name='tuck-inner-flap';inner.castShadow=inner.receiveShadow=true;tongueHinge.add(inner);hinge.add(tongueHinge);
+ shell.userData.tuckDimensions={w,h,d,u,profile};
  // Small side flaps seen under the lid in the supplied net.
  for(const sign of [-1,1]){
-  const dustHinge=new THREE.Group();dustHinge.name=sign<0?'tuck-dust-left-hinge':'tuck-dust-right-hinge';dustHinge.position.set(sign*(hw-.25*u),hh-.52*u,0);const dust=new THREE.Mesh(new THREE.BoxGeometry(profile.dustLength,.28*u,Math.max(.5*u,d-.8*u)),paper(null,box.interiorColor));dust.position.x=-sign*profile.dustLength/2;dust.name='tuck-dust-flap';dust.castShadow=dust.receiveShadow=true;dustHinge.add(dust);shell.add(dustHinge);dustHinge.rotation.z=$('lid-pose').value!=='closed'?-sign*rad(110):0;dustHinge.visible=$('lid-pose').value!=='closed';
+  const dustHinge=new THREE.Group();dustHinge.name=sign<0?'tuck-dust-left-hinge':'tuck-dust-right-hinge';dustHinge.position.set(sign*(hw-.25*u),hh-.32*u,0);const dust=new THREE.Mesh(new THREE.BoxGeometry(profile.dustLength,.28*u,Math.max(.5*u,d-.8*u)),[edge,edge,paper(null,box.color),paper(null,box.interiorColor),edge,edge]);dust.position.x=-sign*profile.dustLength/2;dust.name='tuck-dust-flap';dust.castShadow=dust.receiveShadow=true;dustHinge.add(dust);shell.add(dustHinge);dustHinge.rotation.z=$('lid-pose').value!=='closed'?-sign*rad(110):0;dustHinge.visible=$('lid-pose').value!=='closed';
  }
  // Lining is independent of the printed exterior and leaves the top opening clear.
  for(const face of ['front','back','left','right','bottom']){
@@ -314,13 +314,20 @@ function tuckBox(w,h,d,r,mats,u){
  const foldPosition=foldGeometry.attributes.position,foldUV=foldGeometry.attributes.uv;
  for(let i=0;i<foldPosition.count;i++)foldUV.setXY(i,(foldPosition.getX(i)+w/2)/w,clamp(1+(foldPosition.getY(i)-.18*u)/h,0,1));
  const fold=new THREE.Mesh(foldGeometry,mats[4].clone());fold.position.set(0,hh,d/2-.06*u);fold.name='tuck-front-fold';fold.castShadow=fold.receiveShadow=true;shell.add(fold);
- const opened=$('lid-pose').value!=='closed';shell.getObjectByName('tuck-top-hinge').rotation.x=opened?rad(110):0;shell.getObjectByName('tuck-tongue-hinge').rotation.x=opened?rad(80):0;
+ const opened=$('lid-pose').value!=='closed';setTuckOpening(shell,opened?1:0);
  const recess=shell.getObjectByName('tuck-notch-recess');if(recess)recess.visible=!opened;closedTop.visible=!opened;hinge.visible=opened;fold.visible=opened;
  // Narrow shaded paper overlaps, not dieline artwork.
  for(const [x,y,z,width] of [[-(hw+n)/2,hh-.10*u,-d/2-.01*u,hw-n-r],[(hw+n)/2,hh-.10*u,-d/2-.01*u,hw-n-r],[0,-hh+.10*u,-d/2-.01*u,w-2*r]]){
   const material=new THREE.MeshBasicMaterial({color:0x393630,transparent:true,opacity:.18,side:THREE.DoubleSide,depthWrite:false});
   const seam=new THREE.Mesh(new THREE.PlaneGeometry(width,.08*u),material);seam.position.set(x,y,z);seam.name='tuck-closure';shell.add(seam);
  }
+}
+function setTuckOpening(shell,progress){
+ const pose=BoxFeatures.tuckOpeningPose(progress),{w,u,profile}=shell.userData.tuckDimensions;
+ shell.userData.tuckOpen=progress;shell.getObjectByName('tuck-top-hinge').rotation.x=pose.lid;
+ for(const [side,sign] of [['left',-1],['right',1]])shell.getObjectByName('tuck-dust-'+side+'-hinge').rotation.z=-sign*pose.dust;
+ const tab=shell.getObjectByName('tuck-inner-flap');
+ if(tab.userData.fold!==pose.fold||tab.userData.curl!==pose.curl){tab.geometry.dispose();tab.geometry=BoxFeatures.tuckTabGeometry(THREE,w,profile.tongueHeight,profile.tongueCorner,u,pose.fold,pose.curl);tab.userData.fold=pose.fold;tab.userData.curl=pose.curl;}
 }
 function setupLighting(){
  lightingRig=new THREE.Group();scene.add(lightingRig);
@@ -428,26 +435,35 @@ function fitShadowCamera(){
 function stageFlat(){cancelAnimationFrame(animation);Object.assign(state,BoxFeatures.flatPose,{view:'custom'});$('placement').value='flat';}
 $('paper-finish').addEventListener('change',()=>{if(state.lighting==='neutral'){state.lighting='studio';applyLighting(true);}rebuildBox();save();});
 let lidAnimation=0;
-const lidMovingNames=new Set(['lid','base','tuck','tuck-top-hinge','tuck-tongue-hinge','tuck-dust-left-hinge','tuck-dust-right-hinge']);
-function finishLidAnimation(){cancelAnimationFrame(lidAnimation);lidAnimation=0;stage.dataset.lidAnimating='false';for(const root of [model,companion])root?.traverse(o=>{if(o.userData.lidTarget){o.position.copy(o.userData.lidTarget.position);o.quaternion.copy(o.userData.lidTarget.quaternion);delete o.userData.lidTarget;}});syncTuckRecess();}
+const lidMovingNames=new Set(['lid','base','tuck']);
+function finishLidAnimation(){cancelAnimationFrame(lidAnimation);lidAnimation=0;stage.dataset.lidAnimating='false';for(const root of [model,companion])root?.traverse(o=>{if(o.name==='tuck'&&o.userData.tuckTarget!==undefined){setTuckOpening(o,o.userData.tuckTarget);delete o.userData.tuckTarget;}if(o.userData.lidTarget){o.position.copy(o.userData.lidTarget.position);o.quaternion.copy(o.userData.lidTarget.quaternion);delete o.userData.lidTarget;}});syncTuckRecess();}
 function syncClosedLining(){for(const root of [model,companion])root?.traverse(o=>{if(['plain-inner-floor','inner-side','paper-rim'].includes(o.name))o.visible=$('lid-pose').value!=='closed'||!!o.parent.userData.lidTarget;});}
 function syncTuckRecess(){syncClosedLining();for(const root of [model,companion])root?.traverse(shell=>{
  if(shell.name!=='tuck')return;
  const hinge=shell.getObjectByName('tuck-top-hinge');if(!hinge)return;
- const articulated=!!hinge.userData.lidTarget||Math.abs(hinge.rotation.x)>.0001;
+ const articulated=shell.userData.tuckTarget!==undefined||shell.userData.tuckOpen>0;
  hinge.visible=articulated;
  for(const name of ['tuck-top-closed','tuck-front-fold','tuck-dust-left-hinge','tuck-dust-right-hinge']){const part=shell.getObjectByName(name);if(part)part.visible=name==='tuck-top-closed'?!articulated:articulated;}
  const recess=shell.getObjectByName('tuck-notch-recess');if(recess)recess.visible=Math.abs(hinge.rotation.x)<rad(12);
  });}
 function animateLidChange(){
  cancelAnimationFrame(lidAnimation);lidAnimation=0;
- const previous=new Map();model.traverse(o=>{if(lidMovingNames.has(o.name))previous.set(o.name,{position:o.position.clone(),quaternion:o.quaternion.clone()});});
+ const previous=new Map();model.traverse(o=>{if(lidMovingNames.has(o.name))previous.set(o.name,{position:o.position.clone(),quaternion:o.quaternion.clone(),tuckOpen:o.userData.tuckOpen});});
  if($('lid-pose').value!=='closed'){$('box-arrangement').value='single';if(box.type==='lid')stageFlat();}
  rebuildBox(false);
- const tracks=[];for(const root of [model,companion])root.traverse(o=>{const from=previous.get(o.name);if(from){const to={position:o.position.clone(),quaternion:o.quaternion.clone()};o.userData.lidTarget=to;const u=330/Math.max(box.width,box.height,box.depth),w=box.width*u,h=box.height*u,d=box.depth*u,profile=BoxStudio.lidProfile(d,(.2+box.basePeekMM)*u,Math.max(Math.min(1.2*u,d/5),Math.min(box.radius*u,w/6,h/6,d/6)));const travel=box.type==='lid'&&o.name==='lid'?BoxFeatures.lidTravel(THREE,from,to,w,h,d,profile.baseCenter+profile.baseDepth/2,2*u):null;tracks.push({o,from,to,travel});}});
- for(const {o,from} of tracks){o.position.copy(from.position);o.quaternion.copy(from.quaternion);}syncTuckRecess();draw();
- const duration=matchMedia('(prefers-reduced-motion: reduce)').matches?0:(box.type==='lid'?1000:700),start=performance.now();
- function frame(now){const t=duration?Math.min(1,(now-start)/duration):1,e=t*t*(3-2*t);for(const {o,from,to,travel} of tracks){if(travel){const pose=travel(t);o.position.copy(pose.position);o.quaternion.copy(pose.quaternion);}else{o.position.lerpVectors(from.position,to.position,e);o.quaternion.slerpQuaternions(from.quaternion,to.quaternion,e);}}syncTuckRecess();draw();stage.dataset.lidAnimating=String(t<1);if(t<1)lidAnimation=requestAnimationFrame(frame);else{finishLidAnimation();draw();save();}}lidAnimation=requestAnimationFrame(frame);
+ const tracks=[];for(const root of [model,companion])root.traverse(o=>{const from=previous.get(o.name);if(from){
+  const to={position:o.position.clone(),quaternion:o.quaternion.clone()},u=330/Math.max(box.width,box.height,box.depth),w=box.width*u,h=box.height*u,d=box.depth*u;
+  o.userData.lidTarget=to;let travel=null;
+  if(box.type==='lid'&&o.name==='lid'){
+   const base=root.getObjectByName('base'),baseFrom=previous.get('base'),profile=BoxStudio.lidProfile(d,(.2+box.basePeekMM)*u,Math.max(Math.min(1.2*u,d/5),Math.min(box.radius*u,w/6,h/6,d/6)));
+   travel=BoxFeatures.relativeLidTravel(THREE,from,to,baseFrom,{position:base.position.clone()},w,h,d,profile.baseDepth,2*u);
+  }
+  const tuck=o.name==='tuck'?{from:from.tuckOpen??0,to:o.userData.tuckOpen}:null;
+  if(tuck)o.userData.tuckTarget=tuck.to;tracks.push({o,from,to,travel,tuck});
+ }});
+ for(const {o,from,tuck} of tracks){o.position.copy(from.position);o.quaternion.copy(from.quaternion);if(tuck)setTuckOpening(o,tuck.from);}syncTuckRecess();draw();
+ const duration=matchMedia('(prefers-reduced-motion: reduce)').matches?0:(box.type==='lid'?1000:1400),start=performance.now();
+ function frame(now){const t=duration?Math.min(1,(now-start)/duration):1,e=t*t*(3-2*t);for(const {o,from,to,travel,tuck} of tracks){if(travel){const pose=travel(t);o.position.copy(pose.position);o.quaternion.copy(pose.quaternion);}else{o.position.lerpVectors(from.position,to.position,e);o.quaternion.slerpQuaternions(from.quaternion,to.quaternion,e);}if(tuck)setTuckOpening(o,tuck.from+(tuck.to-tuck.from)*t);}syncTuckRecess();draw();stage.dataset.lidAnimating=String(t<1);if(t<1)lidAnimation=requestAnimationFrame(frame);else{finishLidAnimation();draw();save();}}lidAnimation=requestAnimationFrame(frame);
 }
 $('lid-pose').addEventListener('change',animateLidChange);
 $('box-arrangement').addEventListener('change',()=>{if($('box-arrangement').value!=='single'){state.paired=false;$('lid-pose').value='closed';stageFlat();}rebuildBox();save();});
