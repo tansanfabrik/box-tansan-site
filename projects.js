@@ -49,7 +49,7 @@ window.BoxProjects={install(api){
  $('project-load-button').addEventListener('click',()=>$('project-load').click());
  $('project-load').addEventListener('change',e=>{const file=e.target.files[0];e.target.value='';if(!file)return;run(async()=>{
   if(file.size>data.MAX_BYTES)throw new Error('250 MB以下のプロジェクトファイルを選んでください。');
-  notice('保存ファイルを確認しています…');let parsed;try{parsed=JSON.parse(await file.text());}catch{throw new Error('保存ファイルを読み取れませんでした。このツールで保存した作業ファイル（.boxproject）または構図ファイル（.boxview）を選んでください。以前のJSONファイルも開けます。');}
+  notice('保存ファイルを確認しています…');let parsed;try{parsed=JSON.parse(await file.text());}catch{throw new Error('保存ファイルを読み取れませんでした。このツールで保存した作業ファイル（.boxproject）または構図ファイル（.boxview）を選んでください。');}
   const doc=data.validate(parsed,api.schema),composition=doc.kind==='composition'||$('project-load-mode').value==='composition';
   if(composition){const config=doc.kind==='composition'?doc.config:doc.current.config;api.apply(api.withComposition(api.snapshot(),config));notice('構図・照明・背景を適用しました。画像・配置と箱のサイズはそのままです。');dirty=true;return;}
   const loaded=await data.decode(doc);
