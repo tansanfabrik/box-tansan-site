@@ -54,3 +54,19 @@ header .brand img{height:32px}.header-actions{gap:6px}.header-actions button,.bu
 
 .gif-export-row{flex-wrap:wrap}.gif-speed-control{min-width:180px}
 @media(min-width:701px) and (max-width:1250px){.gif-export-row .save-label small{display:none}.gif-export-row #export-gif{padding:8px;gap:5px}}
+
+/* Keep numeric text readable, including decimal points and minus signs. */
+input[type=number]{appearance:textfield;-moz-appearance:textfield;font-variant-numeric:tabular-nums}
+input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-spin-button{-webkit-appearance:none;margin:0}
+.numeric-field .range-entry{display:grid;grid-template-columns:minmax(24px,1fr) max-content auto;gap:7px}
+.numeric-field .range-entry .range-number{width:calc(6ch + 16px);min-width:calc(6ch + 16px);max-width:none;flex:none;padding-inline:7px;letter-spacing:normal}
+.numeric-field{min-width:0}.range-unit:empty{display:none}
+.dimensions input{padding-inline:6px;letter-spacing:normal}.dimensions small{top:0;bottom:auto;right:0}
+.pdf-page-row input{width:calc(6ch + 16px);padding-inline:7px}
+#image-editor .coords{grid-template-columns:repeat(2,minmax(0,1fr))}
+.coords input{padding-inline:7px;letter-spacing:normal}
+.comparison-angle-grid{grid-template-columns:repeat(auto-fit,minmax(145px,1fr))}
+.finish-edit-toolbar{grid-template-columns:repeat(auto-fit,minmax(145px,1fr))}
+.gif-speed-control{min-width:min(100%,260px)}
+@media(max-width:700px){.numeric-field .range-entry .range-number{font-size:16px}.pdf-page-row input,.coords input{font-size:16px}.comparison-angle-grid{grid-template-columns:repeat(auto-fit,minmax(140px,1fr))}.finish-edit-toolbar{grid-template-columns:repeat(auto-fit,minmax(140px,1fr))}}
+.studio .export-bar{flex-wrap:wrap}.studio .export-bar .field{width:136px;flex:0 0 136px}.studio .export-bar .primary{flex:1 0 auto}
