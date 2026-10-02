@@ -91,3 +91,13 @@ footer .reset-all:disabled{opacity:.45;cursor:default}
 #stage #stage-caption{position:absolute;inset:0;z-index:4;pointer-events:none}#stage #stage-caption[hidden]{display:none}#stage.caption-preview-enabled #stage-dimensions,#stage.caption-preview-enabled #stage-hint,#stage.caption-preview-enabled #reference-badge{display:none}
 
 #finish-preview{touch-action:none;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none}#finish-preview[aria-pressed="true"]{background:#e2edff!important;border-color:#2f6bff;color:#124bba;box-shadow:inset 0 0 0 1px #2f6bff}
+
+/* Shared navigation stays within each image, leaving the surrounding form scrollable. */
+.image-view-tools{display:flex;align-items:center;flex-wrap:wrap;gap:6px 10px;padding:7px 10px;font-size:11px;color:var(--muted);background:#f6f7f8;border-bottom:1px solid var(--border)}
+.image-view-tools button{margin-left:auto;padding:4px 9px;font-size:12px;white-space:nowrap}
+.image-panning,.image-panning *{cursor:grabbing!important;user-select:none}
+#finish-edit-stage{position:relative;overflow:hidden}
+#finish-edit-surface{display:contents}
+#finish-edit-canvas{position:absolute}
+#review-dialog .image-review-viewport{position:relative;height:min(55dvh,500px);overflow:hidden;display:block}
+#review-dialog #result-image{position:absolute;max-width:none;max-height:none;object-fit:fill;user-select:none}

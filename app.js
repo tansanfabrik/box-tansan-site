@@ -148,7 +148,8 @@ function faceImage(){return selectedFace==='front'&&frontGuide?frontGuide.image:
 function drawCrop(){
  const image=faceImage();if(!image)return;const c=$('crop-canvas'),width=c.clientWidth,height=c.clientHeight;if(!width||!height)return;
  const ratio=Math.min(devicePixelRatio||1,2);c.width=Math.round(width*ratio);c.height=Math.round(height*ratio);const ctx=c.getContext('2d');ctx.scale(ratio,ratio);
- const scale=Math.min((width-12)/image.naturalWidth,(height-12)/image.naturalHeight),ox=(width-image.naturalWidth*scale)/2,oy=(height-image.naturalHeight*scale)/2;
+ const {scale,ox,oy}=cropNavigation.layout(image.naturalWidth,image.naturalHeight,image);
+ $('crop-zoom-label').textContent=Math.round(cropNavigation.zoom*100)+'%';
  cropView={scale,ox,oy};
  if(finishPreviewHeld){ctx.fillStyle='#fff';ctx.fillRect(ox,oy,image.naturalWidth*scale,image.naturalHeight*scale);ctx.globalAlpha=.16;}
  ctx.drawImage(image,ox,oy,image.naturalWidth*scale,image.naturalHeight*scale);ctx.globalAlpha=1;
@@ -786,6 +787,8 @@ $('use-full-image').addEventListener('click',useSingleImage);
 $('open-image-editor').addEventListener('click',openImageEditor);$('close-image-editor').addEventListener('click',()=>$('image-editor').close());
 new ResizeObserver(drawCrop).observe($('crop-canvas'));
 const cropCanvas=$('crop-canvas');
+const cropNavigation=BoxImageNavigation.attach(cropCanvas,{render:drawCrop,busy:()=>!!cropDrag||exporting||importing});
+$('crop-view-reset').addEventListener('click',()=>cropNavigation.reset());
 function clearFaceGuess(){faceGuess=null;guessGeneration++;$('guess-actions').hidden=true;}
 function syncFrontGuide(){
  const active=!!frontGuide;$('front-guide').hidden=!active;$('specify-front').hidden=active;$('guess-faces').hidden=active;
@@ -852,7 +855,7 @@ cropCanvas.addEventListener('pointerdown',e=>{
  cropCanvas.setPointerCapture(e.pointerId);cropDrag={start,old,id:e.pointerId,mode,screen:[e.clientX,e.clientY],moved:false};cropCanvas.style.cursor=BoxCrop.cursor(mode);
 });
 cropCanvas.addEventListener('pointermove',e=>{
- if(!sourceImage||!cropView)return;
+ if(!sourceImage||!cropView||cropNavigation.panning)return;
  if(!cropDrag){cropCanvas.style.cursor=BoxCrop.cursor(cropHit(e));return;}
  if(e.pointerId!==cropDrag.id)return;e.preventDefault();
  if(!cropDrag.moved&&Math.hypot(e.clientX-cropDrag.screen[0],e.clientY-cropDrag.screen[1])<2)return;
@@ -950,6 +953,16 @@ async function loadSample(preserveColors=false,replaceImport=false){
 }
 $('sample').addEventListener('click',async()=>{await loadSample(false,true);openImageEditor();});
 $('close-review').addEventListener('click',()=>$('review-dialog').close());
+const resultImage=$('result-image'),resultHost=resultImage.parentElement;
+const resultNavigation=BoxImageNavigation.attach(resultHost,{render:()=>{
+ if(!resultImage.naturalWidth)return;
+ const {scale,ox,oy}=resultNavigation.layout(resultImage.naturalWidth,resultImage.naturalHeight,resultImage.src);
+ resultImage.style.width=resultImage.naturalWidth*scale+'px';resultImage.style.height=resultImage.naturalHeight*scale+'px';resultImage.style.left=ox+'px';resultImage.style.top=oy+'px';
+}});
+resultImage.addEventListener('load',()=>resultNavigation.reset());
+new ResizeObserver(()=>resultNavigation.setZoom(resultNavigation.zoom)).observe(resultHost);
+$('result-view-reset').addEventListener('click',()=>resultNavigation.reset());
+
 for(const tablist of document.querySelectorAll('[role="tablist"]')){
  const tabs=[...tablist.querySelectorAll('[role="tab"]')];
  const choose=button=>{for(const tab of tabs){const active=tab===button;tab.setAttribute('aria-selected',String(active));tab.tabIndex=active?0:-1;$(tab.getAttribute('aria-controls')).hidden=!active;}drawCrop();};
