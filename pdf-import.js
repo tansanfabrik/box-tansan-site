@@ -16,7 +16,10 @@
   catch(error){await task.destroy().catch(()=>{});throw error;}
   finally{signal?.removeEventListener('abort',abort);}
  }
- async function render(doc,pageNumber,signal){
+ async function inspect(doc,pageNumber,signal){
+  const lib=await library(),page=await doc.getPage(pageNumber);cancelled(signal);const layers=await doc.getOptionalContentConfig({intent:'display'}),list=await page.getOperatorList();cancelled(signal);const strokes=BoxLineCleanup.pdfStrokes(list,lib.OPS);return {strokes,layers:[...layers].map(([id,g])=>({id,name:g.name||'名称なし',visible:g.visible}))};
+ }
+ async function render(doc,pageNumber,signal,removal=null){
   cancelled(signal);const page=await doc.getPage(pageNumber);cancelled(signal);
   const original=page.getViewport({scale:1});
   if(!Number.isFinite(original.width)||!Number.isFinite(original.height)||original.width<=0||original.height<=0)throw new Error('PDFのページサイズを読み取れませんでした。');
@@ -24,14 +27,17 @@
   const scale=Math.min(300/72,8192/Math.max(original.width,original.height),Math.sqrt(24000000/(original.width*original.height)));
   const viewport=page.getViewport({scale}),canvas=document.createElement('canvas');canvas.width=Math.max(2,Math.floor(viewport.width));canvas.height=Math.max(2,Math.floor(viewport.height));
   const layers=await doc.getOptionalContentConfig({intent:'display'});cancelled(signal);
+  const initialVisibility=[...layers].map(([id,g])=>[id,g.visible]);
+  if(removal?.layers)for(const id of removal.layers)layers.setVisibility(id,false);
+  const removed=new Set(removal?.indices||[]);
   const hiddenLayers=[...layers].map(([,group])=>group).filter(group=>!group.visible).map(group=>group.name||'名称なし');
-  const task=page.render({canvasContext:canvas.getContext('2d'),viewport,optionalContentConfigPromise:Promise.resolve(layers),background:'rgb(255,255,255)'});
+  const task=page.render({canvasContext:canvas.getContext('2d'),viewport,optionalContentConfigPromise:Promise.resolve(layers),background:'rgb(255,255,255)',operationsFilter:removed.size?index=>!removed.has(index):null});
   const abort=()=>task.cancel();signal?.addEventListener('abort',abort,{once:true});let url;
   try{
    await task.promise;cancelled(signal);
    const blob=await new Promise((resolve,reject)=>canvas.toBlob(b=>b?resolve(b):reject(new Error('PDFの描画に失敗しました。')),'image/png'));cancelled(signal);
    url=URL.createObjectURL(blob);const image=new Image();image.src=url;await image.decode();cancelled(signal);image.pdfImport='PDFの表示範囲を約'+Math.round(scale*72)+' dpiで読み込みました。TrimBoxでの仕上がり切り抜きは未実施です。'+(hiddenLayers.length?'PDFの設定で非表示のレイヤー：'+hiddenLayers.join('、')+'。':'非表示のレイヤーはありません。');return image;
-  }finally{signal?.removeEventListener('abort',abort);if(url)URL.revokeObjectURL(url);canvas.width=canvas.height=1;page.cleanup();}
+  }finally{for(const [id,visible] of initialVisibility)layers.setVisibility(id,visible,false);signal?.removeEventListener('abort',abort);if(url)URL.revokeObjectURL(url);canvas.width=canvas.height=1;page.cleanup();}
  }
  function describeError(error){
   if(error?.name==='PasswordException')return 'パスワード付きPDFです。ロックを解除したPDFを選んでください。';
@@ -39,5 +45,5 @@
   if(error?.name==='MissingPDFException')return 'PDFデータを読み込めませんでした。ファイルを選び直してください。';
   return 'PDFを読み込めませんでした。別のPDFを試すか、ページを画像として書き出して読み込んでください。';
  }
- root.BoxPhotoPDF={open,render,describeError};
+ root.BoxPhotoPDF={open,render,inspect,describeError};
 })(globalThis);

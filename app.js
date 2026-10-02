@@ -77,7 +77,7 @@ function texture(image,crop,face,finishMask=null){
   const mask=BoxPrintFinish.prepared(finishMask.image).gray;
   const bounds=BoxPrintFinish.maskRect(crop,{width:image.naturalWidth,height:image.naturalHeight},mask,finishMask.alignment),[mx,my,mw,mh]=bounds;
   ctx.drawImage(mask,mx+inset/w*mw,my+inset/h*mh,mw*(1-2*inset/w),mh*(1-2*inset/h),-sw*scale/2,-sh*scale/2,sw*scale,sh*scale);
- }else ctx.drawImage(image,x+inset,y+inset,sw,sh,-sw*scale/2,-sh*scale/2,sw*scale,sh*scale);
+ }else ctx.drawImage(crop.cleanup?.enabled!==false&&crop.cleanup?.image||image,x+inset,y+inset,sw,sh,-sw*scale/2,-sh*scale/2,sw*scale,sh*scale);
  const t=new THREE.CanvasTexture(c);t.colorSpace=finishMask?THREE.NoColorSpace:THREE.SRGBColorSpace;t.anisotropy=renderer.capabilities.getMaxAnisotropy();return t;
 }
 function disposeModel(){companion.clear();const materials=new Set(),maps=new Set();model.traverse(o=>{if(o.isMesh){o.geometry.dispose();for(const m of Array.isArray(o.material)?o.material:[o.material]){materials.add(m);for(const key of ['map','metalnessMap','roughnessMap','clearcoatMap','clearcoatRoughnessMap'])if(m[key])maps.add(m[key]);}}});for(const map of maps)map.dispose();for(const material of materials)material.dispose();model.clear();}
@@ -142,7 +142,7 @@ function refreshCrop(){
  $('inset').value=c?.inset||0;$('inset-value').textContent=(c?.inset||0)+' px';
  ['x','y','w','h'].forEach((k,i)=>{const input=$('crop-'+k);input.value=c?c.rect[i]:'';input.disabled=!c;});
  $('rotate-crop').disabled=!c;$('clear-face').disabled=!c;$('inset').disabled=!c;
- syncFinishControls();BoxRangeInputs.sync();drawCrop();
+ syncFinishControls();syncCleanupControls();BoxRangeInputs.sync();drawCrop();
 }
 function faceImage(){return selectedFace==='front'&&frontGuide?frontGuide.image:crops[selectedFace]?.image||sourceImage;}
 function drawCrop(){
@@ -152,7 +152,7 @@ function drawCrop(){
  $('crop-zoom-label').textContent=Math.round(cropNavigation.zoom*100)+'%';
  cropView={scale,ox,oy};
  if(finishPreviewHeld){ctx.fillStyle='#fff';ctx.fillRect(ox,oy,image.naturalWidth*scale,image.naturalHeight*scale);ctx.globalAlpha=.16;}
- ctx.drawImage(image,ox,oy,image.naturalWidth*scale,image.naturalHeight*scale);ctx.globalAlpha=1;
+ ctx.drawImage(!faceGuess&&!frontGuide&&crops[selectedFace]?.cleanup?.enabled!==false&&crops[selectedFace]?.cleanup?.image||image,ox,oy,image.naturalWidth*scale,image.naturalHeight*scale);ctx.globalAlpha=1;
  if(($('finish-overlay').checked||finishPreviewHeld)&&crops[selectedFace]?.finish)BoxPrintFinish.paintOverlay(ctx,crops[selectedFace].finish,crops[selectedFace],image,scale,ox,oy);
  const active=crops[selectedFace];if(active){const [x,y,w,h]=active.rect;const px=ox+x*scale,py=oy+y*scale,pw=w*scale,ph=h*scale;
  ctx.fillStyle='#1f30254d';ctx.beginPath();ctx.rect(0,0,width,height);ctx.rect(px,py,pw,ph);ctx.fill('evenodd');ctx.strokeStyle='#0071e3';ctx.lineWidth=2;ctx.strokeRect(px,py,pw,ph);
@@ -166,7 +166,7 @@ function cropPoint(e){const image=faceImage(),rect=$('crop-canvas').getBoundingC
 function updateCrop(){clearFaceGuess();sampleMode=false;refreshCrop();rebuildBox();}
 let activePDF=null,importController=null,importing=false;
 function syncPDFControls(){
- syncFinishControls();
+ syncFinishControls();syncCleanupControls();
  $('reset-all').disabled=!ready||importing||exporting||resetting;
  syncFrontGuide();
  $('pdf-controls').hidden=!activePDF||!!activePDF.face&&activePDF.face!==selectedFace;
@@ -199,7 +199,7 @@ function replaceArtwork(img,name,targetFace){
  const oldSize=[old.naturalWidth,old.naturalHeight],newSize=[img.naturalWidth,img.naturalHeight];
  replacementRatioChanged=Math.abs((newSize[0]/newSize[1])/(oldSize[0]/oldSize[1])-1)>.02;
  for(const [face,crop] of Object.entries(crops)){
-  if(targetFace?face===targetFace:(crop.image||sourceImage)===old){crops[face]=BoxProjectData.rescaleCrop(crop,oldSize,newSize);crops[face].image=img;crops[face].name=name;}
+  if(targetFace?face===targetFace:(crop.image||sourceImage)===old){crops[face]=BoxProjectData.rescaleCrop(crop,oldSize,newSize);crops[face].image=img;crops[face].name=name;delete crops[face].cleanup;}
  }
  if(targetFace&&!crops[targetFace])crops[targetFace]={rect:[0,0,...newSize],rotation:0,inset:0,image:img,name};
  if(!targetFace){sourceImage=img;sourceName=name;for(const crop of Object.values(crops))if(crop.image===img)delete crop.image;}
@@ -215,7 +215,7 @@ async function loadImage(file,targetFace=null,preserve=false){
  try{
   let img;
   if(isPDF){
-   const doc=await BoxPhotoPDF.open(file,signal);candidate={doc,name:file.name,page:1,face:targetFace};img=await BoxPhotoPDF.render(doc,1,signal);
+   const doc=await BoxPhotoPDF.open(file,signal);candidate={doc,name:file.name,page:1,face:targetFace};img=await BoxPhotoPDF.render(doc,1,signal);candidate.image=img;
   }else{
    url=URL.createObjectURL(file);img=new Image();img.src=url;await img.decode();
    if(img.naturalWidth<2||img.naturalHeight<2||img.naturalWidth*img.naturalHeight>65000000||Math.max(img.naturalWidth,img.naturalHeight)>16000)throw new Error('画像の縦横を16,000 px以下・合計6,500万画素以下にしてください。');
@@ -235,7 +235,7 @@ async function selectPDFPage(requested){
  try{
   const img=await BoxPhotoPDF.render(current.doc,page,signal);
   if(generation!==uploadGeneration||signal.aborted)return;
-  const name=current.name+' · '+page+' / '+current.doc.numPages+' ページ';if(current.face)applyFaceSource(img,name,current.face);else applySource(img,name);current.page=page;
+  const name=current.name+' · '+page+' / '+current.doc.numPages+' ページ';if(current.face)applyFaceSource(img,name,current.face);else applySource(img,name);current.page=page;current.image=img;
   message(page+' ページ目を読み込みました。各面の範囲を合わせてください。');
  }catch(error){if(generation===uploadGeneration&&!signal.aborted){console.error(error);message(BoxPhotoPDF.describeError(error),true);}}
  finally{if(generation===uploadGeneration){importing=false;syncPDFControls();}}
@@ -733,6 +733,22 @@ const dropzone=$('dropzone');
 dropzone.addEventListener('drop',e=>loadImage(e.dataTransfer.files[0]));
 window.addEventListener('dragover',e=>e.preventDefault());window.addEventListener('drop',e=>e.preventDefault());
 document.querySelectorAll('[data-face]').forEach(button=>button.addEventListener('click',()=>{selectedFace=button.dataset.face;refreshCrop();syncPDFControls();}));
+function syncCleanupControls(){
+ const crop=crops[selectedFace],cleanup=crop?.cleanup;
+ $('open-line-cleanup').disabled=!crop||!!frontGuide||importing||exporting;$('line-enabled-row').hidden=!cleanup;$('clear-line-cleanup').hidden=!cleanup;$('line-enabled').checked=cleanup?.enabled!==false;
+ $('line-summary').textContent=cleanup?(cleanup.enabled===false?'元画像を表示中。':cleanup.name+'：適用中。')+'面の推測には線のある元画像を使います。':'';
+}
+$('open-line-cleanup').addEventListener('click',()=>{
+ const face=selectedFace,crop=crops[face],image=faceImage();if(!crop||!image||frontGuide||importing||exporting)return;
+ const pdf=activePDF?.image===image?{doc:activePDF.doc,page:activePDF.page}:null;
+ BoxLineCleanupEditor.open({image,crop,pdf,faceName:faceNames[face],onApply:(cleanup,all)=>{
+  if(crops[face]!==crop||(crop.image||sourceImage)!==image)return;
+  for(const [key,item] of Object.entries(crops))if(key===face||(all&&(item.image||sourceImage)===image))item.cleanup={...cleanup};
+  updateCrop();
+ }});
+});
+$('line-enabled').addEventListener('change',()=>{const crop=crops[selectedFace];if(crop?.cleanup){crop.cleanup={...crop.cleanup,enabled:$('line-enabled').checked};updateCrop();}});
+$('clear-line-cleanup').addEventListener('click',()=>{const crop=crops[selectedFace];if(crop){delete crop.cleanup;updateCrop();}});
 function syncFinishControls(){
  const crop=crops[selectedFace],finish=crop?.finish;
  $('finish-face-name').textContent=faceNames[selectedFace];$('finish-kind').value=finish?.kind||'none';$('finish-alignment').value=finish?.alignment||'source';
@@ -741,7 +757,7 @@ function syncFinishControls(){
 }
 $('finish-edit-button').addEventListener('click',()=>{
  const face=selectedFace,crop=crops[face];if(!crop||importing||exporting)return;
- BoxFinishEditor.open({image:faceImage(),crop,faceName:faceNames[face],kind:$('finish-kind').value,onApply:finish=>{
+ BoxFinishEditor.open({image:crop.cleanup?.enabled!==false&&crop.cleanup?.image||faceImage(),crop,faceName:faceNames[face],kind:$('finish-kind').value,onApply:finish=>{
   if(crops[face]!==crop)return;crop.finish=finish;if(state.lighting==='neutral'){state.lighting='studio';applyLighting(true);}updateCrop();
  }});
 });
@@ -859,7 +875,8 @@ $('apply-guess').addEventListener('click',()=>{
  }
  for(const [face,item] of Object.entries(proposal.faces)){
   if(proposal.anchored&&face==='front')continue;
-  crops[face]={rect:normalizeRect(item.rect,proposal.image),rotation:item.rotation,inset:item.inset||0,image:proposal.image,name:'推測した'+faceNames[face]};
+  const cleanup=(crops[face]?.image||sourceImage)===proposal.image?crops[face]?.cleanup:null;
+  crops[face]={...(cleanup?{cleanup:{...cleanup}}:{}),rect:normalizeRect(item.rect,proposal.image),rotation:item.rotation,inset:item.inset||0,image:proposal.image,name:'推測した'+faceNames[face]};
  }
  const missing=proposal.anchored?proposal.missing:[];cancelFrontGuide(false);selectedFace='front';clearFaceGuess();clearAutoLayoutNotice();sampleMode=false;$('preview-badge').textContent='面の候補を反映しました';$('guess-message').textContent='配置を反映しました。'+(missing.length?'未設定の面（'+missing.map(f=>faceNames[f]).join('・')+'）は、面を選んで範囲を指定してください。':'各面の文字の向きを確認してください。');refreshCrop();rebuildBox();
 });
@@ -990,7 +1007,7 @@ const projectSchema={
  box:{width:[30,400],height:[30,400],depth:[3,250],radius:[.2,4],color:'color',baseColor:'color',interiorColor:'color',basePeekMM:[0,100],baseArtwork:'boolean',tuckNotch:'boolean',type:{values:['lid','tuck']}},
  output:Object.fromEntries(outputIds.map(id=>{const el=$(id);return[id,el.type==='checkbox'?'boolean':el.type==='color'?'color':{...(id==='gif-mode'?{default:'rotate'}:id==='gif-angle'?{default:'60'}:{}),values:id==='gif-angle'?Array.from({length:171},(_,i)=>String(10+i)):el.tagName==='SELECT'?[...el.options].map(o=>o.value):Array.from({length:299},(_,i)=>String(Number((.1+i*.05).toFixed(2))))}];}))
 };
-function projectSnapshot(){return{config:{state:BoxProjectData.copy({...state,y:wrap(state.y)}),box:{...box},output:readOutput()},sourceImage,sourceName,sampleMode,selectedFace,crops:Object.fromEntries(Object.entries(crops).map(([f,c])=>[f,{...c,rect:[...c.rect],...(c.finish?{finish:{...c.finish}}:{})}]))};}
+function projectSnapshot(){return{config:{state:BoxProjectData.copy({...state,y:wrap(state.y)}),box:{...box},output:readOutput()},sourceImage,sourceName,sampleMode,selectedFace,crops:Object.fromEntries(Object.entries(crops).map(([f,c])=>[f,{...c,rect:[...c.rect],...(c.finish?{finish:{...c.finish}}:{}),...(c.cleanup?{cleanup:{...c.cleanup}}:{})}]))};}
 function projectComposition(snapshot,config){
  const next={...snapshot,config:BoxProjectData.copy(snapshot.config)};
  next.config.state=BoxProjectData.copy(config.state);
@@ -1001,7 +1018,7 @@ function applyProjectSnapshot(snapshot,keepPDF=false){
  cancelAnimationFrame(animation);stopFocusPreview();clearFaceGuess();frontGuide=null;clearAutoLayoutNotice();
  state=BoxProjectData.copy(snapshot.config.state);box={...snapshot.config.box};
  sourceImage=snapshot.sourceImage;sourceName=snapshot.sourceName;sampleMode=snapshot.sampleMode;selectedFace=snapshot.selectedFace;
- crops=Object.fromEntries(Object.entries(snapshot.crops).map(([f,c])=>[f,{...c,rect:[...c.rect],...(c.finish?{finish:{...c.finish}}:{})}]));
+ crops=Object.fromEntries(Object.entries(snapshot.crops).map(([f,c])=>[f,{...c,rect:[...c.rect],...(c.finish?{finish:{...c.finish}}:{}),...(c.cleanup?{cleanup:{...c.cleanup}}:{})}]));
  for(const id of outputIds){const el=$(id);if(el.type==='checkbox')el.checked=snapshot.config.output[id];else el.value=snapshot.config.output[id];}
  if(!keepPDF){releasePDF(activePDF);activePDF=null;$('result').hidden=true;$('result-image').removeAttribute('src');if(lastURL){URL.revokeObjectURL(lastURL);lastURL=null;}}
  for(const key of ['width','height','depth'])$('box-'+key).value=box[key];
