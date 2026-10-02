@@ -32,7 +32,7 @@
   return {width:Math.round(width),height:Math.round(height),dpi:Math.round(Math.min(width/mmWidth,height/mmHeight)*25.4)};
  }
  function gifTiming(value){
-  const speed=Number.isFinite(Number(value))&&Number(value)>0?Math.min(5,Math.max(.1,Number(value))):1,totalCS=Math.round(300/speed);
+  const speed=Number.isFinite(Number(value))&&Number(value)>0?Math.min(15,Math.max(.1,Number(value))):1,totalCS=Math.round(300/speed);
   // Slower turns gain frames; faster turns keep every delay at least 20ms for GIF players.
   const frames=Math.min(150,Math.max(50,Math.round(50/Math.sqrt(speed))),Math.floor(totalCS/2));
   const delays=Array.from({length:frames},(_,i)=>(Math.round((i+1)*totalCS/frames)-Math.round(i*totalCS/frames))*10);
