@@ -31,6 +31,9 @@
   const mmHeight=face==='top'||face==='bottom'?box.depth:box.height;
   return {width:Math.round(width),height:Math.round(height),dpi:Math.round(Math.min(width/mmWidth,height/mmHeight)*25.4)};
  }
+ // Reserve the last quarter of the GIF slider for fast turns (5x–15x).
+ function gifSpeedPosition(speed){const s=Math.min(15,Math.max(.1,Number(speed)||.1));return s<=5?(s-.1)/4.9*75:75+(s-5)/10*25;}
+ function gifSpeedAtPosition(position){const p=Math.min(100,Math.max(0,Number(position)||0)),s=p<=75?.1+p/75*4.9:5+(p-75)/25*10;return Math.round(s*20)/20;}
  function gifTiming(value){
   const speed=Number.isFinite(Number(value))&&Number(value)>0?Math.min(15,Math.max(.1,Number(value))):1,totalCS=Math.round(300/speed);
   // Slower turns gain frames; faster turns keep every delay at least 20ms for GIF players.
@@ -53,5 +56,5 @@
   let radius=0;for(let i=0;i<zero.length;i++){const c=(zero[i]+half[i])/2,a=(zero[i]-half[i])/2,b=quarter[i]-c;radius=Math.max(radius,Math.abs(c)+Math.hypot(a,b));}return radius;
  }
  function pairCenters(a,b,gap){const total=a[1]-a[0]+b[1]-b[0]+gap;return[-total/2-a[0],total/2-b[1]];}
- const api={faceBox,faceRatio,uprightTurn,uprightCrop,ratioMismatch,fitRect,looksLikeCross,crossPixels,faceResolution,gifTiming,zip,crc32,lidProfile,basePeekLimit,oppositeYaw,rotationHalfWidth,pairCenters};if(typeof module==='object'&&module.exports)module.exports=api;else root.BoxStudio=api;
+ const api={faceBox,faceRatio,uprightTurn,uprightCrop,ratioMismatch,fitRect,looksLikeCross,crossPixels,faceResolution,gifSpeedPosition,gifSpeedAtPosition,gifTiming,zip,crc32,lidProfile,basePeekLimit,oppositeYaw,rotationHalfWidth,pairCenters};if(typeof module==='object'&&module.exports)module.exports=api;else root.BoxStudio=api;
 })(globalThis);
