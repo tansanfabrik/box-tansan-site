@@ -1,6 +1,14 @@
 (function(root){
 'use strict';
-const finishes={matte:{roughness:.88,specularIntensity:.18,clearcoat:0,clearcoatRoughness:.85},semi:{roughness:.57,specularIntensity:.38,clearcoat:.12,clearcoatRoughness:.48},gloss:{roughness:.22,specularIntensity:.8,clearcoat:1,clearcoatRoughness:.1}};
+// Smooth coated stock: roughness controls the width of reflection, never paper grain.
+const finishes={matte:{roughness:.72,specularIntensity:.28,clearcoat:.12,clearcoatRoughness:.52},semi:{roughness:.58,specularIntensity:.32,clearcoat:.48,clearcoatRoughness:.26},gloss:{roughness:.48,specularIntensity:.32,clearcoat:1,clearcoatRoughness:.075}};
+function softboxGeometry(T,w,h){
+ const geometry=new T.PlaneGeometry(w,h,32,32),uv=geometry.attributes.uv,colors=[];
+ // Feather only the perimeter, with a gentle bright centre. No noise or surface relief.
+ const smooth=x=>{const t=Math.max(0,Math.min(1,x));return t*t*(3-2*t);};
+ for(let i=0;i<uv.count;i++){const x=uv.getX(i)*2-1,y=uv.getY(i)*2-1;const value=smooth((1-Math.abs(x))/.22)*smooth((1-Math.abs(y))/.16)*(1.12-.12*(x*x+y*y)/2);colors.push(value,value,value);}
+ geometry.setAttribute('color',new T.Float32BufferAttribute(colors,3));return geometry;
+}
 const groundUp=[0,1,0];
 const flatPose={x:90,y:0,z:-25,cameraAzimuth:0,cameraElevation:35};
 const viewPresets={angle:{x:0,y:30,z:0,cameraAzimuth:0,cameraElevation:0},'angle-right':{x:0,y:-30,z:0,cameraAzimuth:0,cameraElevation:0},'angle-back':{x:0,y:-150,z:0,cameraAzimuth:0,cameraElevation:0},overhead:{x:0,y:30,z:0,cameraAzimuth:0,cameraElevation:20},'flat-overhead':{...flatPose},'top':{x:90,y:0,z:0,cameraAzimuth:0,cameraElevation:90},'low-angle':{x:0,y:-25,z:8,cameraAzimuth:0,cameraElevation:-20},front:{x:0,y:0,z:0,cameraAzimuth:0,cameraElevation:0},back:{x:0,y:180,z:0,cameraAzimuth:0,cameraElevation:0},side:{x:90,y:0,z:90,cameraAzimuth:0,cameraElevation:0}};
@@ -189,5 +197,5 @@ function lightPosition(base,azimuth=0,elevation=0,distance=100){
  const el=Math.max(-85,Math.min(85,Math.atan2(y,Math.hypot(x,z))*180/Math.PI+elevation))*Math.PI/180;
  return [r*Math.cos(el)*Math.sin(az),r*Math.sin(el),r*Math.cos(el)*Math.cos(az)];
 }
-const api={relativeLidTravel,liftedLidPose,tuckOpeningPose,tuckTabGeometry,gifPreviewRotation,viewTransition,lidTravel,lightPosition,tuckFlapGeometry,tuckProfile,tuckTongueGeometry,tuckNotchGeometry,orbitCamera,spinPose,groundUp,viewPresets,flatPose,finishes,references,layout,hollow,arrange,reference,dragRotation,companionRotation};if(typeof module==='object'&&module.exports)module.exports=api;else root.BoxFeatures=api;
+const api={softboxGeometry,relativeLidTravel,liftedLidPose,tuckOpeningPose,tuckTabGeometry,gifPreviewRotation,viewTransition,lidTravel,lightPosition,tuckFlapGeometry,tuckProfile,tuckTongueGeometry,tuckNotchGeometry,orbitCamera,spinPose,groundUp,viewPresets,flatPose,finishes,references,layout,hollow,arrange,reference,dragRotation,companionRotation};if(typeof module==='object'&&module.exports)module.exports=api;else root.BoxFeatures=api;
 })(globalThis);

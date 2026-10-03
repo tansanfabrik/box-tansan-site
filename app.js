@@ -243,7 +243,7 @@ async function selectPDFPage(requested){
 $('pdf-prev').addEventListener('click',()=>selectPDFPage(activePDF?.page-1));
 $('pdf-next').addEventListener('click',()=>selectPDFPage(activePDF?.page+1));
 $('pdf-page').addEventListener('change',()=>selectPDFPage($('pdf-page').value));
-function paper(map,color=0xffffff){if(state.lighting==='neutral')return new THREE.MeshBasicMaterial({map,color,toneMapped:false});return new THREE.MeshPhysicalMaterial({map,color,metalness:0,ior:1.46,...BoxFeatures.finishes[$('paper-finish').value],envMapIntensity:lightingStyles[state.lighting].environmentIntensity??.72});}
+function paper(map,color=0xffffff){if(state.lighting==='neutral')return new THREE.MeshBasicMaterial({map,color,toneMapped:false});return new THREE.MeshPhysicalMaterial({map,color,metalness:0,ior:1.48,...BoxFeatures.finishes[$('paper-finish').value],envMapIntensity:lightingStyles[state.lighting].environmentIntensity??.72});}
 // Independent face UVs follow the physical folding of the supplied net.
 const axes=[
  {name:'right',n:[1,0,0],u:[0,0,-1],v:[0,1,0]},
@@ -361,9 +361,9 @@ function applyLighting(rebuildEnvironment=false){
   clearTimeout(environmentTimer);environmentTimer=0;
   const room=new THREE.Scene();room.background=new THREE.Color(style.room,style.room,style.room).multiplyScalar(detail.ambient/100).multiply(tint);
   const panels=new THREE.Group();panels.rotation.copy(lightingRig.rotation);room.add(panels);
-  function softbox(x,y,z,w,h,power,color){if(power<=0)return;const material=new THREE.MeshBasicMaterial({color:new THREE.Color(color).multiply(tint).multiplyScalar(power),side:THREE.DoubleSide});const m=new THREE.Mesh(new THREE.PlaneGeometry(w*spread,h*spread),material);m.position.set(x,y,z);m.lookAt(0,0,0);panels.add(m);}
-  softbox(...BoxFeatures.lightPosition([-650,650,850],detail.keyAzimuth,detail.keyElevation,detail.keyDistance),900,1100,style.powers[0]*detail.key/100,style.colors[0]);softbox(700,150,450,650,950,style.powers[1]*detail.fill/100,style.colors[1]);softbox(300,550,-800,750,900,style.powers[2]*detail.rim/100,style.colors[2]);softbox(0,1100,0,1000,850,style.powers[3]*detail.ambient/100,style.colors[0]);
-  const previous=environmentTarget;environmentTarget=pmrem.fromScene(room,.03,1,6000);scene.environment=environmentTarget.texture;if(previous)previous.dispose();
+  function softbox(x,y,z,w,h,power,color){if(power<=0)return;const material=new THREE.MeshBasicMaterial({color:new THREE.Color(color).multiply(tint).multiplyScalar(power),vertexColors:true,toneMapped:false,side:THREE.DoubleSide});const m=new THREE.Mesh(BoxFeatures.softboxGeometry(THREE,w*spread,h*spread),material);m.position.set(x,y,z);m.lookAt(0,0,0);panels.add(m);}
+  softbox(...BoxFeatures.lightPosition([-650,650,850],detail.keyAzimuth,detail.keyElevation,detail.keyDistance),750,1100,style.powers[0]*detail.key/100,style.colors[0]);softbox(700,150,450,500,1000,style.powers[1]*detail.fill/100,style.colors[1]);softbox(300,550,-800,420,1100,style.powers[2]*detail.rim/100,style.colors[2]);softbox(0,1100,0,1000,850,style.powers[3]*detail.ambient/100,style.colors[0]);
+  const previous=environmentTarget;environmentTarget=pmrem.fromScene(room,.008,1,6000);scene.environment=environmentTarget.texture;if(previous)previous.dispose();
   room.traverse(o=>{if(o.isMesh){o.geometry.dispose();o.material.dispose();}});
  }
  draw();

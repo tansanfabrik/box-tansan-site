@@ -19,14 +19,16 @@ function apply(T,material,mask,kind){
  if(kind==='varnish'){
   if(!material.isMeshPhysicalMaterial){mask.dispose();return material;}
   const base=material.clearcoat,rough=material.clearcoatRoughness,roughCanvas=canvas(),rctx=roughCanvas.getContext('2d'),rdata=rctx.createImageData(source.width,source.height);
-  for(let i=0;i<data.data.length;i+=4){const m=data.data[i]/255,c=Math.round((base+(1-base)*m)*255),r=Math.round((rough*(1-m)+.08*m)*255);data.data[i]=data.data[i+1]=data.data[i+2]=c;rdata.data[i]=rdata.data[i+1]=rdata.data[i+2]=r;rdata.data[i+3]=255;}
+  for(let i=0;i<data.data.length;i+=4){const m=data.data[i]/255,c=Math.round((base+(1-base)*m)*255),r=Math.round((rough*(1-m)+.065*m)*255);data.data[i]=data.data[i+1]=data.data[i+2]=c;rdata.data[i]=rdata.data[i+1]=rdata.data[i+2]=r;rdata.data[i+3]=255;}
   ctx.putImageData(data,0,0);rctx.putImageData(rdata,0,0);mask.needsUpdate=true;material.clearcoat=1;material.clearcoatMap=mask;material.clearcoatRoughness=1;material.clearcoatRoughnessMap=map(roughCanvas);
  }else{
-  const art=material.map.image,artCtx=art.getContext('2d'),pixels=artCtx.getImageData(0,0,art.width,art.height),foil=kind==='gold'?[233,184,87]:[221,225,231];
+  const art=material.map.image,artCtx=art.getContext('2d'),pixels=artCtx.getImageData(0,0,art.width,art.height),foil=kind==='gold'?[245,202,114]:[239,241,244];
   const roughCanvas=canvas(),rctx=roughCanvas.getContext('2d'),rdata=rctx.createImageData(source.width,source.height),base=material.roughness??.8;
-  for(let i=0;i<data.data.length;i+=4){const m=data.data[i]/255;for(let k=0;k<3;k++)pixels.data[i+k]=Math.round(pixels.data[i+k]*(1-m)+foil[k]*m);const r=Math.round((base*(1-m)+.19*m)*255);rdata.data[i]=rdata.data[i+1]=rdata.data[i+2]=r;rdata.data[i+3]=255;}
+  for(let i=0;i<data.data.length;i+=4){const m=data.data[i]/255;for(let k=0;k<3;k++)pixels.data[i+k]=Math.round(pixels.data[i+k]*(1-m)+foil[k]*m);const r=Math.round((base*(1-m)+.13*m)*255);rdata.data[i]=rdata.data[i+1]=rdata.data[i+2]=r;rdata.data[i+3]=255;}
   artCtx.putImageData(pixels,0,0);material.map.needsUpdate=true;
-  if(material.isMeshPhysicalMaterial){rctx.putImageData(rdata,0,0);material.metalness=1;material.metalnessMap=mask;material.roughness=1;material.roughnessMap=map(roughCanvas);}else mask.dispose();
+  if(material.isMeshPhysicalMaterial){rctx.putImageData(rdata,0,0);material.metalness=1;material.metalnessMap=mask;material.roughness=1;material.roughnessMap=map(roughCanvas);
+   // Exposed foil reflects as metal; retain PP only on the unfoiled printed stock.
+   if(material.clearcoat>0){const coating=canvas(),cc=coating.getContext('2d'),values=cc.createImageData(source.width,source.height);for(let i=0;i<values.data.length;i+=4){const value=255-data.data[i];values.data[i]=values.data[i+1]=values.data[i+2]=value;values.data[i+3]=255;}cc.putImageData(values,0,0);material.clearcoatMap=map(coating);}}else mask.dispose();
  }
  material.needsUpdate=true;return material;
 }
