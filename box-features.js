@@ -70,7 +70,7 @@ function tuckTabGeometry(T,w,height,corner,u,fold=0,curl=0){
 }
 // Convert the existing exterior into an open tray with a paper lining and thickness at its rim.
 function hollow(T,group,w,h,d,openPositive,u,interiorColor=0xe7e1d5,radius=0){
- const removed=group.getObjectByName(group.name+'-'+(openPositive?'front':'back'));if(removed){group.remove(removed);removed.geometry.dispose();for(const key of ['map','metalnessMap','roughnessMap','clearcoatMap','clearcoatRoughnessMap'])removed.material[key]?.dispose();removed.material.dispose();}
+ const removed=group.getObjectByName(group.name+'-'+(openPositive?'front':'back'));if(removed){group.remove(removed);removed.geometry.dispose();for(const key of ['map','metalnessMap','roughnessMap','clearcoatMap','clearcoatRoughnessMap','specularIntensityMap','clearcoatNormalMap'])removed.material[key]?.dispose();removed.material.dispose();}
  const t=Math.min(1.2*u,d/5,w*.005,h*.005),inner=new T.MeshStandardMaterial({color:interiorColor,roughness:.95,side:T.DoubleSide});
  const plane=(W,H,x,y,z,rx,ry,name)=>{const m=new T.Mesh(new T.PlaneGeometry(W,H),inner);m.position.set(x,y,z);m.rotation.set(rx,ry,0);m.name=name;m.castShadow=m.receiveShadow=true;group.add(m);};
  const inset=Math.max(t,radius);

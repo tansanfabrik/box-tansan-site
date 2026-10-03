@@ -80,7 +80,7 @@ function texture(image,crop,face,finishMask=null){
  }else ctx.drawImage(crop.cleanup?.enabled!==false&&crop.cleanup?.image||image,x+inset,y+inset,sw,sh,-sw*scale/2,-sh*scale/2,sw*scale,sh*scale);
  const t=new THREE.CanvasTexture(c);t.colorSpace=finishMask?THREE.NoColorSpace:THREE.SRGBColorSpace;t.anisotropy=renderer.capabilities.getMaxAnisotropy();return t;
 }
-function disposeModel(){companion.clear();const materials=new Set(),maps=new Set();model.traverse(o=>{if(o.isMesh){o.geometry.dispose();for(const m of Array.isArray(o.material)?o.material:[o.material]){materials.add(m);for(const key of ['map','metalnessMap','roughnessMap','clearcoatMap','clearcoatRoughnessMap'])if(m[key])maps.add(m[key]);}}});for(const map of maps)map.dispose();for(const material of materials)material.dispose();model.clear();}
+function disposeModel(){companion.clear();const materials=new Set(),maps=new Set();model.traverse(o=>{if(o.isMesh){o.geometry.dispose();for(const m of Array.isArray(o.material)?o.material:[o.material]){materials.add(m);for(const key of ['map','metalnessMap','roughnessMap','clearcoatMap','clearcoatRoughnessMap','specularIntensityMap','clearcoatNormalMap'])if(m[key])maps.add(m[key]);}}});for(const map of maps)map.dispose();for(const material of materials)material.dispose();model.clear();}
 function faceMaterial(face){
  const crop=crops[face];if(!sourceImage||!crop)return paper(null,faceColor(face));
  const material=paper(texture(sourceImage,crop,face));
