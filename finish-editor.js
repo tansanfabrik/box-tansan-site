@@ -11,7 +11,7 @@ function connected(pixels,w,h,x,y,tolerance){
  return selected;
 }
 function rawPoint(x,y,w,h,rotation){switch(rotation){case 90:return[y,h-x];case 180:return[w-x,h-y];case 270:return[w-y,x];default:return[x,y];}}
-function open({image,crop,faceName,kind,onApply}){
+function open({image,crop,faceName,kind,color,onApply}){
  const $=id=>document.getElementById(id),dialog=$('finish-editor'),canvas=$('finish-edit-canvas'),host=$('finish-edit-stage'),ctx=canvas.getContext('2d'),events=new AbortController();
  const on=(el,event,fn,opts={})=>el.addEventListener(event,fn,{...opts,signal:events.signal});
  const make=(w,h)=>{const c=document.createElement('canvas');c.width=w;c.height=h;return c;};
@@ -22,6 +22,8 @@ function open({image,crop,faceName,kind,onApply}){
  let history=[],pending=null,stroke=null,hover=null,closed=false,busy=false,frame=0;
  const cw=rotation%180?h:w,ch=rotation%180?w:h;canvas.width=cw;canvas.height=ch;
  $('finish-edit-title').textContent=faceName+'の加工範囲を選ぶ';$('finish-edit-kind').value=kind==='none'?'varnish':kind;$('finish-edit-tool').value='select';$('finish-edit-tolerance').value='18';$('finish-edit-size').value='30';$('finish-edit-zoom').value='100';
+ $('finish-edit-color').value=BoxPrintFinish.cleanColor(color||crop.finish?.color);$('finish-edit-color-hex').value=$('finish-edit-color').value;$('finish-edit-color-hex').setCustomValidity('');
+ const showColor=()=>{$('finish-edit-color-row').hidden=$('finish-edit-kind').value!=='color';};showColor();on($('finish-edit-kind'),'change',showColor);BoxPrintFinish.bindColorInputs($('finish-edit-color'),$('finish-edit-color-hex'),()=>{},{signal:events.signal});
  $('finish-edit-status').textContent='クリックで、つながった近い色の部分を追加します。許容範囲は直前のクリックに反映されます。';
  const snapshot=()=>mctx.getImageData(0,0,w,h);
  function push(){history.push(snapshot());if(history.length>8)history.shift();$('finish-edit-undo').disabled=false;}
@@ -42,7 +44,7 @@ function open({image,crop,faceName,kind,onApply}){
  on($('finish-edit-undo'),'click',()=>{if(!history.length)return;mctx.putImageData(history.pop(),0,0);pending=null;$('finish-edit-undo').disabled=!history.length;$('finish-edit-status').textContent='1操作戻しました。';schedule();});
  on($('finish-edit-clear'),'click',()=>{push();pending=null;mctx.clearRect(0,0,w,h);$('finish-edit-status').textContent='加工範囲をすべて消しました。「ひとつ戻す」で取り消せます。';schedule();});
  on($('finish-edit-cancel'),'click',()=>{if(!busy)dialog.close();});on(dialog,'cancel',e=>{if(busy)e.preventDefault();});
- on($('finish-edit-apply'),'click',async()=>{if(busy)return;busy=true;const controls=[...dialog.querySelectorAll('button,input,select')].map(el=>[el,el.disabled]);controls.forEach(([el])=>el.disabled=true);$('finish-edit-status').textContent='加工範囲を反映しています…';try{const plate=make(w,h),pctx=plate.getContext('2d');pctx.fillStyle='#fff';pctx.fillRect(0,0,w,h);pctx.drawImage(mask,0,0);const result=new Image();result.src=plate.toDataURL('image/png');await result.decode();onApply({image:result,name:'クリック・ブラシで指定',kind:$('finish-edit-kind').value,alignment:'face'});dialog.close();plate.width=plate.height=1;}catch(error){console.error(error);$('finish-edit-status').textContent='反映できませんでした。もう一度お試しください。';}finally{busy=false;controls.forEach(([el,disabled])=>el.disabled=disabled);}});
+ on($('finish-edit-apply'),'click',async()=>{if(busy)return;busy=true;const controls=[...dialog.querySelectorAll('button,input,select')].map(el=>[el,el.disabled]);controls.forEach(([el])=>el.disabled=true);$('finish-edit-status').textContent='加工範囲を反映しています…';try{const plate=make(w,h),pctx=plate.getContext('2d');pctx.fillStyle='#fff';pctx.fillRect(0,0,w,h);pctx.drawImage(mask,0,0);const result=new Image();result.src=plate.toDataURL('image/png');await result.decode();onApply({image:result,name:'クリック・ブラシで指定',kind:$('finish-edit-kind').value,color:$('finish-edit-color').value,alignment:'face'});dialog.close();plate.width=plate.height=1;}catch(error){console.error(error);$('finish-edit-status').textContent='反映できませんでした。もう一度お試しください。';}finally{busy=false;controls.forEach(([el,disabled])=>el.disabled=disabled);}});
  const observer=new ResizeObserver(fit);observer.observe(host);
  on(dialog,'close',()=>{closed=true;cancelAnimationFrame(frame);events.abort();observer.disconnect();history=[];pending=null;stroke=null;for(const c of [artwork,mask,overlay,canvas])c.width=c.height=1;});
  $('finish-edit-undo').disabled=true;canvas.style.cursor='crosshair';dialog.showModal();BoxRangeInputs.sync();fit();paint();

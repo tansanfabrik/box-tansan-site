@@ -84,7 +84,7 @@ function disposeModel(){companion.clear();const materials=new Set(),maps=new Set
 function faceMaterial(face){
  const crop=crops[face];if(!sourceImage||!crop)return paper(null,faceColor(face));
  const material=paper(texture(sourceImage,crop,face));
- if(crop.finish?.image&&crop.finish.kind!=='none')BoxPrintFinish.apply(THREE,material,texture(sourceImage,crop,face,crop.finish),crop.finish.kind);
+ if(crop.finish?.image&&crop.finish.kind!=='none')BoxPrintFinish.apply(THREE,material,texture(sourceImage,crop,face,crop.finish),crop.finish.kind,crop.finish.color);
  return material;
 }
 function rebuildBox(render=true){
@@ -751,13 +751,14 @@ $('line-enabled').addEventListener('change',()=>{const crop=crops[selectedFace];
 $('clear-line-cleanup').addEventListener('click',()=>{const crop=crops[selectedFace];if(crop){delete crop.cleanup;updateCrop();}});
 function syncFinishControls(){
  const crop=crops[selectedFace],finish=crop?.finish;
+ $('finish-color').value=BoxPrintFinish.cleanColor(finish?.color);$('finish-color-hex').value=$('finish-color').value;$('finish-color-hex').setCustomValidity('');$('finish-color-row').hidden=finish?.kind!=='color';for(const id of ['finish-color','finish-color-hex'])$(id).disabled=!crop||importing||exporting;
  $('finish-face-name').textContent=faceNames[selectedFace];$('finish-kind').value=finish?.kind||'none';$('finish-alignment').value=finish?.alignment||'source';
  $('finish-edit-button').disabled=!crop||importing||exporting;$('finish-upload-button').disabled=!crop||importing||exporting;$('finish-kind').disabled=!crop||importing||exporting;$('finish-alignment').disabled=!finish||importing||exporting;$('finish-preview').disabled=!finish||importing||exporting;
  $('finish-file-name').textContent=finish?.name||'加工用画像はまだ読み込まれていません。';
 }
 $('finish-edit-button').addEventListener('click',()=>{
  const face=selectedFace,crop=crops[face];if(!crop||importing||exporting)return;
- BoxFinishEditor.open({image:crop.cleanup?.enabled!==false&&crop.cleanup?.image||faceImage(),crop,faceName:faceNames[face],kind:$('finish-kind').value,onApply:finish=>{
+ BoxFinishEditor.open({image:crop.cleanup?.enabled!==false&&crop.cleanup?.image||faceImage(),crop,faceName:faceNames[face],kind:$('finish-kind').value,color:$('finish-color').value,onApply:finish=>{
   if(crops[face]!==crop)return;crop.finish=finish;if(state.lighting==='neutral'){state.lighting='studio';applyLighting(true);}updateCrop();
  }});
 });
@@ -765,15 +766,16 @@ $('finish-upload-button').addEventListener('click',()=>$('finish-upload').click(
 $('finish-upload').addEventListener('change',async e=>{
  const file=e.target.files[0];e.target.value='';const face=selectedFace,crop=crops[face];if(!file||!crop||importing||exporting)return;
  if(!['image/png','image/jpeg','image/webp'].includes(file.type)||file.size>30*1024*1024){$('finish-file-name').textContent='30 MB以下のPNG・JPEG・WebPを選んでください。';return;}
- const requestedKind=$('finish-kind').value,requestedAlignment=$('finish-alignment').value;let loadError='';const {generation,signal}=startImport();syncFinishControls();const url=URL.createObjectURL(file);
+ const requestedKind=$('finish-kind').value,requestedAlignment=$('finish-alignment').value,requestedColor=$('finish-color').value;let loadError='';const {generation,signal}=startImport();syncFinishControls();const url=URL.createObjectURL(file);
  try{const image=new Image();image.src=url;await image.decode();if(image.naturalWidth<2||image.naturalHeight<2||image.naturalWidth*image.naturalHeight>65000000||Math.max(image.naturalWidth,image.naturalHeight)>16000)throw new Error('各辺16,000 px以下・合計6,500万画素以下の画像を選んでください。');
   if(signal.aborted||generation!==uploadGeneration||crops[face]!==crop)return;
-  crop.finish={image,name:file.name,kind:crop.finish?.kind&&crop.finish.kind!=='none'?crop.finish.kind:(requestedKind==='none'?'varnish':requestedKind),alignment:requestedAlignment};
+  crop.finish={image,name:file.name,kind:crop.finish?.kind&&crop.finish.kind!=='none'?crop.finish.kind:(requestedKind==='none'?'varnish':requestedKind),alignment:requestedAlignment,color:requestedColor};
   if(state.lighting==='neutral'){state.lighting='studio';applyLighting(true);}sampleMode=false;rebuildBox();refreshCrop();message(faceNames[face]+'に加工用画像を配置しました。青い部分が加工範囲です。');
  }catch(error){if(!signal.aborted){loadError=error.message||'加工用画像を読み込めませんでした。';}}
  finally{URL.revokeObjectURL(url);if(generation===uploadGeneration){importing=false;syncPDFControls();syncFinishControls();if(loadError)$('finish-file-name').textContent=loadError;}}
 });
-$('finish-kind').addEventListener('change',()=>{const c=crops[selectedFace];if(!c)return;if(c.finish){c.finish={...c.finish,kind:$('finish-kind').value};if(c.finish.kind!=='none'&&state.lighting==='neutral'){state.lighting='studio';applyLighting(true);}updateCrop();}else $('finish-file-name').textContent='加工用画像を読み込むと、黒い部分に選んだ加工を反映します。';});
+$('finish-kind').addEventListener('change',()=>{const c=crops[selectedFace];if(!c)return;$('finish-color-row').hidden=$('finish-kind').value!=='color';if(c.finish){c.finish={...c.finish,kind:$('finish-kind').value,color:$('finish-color').value};if(c.finish.kind!=='none'&&state.lighting==='neutral'){state.lighting='studio';applyLighting(true);}updateCrop();}else $('finish-file-name').textContent='加工用画像を読み込むと、黒い部分に選んだ加工を反映します。';});
+BoxPrintFinish.bindColorInputs($('finish-color'),$('finish-color-hex'),color=>{const c=crops[selectedFace];if(c?.finish){c.finish={...c.finish,color};updateCrop();}});
 $('finish-alignment').addEventListener('change',()=>{const c=crops[selectedFace];if(c?.finish){c.finish={...c.finish,alignment:$('finish-alignment').value};updateCrop();}});
 $('finish-overlay').addEventListener('change',drawCrop);
 // Inspection is transient: never change the processing plate or saved settings.

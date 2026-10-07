@@ -1,7 +1,13 @@
 /* Local monochrome processing plates. Black = finish; white/transparent = untouched. */
 (function(root){
 'use strict';
-const caches=new WeakMap(),kinds=['none','varnish','gold','silver'];
+const caches=new WeakMap(),kinds=['none','varnish','gold','silver','color'];
+const defaultColor='#d46fbe',validColor=value=>typeof value==='string'&&/^#[0-9a-f]{6}$/i.test(value),cleanColor=value=>validColor(value)?value.toLowerCase():defaultColor;
+function bindColorInputs(picker,hex,change,options={}){
+ picker.addEventListener('input',()=>{hex.value=picker.value;change(picker.value);},options);
+ hex.addEventListener('input',()=>{const value=hex.value.trim();hex.setCustomValidity(validColor(value)?'':'#と6桁の英数字で入力してください。');if(validColor(value)){picker.value=value;change(value.toLowerCase());}},options);
+ hex.addEventListener('blur',()=>{hex.value=picker.value;hex.setCustomValidity('');},options);
+}
 const coverage=(r,g,b,a=255)=>Math.round((255-(.2126*r+.7152*g+.0722*b))*a/255);
 function maskRect(crop,source,mask,alignment){const [x,y,w,h]=crop.rect;return alignment==='face'?[0,0,mask.width,mask.height]:[x/source.width*mask.width,y/source.height*mask.height,w/source.width*mask.width,h/source.height*mask.height];}
 function prepared(image){
@@ -24,7 +30,7 @@ function varnishNormals(pixels,w,h){
  }
  return out;
 }
-function apply(T,material,mask,kind){
+function apply(T,material,mask,kind,color){
  if(kind==='none'){mask.dispose();return material;}
  const source=mask.image,ctx=source.getContext('2d'),data=ctx.getImageData(0,0,source.width,source.height);
  const canvas=()=>{const c=document.createElement('canvas');c.width=source.width;c.height=source.height;return c;};
@@ -51,7 +57,7 @@ function apply(T,material,mask,kind){
   mask.needsUpdate=true;material.clearcoat=1;material.clearcoatMap=mask;material.clearcoatRoughness=1;material.clearcoatRoughnessMap=map(roughCanvas);
   material.roughness=1;material.roughnessMap=map(surface);material.specularIntensity=1;material.specularIntensityMap=map(reflection);
  }else{
-  const art=material.map.image,artCtx=art.getContext('2d'),pixels=artCtx.getImageData(0,0,art.width,art.height),foil=kind==='gold'?[245,202,114]:[239,241,244];
+  const art=material.map.image,artCtx=art.getContext('2d'),pixels=artCtx.getImageData(0,0,art.width,art.height),foil=kind==='color'?cleanColor(color).slice(1).match(/../g).map(v=>parseInt(v,16)):kind==='gold'?[245,202,114]:[239,241,244];
   const roughCanvas=canvas(),rctx=roughCanvas.getContext('2d'),rdata=rctx.createImageData(source.width,source.height),base=material.roughness??.8;
   for(let i=0;i<data.data.length;i+=4){const m=data.data[i]/255;for(let k=0;k<3;k++)pixels.data[i+k]=Math.round(pixels.data[i+k]*(1-m)+foil[k]*m);const r=Math.round((base*(1-m)+.13*m)*255);rdata.data[i]=rdata.data[i+1]=rdata.data[i+2]=r;rdata.data[i+3]=255;}
   artCtx.putImageData(pixels,0,0);material.map.needsUpdate=true;
@@ -61,5 +67,5 @@ function apply(T,material,mask,kind){
  }
  material.needsUpdate=true;return material;
 }
-const api={coverage,maskRect,prepared,paintOverlay,apply,kinds,varnishNormals};if(typeof module==='object'&&module.exports)module.exports=api;else root.BoxPrintFinish=api;
+const api={coverage,maskRect,prepared,paintOverlay,apply,kinds,varnishNormals,defaultColor,cleanColor,validColor,bindColorInputs};if(typeof module==='object'&&module.exports)module.exports=api;else root.BoxPrintFinish=api;
 })(typeof window==='object'?window:globalThis);
