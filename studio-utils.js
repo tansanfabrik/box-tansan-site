@@ -37,7 +37,7 @@
  function gifSpeedPosition(speed){const s=Math.min(15,Math.max(.1,Number(speed)||.1));return s<=1.5?(s-.1)/1.4*50:50+50*Math.pow((s-1.5)/13.5,1/gifFastPower);}
  function gifSpeedAtPosition(position){const p=Math.min(100,Math.max(0,Number(position)||0)),s=p<=50?.1+p/50*1.4:1.5+13.5*Math.pow((p-50)/50,gifFastPower);return Math.round(s*10)/10;}
  // A full cosine cycle joins smoothly at the left endpoint, centered on the chosen pose.
- function gifRotationAngle(progress,mode,span=60){return mode==='rock'?-Math.min(180,Math.max(10,Number(span)||60))/2*Math.cos(2*Math.PI*progress):360*progress;}
+ function gifRotationAngle(progress,mode,span=360){return mode==='rock'?-Math.min(360,Math.max(10,Number(span)||360))/2*Math.cos(2*Math.PI*progress):360*progress;}
  function gifTiming(value){
   const speed=Number.isFinite(Number(value))&&Number(value)>0?Math.min(15,Math.max(.1,Number(value))):1,totalCS=Math.round(300/speed);
   // Slower turns gain frames; faster turns keep every delay at least 20ms for GIF players.
