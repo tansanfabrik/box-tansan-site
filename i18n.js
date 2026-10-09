@@ -11,14 +11,16 @@
  const templates=[];
  function template(source){const pieces=source.split(/(\{\d+\})/);let args=[];let regex='^';for(const p of pieces){if(/^\{\d+\}$/.test(p)){args.push(p);regex+='(.+?)';}else regex+=p.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');}templates.push({source,args,regex:new RegExp(regex+'$','s')});}
  for(const key of Object.keys(dictionaries))if(/\{\d+\}/.test(key))template(key);
- function t(source,lang=language){
+ function t(source,lang=language,depth=0){
   if(typeof source!=='string'||lang==='ja')return source;
   const trim=source.trim();let result=exact(trim,lang);
-  if(result===trim){for(const item of templates){const match=trim.match(item.regex);if(!match)continue;result=exact(item.source,lang).replace(/\{\d+\}/g,key=>match[item.args.indexOf(key)+1]);break;}}
+  if(result===trim){for(const item of templates){const match=trim.match(item.regex);if(!match)continue;result=exact(item.source,lang).replace(/\{\d+\}/g,key=>{const value=match[item.args.indexOf(key)+1];const opaque=/^「|^\{0\}(を開き|の名前|の箱プレビュー|を比較|を読み|を差し| · 6面| · 配置)|^PDFの設定/.test(item.source);return opaque||depth>4?value:t(value,lang,depth+1);});break;}}
+  // Runtime notices are sometimes assembled from several canonical sentences.
+  if(result===trim&&depth<5){const parts=trim.match(/[^。\n]+。?|\n/g)||[];if(parts.length>1)result=parts.map(p=>t(p,lang,depth+1)).join('');}
   return source.slice(0,source.indexOf(trim))+result+source.slice(source.indexOf(trim)+trim.length);
  }
  const state=new WeakMap(), attributes=['aria-label','aria-valuetext','title','placeholder','alt'];
- const excluded='script,style,textarea,code,pre,[data-i18n-ignore],.comparison-card input,#line-layer-list';
+ const excluded='script,style,textarea,code,pre,[data-i18n-ignore],[data-original-help],#line-layer-list';
  function translateNode(node){
   const parent=node.parentElement;if(!parent||parent.closest(excluded))return;
   const old=state.get(node),current=node.data;
@@ -34,9 +36,10 @@
  function scan(root){
   if(root.nodeType===3){translateNode(root);return;}
   if(root.nodeType!==1||root.closest(excluded))return;
+  if(root.tagName==='OPTION'&&!root.hasAttribute('value'))root.setAttribute('value',root.value);
   translateAttributes(root);
   const walker=document.createTreeWalker(root,NodeFilter.SHOW_ELEMENT|NodeFilter.SHOW_TEXT);
-  while(walker.nextNode()){const n=walker.currentNode;if(n.nodeType===3)translateNode(n);else translateAttributes(n);}
+  while(walker.nextNode()){const n=walker.currentNode;if(n.nodeType===3)translateNode(n);else {if(n.tagName==='OPTION'&&!n.hasAttribute('value'))n.setAttribute('value',n.value);translateAttributes(n);}}
  }
  let observer;
  function observe(){observer.observe(document.body,{subtree:true,childList:true,characterData:true,attributes:true,attributeFilter:attributes});}
@@ -66,6 +69,7 @@
   });
   setLanguage(language);
  }
- window.BoxI18n={t,resolve,setLanguage,get language(){return language;},confirm:text=>window.confirm(t(text)),alert:text=>window.alert(t(text))};
+ function sourceText(el){return Array.from(el.childNodes,n=>n.nodeType===3?(state.get(n)?.source??n.data):sourceText(n)).join('');}
+ window.BoxI18n={t,resolve,setLanguage,sourceText,get language(){return language;},confirm:text=>window.confirm(t(text)),alert:text=>window.alert(t(text))};
  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start,{once:true});else start();
 })();

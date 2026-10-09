@@ -5,7 +5,7 @@ const caches=new WeakMap(),kinds=['none','varnish','gold','silver','color'];
 const defaultColor='#d46fbe',validColor=value=>typeof value==='string'&&/^#[0-9a-f]{6}$/i.test(value),cleanColor=value=>validColor(value)?value.toLowerCase():defaultColor;
 function bindColorInputs(picker,hex,change,options={}){
  picker.addEventListener('input',()=>{hex.value=picker.value;change(picker.value);},options);
- hex.addEventListener('input',()=>{const value=hex.value.trim();hex.setCustomValidity(validColor(value)?'':'#と6桁の英数字で入力してください。');if(validColor(value)){picker.value=value;change(value.toLowerCase());}},options);
+ hex.addEventListener('input',()=>{const value=hex.value.trim();hex.setCustomValidity(validColor(value)?'':BoxI18n.t('#と6桁の英数字で入力してください。'));if(validColor(value)){picker.value=value;change(value.toLowerCase());}},options);
  hex.addEventListener('blur',()=>{hex.value=picker.value;hex.setCustomValidity('');},options);
 }
 const coverage=(r,g,b,a=255)=>Math.round((255-(.2126*r+.7152*g+.0722*b))*a/255);

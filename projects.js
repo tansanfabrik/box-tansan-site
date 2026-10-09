@@ -25,8 +25,8 @@ window.BoxProjects={install(api){
     const actions=document.createElement('div');actions.className='comparison-actions';
     const button=(label,fn)=>{const b=document.createElement('button');b.textContent=label;b.disabled=busy;b.addEventListener('click',fn);actions.append(b);};
     button('編集する',()=>run(async()=>{api.apply(d.snapshot);dialog.close();api.message(d.name+'を開きました。編集後は「現在の状態で更新」で比較案に反映できます。');}));
-    button('現在の状態で更新',()=>run(async()=>{if(!confirm('「'+d.name+'」を現在のデザイン・設定で更新しますか？'))return;const snapshot=api.snapshot(),thumbnail=await api.thumbnail(snapshot);designs[designs.indexOf(d)]={...d,snapshot,thumbnail};dirty=true;notice('比較案を更新しました。');}));
-    button('削除',()=>{if(confirm('「'+d.name+'」を比較から外しますか？')){designs.splice(designs.indexOf(d),1);dirty=true;render();}});
+    button('現在の状態で更新',()=>run(async()=>{if(!BoxI18n.confirm('「'+d.name+'」を現在のデザイン・設定で更新しますか？'))return;const snapshot=api.snapshot(),thumbnail=await api.thumbnail(snapshot);designs[designs.indexOf(d)]={...d,snapshot,thumbnail};dirty=true;notice('比較案を更新しました。');}));
+    button('削除',()=>{if(BoxI18n.confirm('「'+d.name+'」を比較から外しますか？')){designs.splice(designs.indexOf(d),1);dirty=true;render();}});
     const select=document.createElement('label');select.className='comparison-select';const check=document.createElement('input');check.type='checkbox';check.checked=!excluded.has(d);check.disabled=busy;check.setAttribute('aria-label',d.name+'を比較に表示');check.addEventListener('change',()=>{if(check.checked)excluded.delete(d);else excluded.add(d);$('compare-live').disabled=!designs.some(item=>!excluded.has(item));});select.append(check,document.createTextNode('比較に表示'));card.append(img,name,select,actions);
    }$('comparison-grid').append(card);
   }
@@ -75,7 +75,7 @@ window.BoxProjects={install(api){
   const doc=data.validate(parsed,api.schema),composition=doc.kind==='composition'||$('project-load-mode').value==='composition';
   if(composition){const config=doc.kind==='composition'?doc.config:doc.current.config;api.apply(api.withComposition(api.snapshot(),config));notice('構図・照明・背景を適用しました。画像・配置と箱のサイズはそのままです。');dirty=true;return;}
   const loaded=await data.decode(doc);
-  if(!confirm('保存したプロジェクトを開き、現在の作業と比較案を置き換えますか？\n必要な作業は先に「作業を保存」で残してください。')){notice('読み込みを取り消しました。');return;}
+  if(!BoxI18n.confirm('保存したプロジェクトを開き、現在の作業と比較案を置き換えますか？\n必要な作業は先に「作業を保存」で残してください。')){notice('読み込みを取り消しました。');return;}
   api.apply(loaded.current);designs=loaded.designs;$('project-name').value=doc.name||'箱プロジェクト';dirty=false;notice('プロジェクトを読み込みました。PDFは保存したページの画像として復元しています。');
  });});
  function open(){if(api.busy())return;api.closePanels();render();dialog.showModal();}

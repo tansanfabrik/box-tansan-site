@@ -391,7 +391,7 @@ async function renderExportFocus(cam){
  stopFocusPreview();
  if(!focusSupported||state.focusBlur===0){renderer.render(scene,cam);return;}
  focusEngine.begin(scene,cam,focusSettings(cam,exportSamples));
- const label=status.textContent;
+ const label=BoxI18n.sourceText(status);
  while(focusEngine.count<exportSamples){if(cancelExport)throw new Error('書き出しを中止しました。');focusEngine.step(8);if(focusEngine.count%32===0)message(label+' '+Math.round(focusEngine.count/exportSamples*100)+'%');await tick();}
  if(cancelExport)throw new Error('書き出しを中止しました。');
  focusEngine.present();
@@ -704,13 +704,13 @@ $('paired-box').addEventListener('change',()=>{state.paired=$('paired-box').chec
 $('pair-gap').addEventListener('input',()=>{state.pairGapMM=Number($('pair-gap').value);draw();save();});
 $('reset-all').addEventListener('click',()=>{
  if(!ready||importing||exporting||resetting)return;
- if(!window.confirm('すべての設定を初期状態に戻しますか？\n\n箱のサイズ・向き・光・ピント・背景・保存設定と、読み込んだ画像の配置をリセットし、ドイツ小箱のサンプルに戻します。\n元の画像・PDFファイルや保存済みの画像は削除されません。'))return;
+ if(!BoxI18n.confirm('すべての設定を初期状態に戻しますか？\n\n箱のサイズ・向き・光・ピント・背景・保存設定と、読み込んだ画像の配置をリセットし、ドイツ小箱のサンプルに戻します。\n元の画像・PDFファイルや保存済みの画像は削除されません。'))return;
  resetting=true;
  try{
   // Remove only this tool's preferences, never other data on the same origin.
   localStorage.removeItem('box-photo-preferences-v1');
   localStorage.removeItem('box-studio-settings-v2');
- }catch(e){resetting=false;window.alert('ブラウザーに保存した設定をリセットできませんでした。ブラウザーの保存設定を確認してください。');return;}
+ }catch(e){resetting=false;BoxI18n.alert('ブラウザーに保存した設定をリセットできませんでした。ブラウザーの保存設定を確認してください。');return;}
  $('reset-all').disabled=true;cancelAnimationFrame(animation);
  // Also clear live form values before reload, for browsers that restore forms.
  for(const el of document.querySelectorAll('input,select')){

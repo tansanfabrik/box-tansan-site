@@ -1,0 +1,28 @@
+.language-control{display:inline-flex;align-items:center;gap:4px;flex:0 0 auto;font-size:13px;min-width:0;color:#41464d}
+.language-select{font:inherit;color:inherit;background:#fff;border:1px solid #d9dde3;border-radius:10px;min-height:34px;max-width:148px;padding:6px 20px 6px 8px;cursor:pointer}
+.language-select:focus-visible{outline:2px solid #4178dd;outline-offset:2px}
+[data-original-help][hidden],[data-localized-help][hidden]{display:none!important}
+[data-localized-help] section{margin:0 0 20px}[data-localized-help] h3{font-size:15px;margin-bottom:8px}[data-localized-help] p{line-height:1.75}
+html:not([lang=ja]) .step-guide{flex-wrap:wrap}
+html:not([lang=ja]) .step-guide button{white-space:normal;line-height:1.2}
+html:not([lang=ja]) .header-actions{flex-wrap:wrap;justify-content:flex-end}
+html:not([lang=ja]) button{overflow-wrap:anywhere}
+html:not([lang=ja]) .view-bar .segments{flex-wrap:wrap}
+html:not([lang=ja]) .view-bar [data-view]{white-space:normal;line-height:1.2;min-height:35px}
+html:not([lang=ja]) .choice-name,html:not([lang=ja]) .picture-choices small{white-space:normal}
+html:not([lang=ja]) .save-label{white-space:normal}
+html:not([lang=ja]) .range-title{white-space:normal;line-height:1.4}
+html:not([lang=ja]) .image-editor-open{height:auto;min-height:40px;white-space:normal}
+html:not([lang=ja]) .finish-edit-toolbar select{max-width:100%}
+.page-header .language-control{margin-left:auto}.page-header{flex-wrap:wrap;gap:12px}
+@media(max-width:1000px){.language-select{max-width:120px}.language-control{font-size:12px}}
+@media(max-width:700px){.language-select{max-width:125px;min-height:32px}.header-actions{gap:5px}.page-header .brand{width:100%}html:not([lang=ja]) .view-bar [data-view]{font-size:10px}}
+html:not([lang=ja]) .segments{display:flex;flex-wrap:wrap;min-width:0}
+html:not([lang=ja]) .segments button{flex:1 1 auto;min-width:0;white-space:normal}
+html:not([lang=ja]) .view-bar .segments button{flex:1 1 75px;padding:7px 6px}
+html:not([lang=ja]) #image-editor .faces button{flex:1 1 62px;padding:7px 6px}
+html:not([lang=ja]) #image-editor #mapping>*{min-width:0}
+@media(max-width:700px){html:not([lang=ja]) .view-bar .segments{flex-wrap:nowrap;overflow-x:auto}html:not([lang=ja]) .view-bar .segments button{flex:0 0 auto;max-width:105px;white-space:normal}}
+html:not([lang=ja]) .view-bar .segments button span{white-space:normal;min-width:0;line-height:1.25}
+html:not([lang=ja]) .view-bar #reset-view{flex:0 0 88px;overflow-wrap:normal;white-space:normal}
+html:not([lang=ja]) .choice-name{hyphens:auto;overflow-wrap:normal;font-size:12px}
