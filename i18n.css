@@ -1,5 +1,6 @@
-.language-control{display:inline-flex;align-items:center;gap:4px;flex:0 0 auto;font-size:13px;min-width:0;color:#41464d}
-.language-select{font:inherit;color:inherit;background:#fff;border:1px solid #d9dde3;border-radius:10px;min-height:34px;max-width:148px;padding:6px 20px 6px 8px;cursor:pointer}
+.language-control{display:inline-flex;align-items:center;gap:5px;flex:0 0 auto;font-size:10px;min-width:0;color:#60656d;white-space:nowrap}
+.language-control>svg{width:14px;height:14px;fill:none;stroke:currentColor;stroke-width:1.5;flex:none}
+.language-select{font:inherit;color:inherit;background:transparent;border:1px solid #d9dde3;border-radius:7px;min-height:26px;max-width:160px;padding:3px 18px 3px 6px;cursor:pointer}
 .language-select:focus-visible{outline:2px solid #4178dd;outline-offset:2px}
 [data-original-help][hidden],[data-localized-help][hidden]{display:none!important}
 [data-localized-help] section{margin:0 0 20px}[data-localized-help] h3{font-size:15px;margin-bottom:8px}[data-localized-help] p{line-height:1.75}
@@ -14,9 +15,9 @@ html:not([lang=ja]) .save-label{white-space:normal}
 html:not([lang=ja]) .range-title{white-space:normal;line-height:1.4}
 html:not([lang=ja]) .image-editor-open{height:auto;min-height:40px;white-space:normal}
 html:not([lang=ja]) .finish-edit-toolbar select{max-width:100%}
-.page-header .language-control{margin-left:auto}.page-header{flex-wrap:wrap;gap:12px}
-@media(max-width:1000px){.language-select{max-width:120px}.language-control{font-size:12px}}
-@media(max-width:700px){.language-select{max-width:125px;min-height:32px}.header-actions{gap:5px}.page-header .brand{width:100%}html:not([lang=ja]) .view-bar [data-view]{font-size:10px}}
+.page-header{flex-wrap:wrap;gap:12px}
+
+@media(max-width:700px){.language-select{max-width:170px;min-height:32px}.language-control{font-size:11px}.header-actions{gap:5px}.page-header .brand{width:100%}html:not([lang=ja]) .view-bar [data-view]{font-size:10px}}
 html:not([lang=ja]) .segments{display:flex;flex-wrap:wrap;min-width:0}
 html:not([lang=ja]) .segments button{flex:1 1 auto;min-width:0;white-space:normal}
 html:not([lang=ja]) .view-bar .segments button{flex:1 1 75px;padding:7px 6px}
@@ -26,21 +27,25 @@ html:not([lang=ja]) #image-editor #mapping>*{min-width:0}
 html:not([lang=ja]) .view-bar .segments button span{white-space:normal;min-width:0;line-height:1.25}
 html:not([lang=ja]) .view-bar #reset-view{flex:0 0 88px;overflow-wrap:normal;white-space:normal}
 html:not([lang=ja]) .choice-name{hyphens:auto;overflow-wrap:normal;font-size:12px}
-/* Reserve one row for the language selector; keep the mobile preview below it. */
 @media(max-width:700px){
- :root{--friendly-header:126px}
- header:not(.page-header){grid-template-columns:repeat(12,minmax(0,1fr));grid-template-rows:30px 30px 40px;gap:4px 6px;padding:7px 10px}
- header:not(.page-header) .brand{grid-column:1/9;grid-row:1;width:100%}
- header:not(.page-header) .header-actions{display:contents}
- header:not(.page-header) .language-control{grid-column:9/-1;grid-row:1;justify-content:flex-end}
- header:not(.page-header) .language-control>span{display:none}
- header:not(.page-header) .language-select{width:100%;max-width:100%;min-width:0;min-height:28px;font-size:11px;padding:4px 15px 4px 5px}
- header:not(.page-header) #open-help{grid-column:1/4;grid-row:2}
- header:not(.page-header) #open-project{grid-column:4/9;grid-row:2}
- header:not(.page-header) .bug-report-link{grid-column:9/-1;grid-row:2;justify-content:center;text-align:center}
- header:not(.page-header) .step-guide{grid-column:1/-1;grid-row:3;display:grid;grid-template-columns:repeat(4,minmax(0,1fr))}
  html:not([lang=ja]) #preview-dock .view-bar .segments{display:flex;flex-wrap:nowrap;overflow-x:auto;scrollbar-width:thin}
  html:not([lang=ja]) #preview-dock .view-bar .segments button{flex:0 0 76px;min-height:42px}
  html:not([lang=ja]) #preview-dock #reset-view{flex:0 0 28px}
 }
 @media(max-width:700px){html:not([lang=ja]){--dock-height:calc(var(--mobile-stage) + 84px)}html:not([lang=ja]) #preview-dock .view-bar{height:50px}}
+
+.localized-logo[hidden],.brand img[hidden]{display:none!important}
+/* Text wordmarks remain sharp and readable in every supported language. */
+.localized-logo{display:flex;flex-direction:column;gap:3px;color:#202329;max-width:100%;letter-spacing:-.04em;line-height:1.12}
+.localized-logo-title{font-family:Arial,"Helvetica Neue",sans-serif;font-size:22px;font-weight:800;overflow-wrap:anywhere}
+.localized-logo-credit{font-size:10px;font-weight:600;letter-spacing:0;text-align:right}.localized-logo-credit strong{background:#f5ed32;padding:1px 4px;color:#111;letter-spacing:.06em;font-style:italic}
+footer:not(.page-footer){align-items:center;gap:14px;min-height:36px;padding-top:3px;padding-bottom:3px}
+footer:not(.page-footer) .footer-notes{flex:1;min-width:0}
+.page-footer{flex-wrap:wrap}.page-footer p{flex:1;min-width:220px}
+@media(max-width:700px){
+ .localized-logo-title{font-size:16px}.localized-logo-credit{font-size:8px}.localized-logo{gap:2px}
+ footer:not(.page-footer){flex-wrap:wrap;gap:10px 16px;padding:16px 4px;height:auto}
+ footer:not(.page-footer) .footer-notes{flex-basis:100%}
+ footer:not(.page-footer) .language-control{order:1}footer:not(.page-footer) .credit{order:2}
+ .page-header .localized-logo-title{font-size:22px}.page-header .localized-logo-credit{font-size:10px}
+}

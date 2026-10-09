@@ -3,6 +3,8 @@
  'use strict';
  const locales=['ja','en','ko','zh-CN','zh-TW','de','fr','es','pt-BR'];
  const names=['日本語','English','한국어','简体中文','繁體中文（台灣）','Deutsch','Français','Español','Português (Brasil)'];
+ const flags=['🇯🇵','🇬🇧','🇰🇷','🇨🇳','🇹🇼','🇩🇪','🇫🇷','🇪🇸','🇧🇷'];
+ const logoNames=['ボドゲ箱イメージツクール','Board Game Box Studio','보드게임 상자 스튜디오','桌游盒效果图工具','桌遊盒預覽工具','Brettspielbox-Studio','Studio de boîtes de jeux','Estudio de cajas de juegos','Estúdio de caixas de jogos'];
  const storageKey='box-studio-language';
  const dictionaries=window.BoxTranslations||{};
  function resolve(value){const tag=String(value||'').toLowerCase();if(tag.startsWith('zh'))return /hant|tw|hk|mo/.test(tag)?'zh-TW':'zh-CN';if(tag.startsWith('pt'))return 'pt-BR';return locales.find(l=>tag===l||tag.startsWith(l+'-'))||'en';}
@@ -52,6 +54,10 @@
   document.querySelectorAll('[data-localized-help]').forEach(el=>el.hidden=next==='ja');
   document.querySelectorAll('[data-original-help]').forEach(el=>el.hidden=next!=='ja');
   if(window.BoxLocaleHelp)for(const el of document.querySelectorAll('[data-localized-help]')){el.replaceChildren();for(const [heading,body]of BoxLocaleHelp[next]||[]){const section=document.createElement('section'),h=document.createElement('h3'),p=document.createElement('p');h.textContent=heading;p.textContent=body;section.append(h,p);el.append(section);}}
+  for(const brand of document.querySelectorAll('.brand')){
+   const image=brand.querySelector('img'),mark=brand.querySelector('.localized-logo'),title=brand.querySelector('.localized-logo-title');
+   if(image&&mark&&title){image.hidden=next!=='ja';mark.hidden=next==='ja';title.textContent=logoNames[locales.indexOf(next)];mark.lang=next;brand.setAttribute('aria-label',logoNames[locales.indexOf(next)]);}
+  }
   scan(document.body);
   const pageTitle=document.querySelector('title');if(pageTitle){if(!pageTitle.dataset.original)pageTitle.dataset.original=pageTitle.textContent;pageTitle.textContent=t(pageTitle.dataset.original);}
   // Keep FAQ structured data equal to the translated, visible FAQ answers.
@@ -59,10 +65,12 @@
   observe();document.dispatchEvent(new CustomEvent('box-language-change',{detail:{language}}));
  }
  function start(){
-  const host=document.querySelector('.header-actions')||document.querySelector('header');if(!host)return;
+  const host=document.querySelector('footer');if(!host)return;
   const label=document.createElement('label');label.className='language-control';label.dataset.i18nIgnore='';
-  const globe=document.createElement('span');globe.textContent='◎';globe.setAttribute('aria-hidden','true');
-  const select=document.createElement('select');select.className='language-select';select.setAttribute('aria-label','Language / 言語');for(let i=0;i<locales.length;i++){const o=document.createElement('option');o.value=locales[i];o.textContent=names[i];o.lang=locales[i];select.append(o);}select.value=language;label.append(globe,select);host.prepend(label);select.addEventListener('change',()=>setLanguage(select.value));
+  const globe=document.createElementNS('http://www.w3.org/2000/svg','svg');globe.setAttribute('viewBox','0 0 24 24');globe.setAttribute('aria-hidden','true');globe.innerHTML='<circle cx="12" cy="12" r="9"/><ellipse cx="12" cy="12" rx="4" ry="9"/><path d="M3 12h18M5 6.5h14M5 17.5h14"/>';
+  const caption=document.createElement('span');caption.textContent='Language';
+  const select=document.createElement('select');select.className='language-select';select.setAttribute('aria-label','Language / 言語');for(let i=0;i<locales.length;i++){const o=document.createElement('option');o.value=locales[i];o.textContent=flags[i]+' '+names[i];o.lang=locales[i];select.append(o);}select.value=language;label.append(globe,caption,select);host.insertBefore(label,host.querySelector('.credit, a[href^="https://tansan.co"]'));
+  for(const brand of document.querySelectorAll('.brand')){const mark=document.createElement('span');mark.className='localized-logo';mark.hidden=true;mark.dataset.i18nIgnore='';const title=document.createElement('span');title.className='localized-logo-title';const credit=document.createElement('span');credit.className='localized-logo-credit';credit.innerHTML='by <strong>TANSAN</strong>';mark.append(title,credit);brand.append(mark);}select.addEventListener('change',()=>setLanguage(select.value));
   const help=document.querySelector('.help-body');if(help){help.dataset.originalHelp='';const translated=document.createElement('div');translated.className='help-body';translated.dataset.localizedHelp='';translated.dataset.i18nIgnore='';help.after(translated);}
   for(const script of document.querySelectorAll('script[type="application/ld+json"]')){try{if(JSON.parse(script.textContent)['@type']==='FAQPage')script.dataset.faqSchema=script.textContent;}catch{}}
   observer=new MutationObserver(records=>{
