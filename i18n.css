@@ -26,3 +26,21 @@ html:not([lang=ja]) #image-editor #mapping>*{min-width:0}
 html:not([lang=ja]) .view-bar .segments button span{white-space:normal;min-width:0;line-height:1.25}
 html:not([lang=ja]) .view-bar #reset-view{flex:0 0 88px;overflow-wrap:normal;white-space:normal}
 html:not([lang=ja]) .choice-name{hyphens:auto;overflow-wrap:normal;font-size:12px}
+/* Reserve one row for the language selector; keep the mobile preview below it. */
+@media(max-width:700px){
+ :root{--friendly-header:126px}
+ header:not(.page-header){grid-template-columns:repeat(12,minmax(0,1fr));grid-template-rows:30px 30px 40px;gap:4px 6px;padding:7px 10px}
+ header:not(.page-header) .brand{grid-column:1/9;grid-row:1;width:100%}
+ header:not(.page-header) .header-actions{display:contents}
+ header:not(.page-header) .language-control{grid-column:9/-1;grid-row:1;justify-content:flex-end}
+ header:not(.page-header) .language-control>span{display:none}
+ header:not(.page-header) .language-select{width:100%;max-width:100%;min-width:0;min-height:28px;font-size:11px;padding:4px 15px 4px 5px}
+ header:not(.page-header) #open-help{grid-column:1/4;grid-row:2}
+ header:not(.page-header) #open-project{grid-column:4/9;grid-row:2}
+ header:not(.page-header) .bug-report-link{grid-column:9/-1;grid-row:2;justify-content:center;text-align:center}
+ header:not(.page-header) .step-guide{grid-column:1/-1;grid-row:3;display:grid;grid-template-columns:repeat(4,minmax(0,1fr))}
+ html:not([lang=ja]) #preview-dock .view-bar .segments{display:flex;flex-wrap:nowrap;overflow-x:auto;scrollbar-width:thin}
+ html:not([lang=ja]) #preview-dock .view-bar .segments button{flex:0 0 76px;min-height:42px}
+ html:not([lang=ja]) #preview-dock #reset-view{flex:0 0 28px}
+}
+@media(max-width:700px){html:not([lang=ja]){--dock-height:calc(var(--mobile-stage) + 84px)}html:not([lang=ja]) #preview-dock .view-bar{height:50px}}

@@ -17,6 +17,7 @@
   if(result===trim){for(const item of templates){const match=trim.match(item.regex);if(!match)continue;result=exact(item.source,lang).replace(/\{\d+\}/g,key=>{const value=match[item.args.indexOf(key)+1];const opaque=/^「|^\{0\}(を開き|の名前|の箱プレビュー|を比較|を読み|を差し| · 6面| · 配置)|^PDFの設定/.test(item.source);return opaque||depth>4?value:t(value,lang,depth+1);});break;}}
   // Runtime notices are sometimes assembled from several canonical sentences.
   if(result===trim&&depth<5){const parts=trim.match(/[^。\n]+。?|\n/g)||[];if(parts.length>1)result=parts.map(p=>t(p,lang,depth+1)).join('');}
+  if(result===trim&&depth<5){const progress=trim.match(/^(.*…)[ ]+(\d+%)$/);if(progress)result=t(progress[1],lang,depth+1)+' '+progress[2];}
   return source.slice(0,source.indexOf(trim))+result+source.slice(source.indexOf(trim)+trim.length);
  }
  const state=new WeakMap(), attributes=['aria-label','aria-valuetext','title','placeholder','alt'];
@@ -69,7 +70,7 @@
   });
   setLanguage(language);
  }
- function sourceText(el){return Array.from(el.childNodes,n=>n.nodeType===3?(state.get(n)?.source??n.data):sourceText(n)).join('');}
+ function sourceText(el){return Array.from(el.childNodes,n=>{if(n.nodeType!==3)return sourceText(n);const record=state.get(n);return record&&n.data===record.output?record.source:n.data;}).join('');}
  window.BoxI18n={t,resolve,setLanguage,sourceText,get language(){return language;},confirm:text=>window.confirm(t(text)),alert:text=>window.alert(t(text))};
  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start,{once:true});else start();
 })();

@@ -421,14 +421,14 @@ window.BoxTranslations={
   "Profundidade"
  ],
  "箱の正位置": [
-  "Artwork orientation",
-  "상자 정방향",
-  "图案正向",
-  "圖案正向",
-  "Design-Ausrichtung",
-  "Orientation du visuel",
-  "Orientación del diseño",
-  "Orientação da arte"
+  "Upright box orientation",
+  "상자의 기본 방향",
+  "盒子正向",
+  "盒子正向",
+  "Ausrichtung der Schachtel",
+  "Orientation de la boîte",
+  "Orientación de la caja",
+  "Orientação da caixa"
  ],
  "寸法の向きのまま": [
   "Use entered dimensions",
@@ -551,13 +551,13 @@ window.BoxTranslations={
   "Altura da base exposta"
  ],
  "画像のない面の色": [
-  "Color of unprinted faces",
-  "이미지 없는 면의 색",
+  "Color of faces without artwork",
+  "이미지가 없는 면의 색",
   "无图像面的颜色",
   "無圖片面的顏色",
-  "Farbe unbedruckter Flächen",
+  "Farbe der Flächen ohne Bild",
   "Couleur des faces sans visuel",
-  "Color de caras sin imagen",
+  "Color de las caras sin imagen",
   "Cor das faces sem imagem"
  ],
  "蓋": [
@@ -771,14 +771,14 @@ window.BoxTranslations={
   "Ângulo frontal"
  ],
  "右斜め": [
-  "Right angle",
+  "Right oblique view",
   "오른쪽 사선",
-  "右斜角",
-  "右斜角",
-  "Schräg rechts",
-  "Trois-quarts droit",
-  "Oblicua derecha",
-  "Ângulo direito"
+  "右侧斜视",
+  "右側斜視",
+  "Schräg von rechts",
+  "Vue oblique droite",
+  "Vista oblicua derecha",
+  "Vista oblíqua direita"
  ],
  "斜め裏面": [
   "Back angle",
@@ -1101,24 +1101,24 @@ window.BoxTranslations={
   "Tamanho de exportação"
  ],
  "長辺 2048 px": [
-  "Long edge 2048 px",
-  "긴 변 2048 px",
-  "长边2048 px",
-  "長邊2048 px",
-  "Lange Seite 2048 px",
-  "Grand côté 2048 px",
-  "Lado largo 2048 px",
-  "Lado maior 2048 px"
+  "2048 px (long edge)",
+  "2048 px (긴 변)",
+  "2048 px（长边）",
+  "2048 px（長邊）",
+  "2048 px (lange Seite)",
+  "2048 px (grand côté)",
+  "2048 px (lado largo)",
+  "2048 px (lado maior)"
  ],
  "長辺 4096 px": [
-  "Long edge 4096 px",
-  "긴 변 4096 px",
-  "长边4096 px",
-  "長邊4096 px",
-  "Lange Seite 4096 px",
-  "Grand côté 4096 px",
-  "Lado largo 4096 px",
-  "Lado maior 4096 px"
+  "4096 px (long edge)",
+  "4096 px (긴 변)",
+  "4096 px（长边）",
+  "4096 px（長邊）",
+  "4096 px (lange Seite)",
+  "4096 px (grand côté)",
+  "4096 px (lado largo)",
+  "4096 px (lado maior)"
  ],
  "仕上がりを見る": [
   "Preview export",
@@ -3321,13 +3321,13 @@ window.BoxTranslations={
   "Empilhar {0} caixas"
  ],
  "{0}箱を平置き": [
-  "Lay out {0} boxes",
-  "상자 {0}개 평놓기",
+  "Lay {0} boxes flat",
+  "상자 {0}개 눕혀 놓기",
   "平放{0}个盒子",
   "平放{0}個盒子",
-  "{0} Boxen flach legen",
+  "{0} Boxen flach hinlegen",
   "Poser {0} boîtes à plat",
-  "Colocar {0} cajas planas",
+  "Colocar {0} cajas tumbadas",
   "Colocar {0} caixas deitadas"
  ],
  "{0}°（左右{1}°）": [
@@ -3941,14 +3941,14 @@ window.BoxTranslations={
   "Pré-visualize e salve PNG. ZIP exporta vistas ou caixa/sombra separadas. GIF oferece volta completa ou oscilação com velocidade e ângulo ajustáveis."
  ],
  "すべての設定を初期状態に戻しますか？": [
-  "Reset dimensions, views, lighting, focus, background, export settings and artwork placement to the initial sample? Original and saved files will not be deleted.",
-  "치수·구도·조명·초점·배경·저장 설정·이미지 배치를 초기 샘플로 되돌릴까요? 원본 및 저장 파일은 삭제되지 않습니다.",
-  "将尺寸、视角、光线、焦点、背景、导出设置和图像配置重置为初始示例？原始文件和已保存文件不会删除。",
-  "將尺寸、視角、光線、焦點、背景、匯出設定和圖片配置重設為初始範例？原始檔和已儲存檔不會刪除。",
-  "Maße, Ansicht, Licht, Fokus, Hintergrund, Export und Design auf das Startbeispiel zurücksetzen? Originale und gespeicherte Dateien bleiben erhalten.",
-  "Réinitialiser dimensions, vue, lumière, focus, fond, export et placement vers l’exemple initial ? Les fichiers originaux et enregistrés restent intacts.",
-  "¿Restablecer medidas, vistas, luz, foco, fondo, exportación y diseño al ejemplo inicial? No se borrarán archivos originales ni guardados.",
-  "Redefinir dimensões, vistas, luz, foco, fundo, exportação e arte ao exemplo inicial? Arquivos originais e salvos não serão apagados."
+  "Reset all settings and artwork to the initial sample? Unsaved changes will be lost. Save your project first. Original and saved files remain intact.",
+  "모든 설정과 이미지를 초기 샘플로 되돌릴까요? 저장하지 않은 변경 사항은 사라집니다. 먼저 프로젝트를 저장하세요. 원본·저장 파일은 유지됩니다.",
+  "将所有设置和图像重置为初始示例？未保存的更改将丢失，请先保存项目。原始及已保存文件不受影响。",
+  "將所有設定和圖片重設為初始範例？未儲存的變更將遺失，請先儲存專案。原始及已儲存檔案不受影響。",
+  "Alle Einstellungen und das Bild auf das Startbeispiel zurücksetzen? Ungespeicherte Änderungen gehen verloren. Projekt vorher speichern. Originale und gespeicherte Dateien bleiben erhalten.",
+  "Tout réinitialiser vers l’exemple initial ? Les modifications non enregistrées seront perdues. Enregistrez le projet avant. Les fichiers originaux et enregistrés restent intacts.",
+  "¿Restablecer todo al ejemplo inicial? Se perderán los cambios sin guardar. Guarda el proyecto antes. Los archivos originales y guardados se conservan.",
+  "Redefinir tudo para o exemplo inicial? Alterações não salvas serão perdidas. Salve o projeto antes. Arquivos originais e salvos permanecem intactos."
  ],
  "無料で使えますか？": [
   "Is it free?",
@@ -4671,214 +4671,214 @@ window.BoxTranslations={
   "Nome do design {0}"
  ],
  "3D表示を準備しています…": [
-  "Loading…",
-  "불러오는 중…",
-  "正在加载…",
-  "正在載入…",
-  "Wird geladen…",
-  "Chargement…",
-  "Cargando…",
-  "Carregando…"
+  "Preparing 3D preview…",
+  "3D 미리보기 준비 중…",
+  "正在准备3D预览…",
+  "正在準備3D預覽…",
+  "3D-Vorschau wird vorbereitet…",
+  "Préparation de l’aperçu 3D…",
+  "Preparando la vista 3D…",
+  "Preparando a prévia 3D…"
  ],
  "PDFの1ページ目を読み込んでいます…": [
-  "Loading…",
-  "불러오는 중…",
-  "正在加载…",
-  "正在載入…",
-  "Wird geladen…",
-  "Chargement…",
-  "Cargando…",
-  "Carregando…"
+  "Loading PDF page 1…",
+  "PDF 1페이지 불러오는 중…",
+  "正在加载PDF第1页…",
+  "正在載入PDF第1頁…",
+  "PDF-Seite 1 wird geladen…",
+  "Chargement de la page 1 du PDF…",
+  "Cargando la página 1 del PDF…",
+  "Carregando a página 1 do PDF…"
  ],
  "画像を読み込んでいます…": [
-  "Loading…",
-  "불러오는 중…",
-  "正在加载…",
-  "正在載入…",
-  "Wird geladen…",
-  "Chargement…",
-  "Cargando…",
-  "Carregando…"
+  "Loading image…",
+  "이미지 불러오는 중…",
+  "正在加载图像…",
+  "正在載入圖片…",
+  "Bild wird geladen…",
+  "Chargement de l’image…",
+  "Cargando la imagen…",
+  "Carregando a imagem…"
  ],
  "作業ファイルから比較案を読み込んでいます…": [
-  "Loading…",
-  "불러오는 중…",
-  "正在加载…",
-  "正在載入…",
-  "Wird geladen…",
-  "Chargement…",
-  "Cargando…",
-  "Carregando…"
+  "Loading a design from the project file…",
+  "작업 파일에서 비교안 불러오는 중…",
+  "正在从项目文件加载对比方案…",
+  "正在從專案檔載入比較方案…",
+  "Entwurf wird aus der Projektdatei geladen…",
+  "Chargement d’une variante depuis le projet…",
+  "Cargando un diseño del archivo de proyecto…",
+  "Carregando uma versão do arquivo de projeto…"
  ],
  "保存ファイルを確認しています…": [
-  "Loading…",
-  "불러오는 중…",
-  "正在加载…",
-  "正在載入…",
-  "Wird geladen…",
-  "Chargement…",
-  "Cargando…",
-  "Carregando…"
+  "Checking saved file…",
+  "저장 파일 확인 중…",
+  "正在检查保存的文件…",
+  "正在檢查儲存的檔案…",
+  "Gespeicherte Datei wird geprüft…",
+  "Vérification du fichier enregistré…",
+  "Comprobando el archivo guardado…",
+  "Verificando o arquivo salvo…"
  ],
  "加工範囲を反映しています…": [
-  "Loading…",
-  "불러오는 중…",
-  "正在加载…",
-  "正在載入…",
-  "Wird geladen…",
-  "Chargement…",
-  "Cargando…",
-  "Carregando…"
+  "Applying finish mask…",
+  "가공 범위 적용 중…",
+  "正在应用加工区域…",
+  "正在套用加工範圍…",
+  "Veredelungsmaske wird angewendet…",
+  "Application du masque de finition…",
+  "Aplicando la máscara de acabado…",
+  "Aplicando a máscara de acabamento…"
  ],
  "比較用の箱を準備しています…": [
-  "Loading…",
-  "불러오는 중…",
-  "正在加载…",
-  "正在載入…",
-  "Wird geladen…",
-  "Chargement…",
-  "Cargando…",
-  "Carregando…"
+  "Preparing boxes for comparison…",
+  "비교용 상자 준비 중…",
+  "正在准备对比盒子…",
+  "正在準備比較用盒子…",
+  "Boxen für den Vergleich werden vorbereitet…",
+  "Préparation des boîtes à comparer…",
+  "Preparando las cajas para comparar…",
+  "Preparando as caixas para comparação…"
  ],
  "指定した表面を固定して、残りの面を探しています…": [
-  "Loading…",
-  "불러오는 중…",
-  "正在加载…",
-  "正在載入…",
-  "Wird geladen…",
-  "Chargement…",
-  "Cargando…",
-  "Carregando…"
+  "Front locked; detecting the other faces…",
+  "앞면을 고정하고 나머지 면 찾는 중…",
+  "已锁定正面，正在识别其余各面…",
+  "已鎖定正面，正在辨識其餘各面…",
+  "Vorderseite fixiert; weitere Flächen werden gesucht…",
+  "Face avant fixée ; détection des autres faces…",
+  "Frente fijado; detectando las demás caras…",
+  "Frente fixada; detectando as outras faces…"
  ],
  "面の候補を探しています…": [
-  "Loading…",
-  "불러오는 중…",
-  "正在加载…",
-  "正在載入…",
-  "Wird geladen…",
-  "Chargement…",
-  "Cargando…",
-  "Carregando…"
+  "Detecting candidate faces…",
+  "면 후보 찾는 중…",
+  "正在识别候选面…",
+  "正在辨識候選面…",
+  "Mögliche Flächen werden gesucht…",
+  "Détection des faces possibles…",
+  "Detectando posibles caras…",
+  "Detectando possíveis faces…"
  ],
  "並べた箱のPNGを作成しています…": [
-  "Creating…",
-  "만드는 중…",
-  "正在生成…",
-  "正在產生…",
-  "Wird erstellt…",
-  "Création…",
-  "Creando…",
-  "Criando…"
+  "Creating PNG of arranged boxes…",
+  "배치한 상자의 PNG 만드는 중…",
+  "正在生成排列盒子的PNG…",
+  "正在產生排列盒子的PNG…",
+  "PNG der angeordneten Boxen wird erstellt…",
+  "Création du PNG des boîtes disposées…",
+  "Creando el PNG de las cajas colocadas…",
+  "Criando o PNG das caixas dispostas…"
  ],
  "比較用の画像を作成しています…": [
-  "Creating…",
-  "만드는 중…",
-  "正在生成…",
-  "正在產生…",
-  "Wird erstellt…",
-  "Création…",
-  "Creando…",
-  "Criando…"
+  "Creating comparison image…",
+  "비교 이미지 만드는 중…",
+  "正在生成对比图像…",
+  "正在產生比較圖片…",
+  "Vergleichsbild wird erstellt…",
+  "Création de l’image de comparaison…",
+  "Creando la imagen comparativa…",
+  "Criando a imagem de comparação…"
  ],
  "現在の構図・照明で比較をそろえています…": [
-  "Creating…",
-  "만드는 중…",
-  "正在生成…",
-  "正在產生…",
-  "Wird erstellt…",
-  "Création…",
-  "Creando…",
-  "Criando…"
+  "Matching designs to the current view and lighting…",
+  "현재 구도·조명으로 비교안 맞추는 중…",
+  "正在统一为当前视角和光线…",
+  "正在統一為目前視角和光線…",
+  "Entwürfe werden an aktuelle Ansicht und Beleuchtung angepasst…",
+  "Harmonisation avec la vue et l’éclairage actuels…",
+  "Igualando diseños a la vista e iluminación actuales…",
+  "Alinhando versões com a vista e iluminação atuais…"
  ],
  "画像と比較案をまとめています…": [
-  "Creating…",
-  "만드는 중…",
-  "正在生成…",
-  "正在產生…",
-  "Wird erstellt…",
-  "Création…",
-  "Creando…",
-  "Criando…"
+  "Packaging artwork and comparison designs…",
+  "이미지와 비교안 묶는 중…",
+  "正在打包图像和对比方案…",
+  "正在打包圖片和比較方案…",
+  "Bilder und Vergleichsentwürfe werden zusammengefasst…",
+  "Regroupement des images et variantes…",
+  "Preparando imágenes y diseños comparativos…",
+  "Reunindo imagens e versões de comparação…"
  ],
  "除去結果を作成しています…": [
-  "Creating…",
-  "만드는 중…",
-  "正在生成…",
-  "正在產生…",
-  "Wird erstellt…",
-  "Création…",
-  "Creando…",
-  "Criando…"
+  "Creating cleaned artwork…",
+  "선 제거 결과 만드는 중…",
+  "正在生成去线结果…",
+  "正在產生去線結果…",
+  "Bereinigtes Bild wird erstellt…",
+  "Création du visuel nettoyé…",
+  "Creando la imagen sin líneas…",
+  "Criando a imagem sem linhas…"
  ],
  "箱を描画しています…": [
-  "Creating…",
-  "만드는 중…",
-  "正在生成…",
-  "正在產生…",
-  "Wird erstellt…",
-  "Création…",
-  "Creando…",
-  "Criando…"
+  "Rendering box…",
+  "상자 렌더링 중…",
+  "正在渲染盒子…",
+  "正在算繪盒子…",
+  "Box wird gerendert…",
+  "Rendu de la boîte…",
+  "Renderizando la caja…",
+  "Renderizando a caixa…"
  ],
  "影を描画しています…": [
-  "Creating…",
-  "만드는 중…",
-  "正在生成…",
-  "正在產生…",
-  "Wird erstellt…",
-  "Création…",
-  "Creando…",
-  "Criando…"
+  "Rendering shadow…",
+  "그림자 렌더링 중…",
+  "正在渲染阴影…",
+  "正在算繪陰影…",
+  "Schatten wird gerendert…",
+  "Rendu de l’ombre…",
+  "Renderizando la sombra…",
+  "Renderizando a sombra…"
  ],
  "箱と影を固定して、カメラを回すGIFを準備しています…": [
-  "Creating…",
-  "만드는 중…",
-  "正在生成…",
-  "正在產生…",
-  "Wird erstellt…",
-  "Création…",
-  "Creando…",
-  "Criando…"
+  "Preparing GIF with the camera orbiting the box and shadow…",
+  "상자·그림자를 고정하고 카메라가 회전하는 GIF 준비 중…",
+  "正在准备盒子和阴影固定、相机环绕的GIF…",
+  "正在準備盒子及陰影固定、相機環繞的GIF…",
+  "GIF mit Kamerafahrt um Box und Schatten wird vorbereitet…",
+  "Préparation du GIF avec caméra tournant autour de la boîte et de l’ombre…",
+  "Preparando GIF con la cámara girando alrededor de la caja y la sombra…",
+  "Preparando GIF com a câmera girando ao redor da caixa e da sombra…"
  ],
  "回転GIFを準備しています…": [
-  "Creating…",
-  "만드는 중…",
-  "正在生成…",
-  "正在產生…",
-  "Wird erstellt…",
-  "Création…",
-  "Creando…",
-  "Criando…"
+  "Preparing rotating GIF…",
+  "회전 GIF 준비 중…",
+  "正在准备旋转GIF…",
+  "正在準備旋轉GIF…",
+  "Rotierendes GIF wird vorbereitet…",
+  "Préparation du GIF animé…",
+  "Preparando el GIF giratorio…",
+  "Preparando o GIF de rotação…"
  ],
  "画像を作成できませんでした。": [
-  "Could not complete the operation. Please try again.",
-  "처리하지 못했습니다. 다시 시도하세요.",
-  "操作失败，请重试。",
-  "操作失敗，請重試。",
-  "Vorgang fehlgeschlagen. Bitte erneut versuchen.",
-  "Impossible de terminer. Réessayez.",
-  "No se pudo completar. Inténtalo de nuevo.",
-  "Não foi possível concluir. Tente novamente."
+  "Could not create the image.",
+  "이미지를 만들지 못했습니다.",
+  "无法生成图像。",
+  "無法產生圖片。",
+  "Bild konnte nicht erstellt werden.",
+  "Impossible de créer l’image.",
+  "No se pudo crear la imagen.",
+  "Não foi possível criar a imagem."
  ],
  "線の除去に失敗しました。": [
-  "Could not complete the operation. Please try again.",
-  "처리하지 못했습니다. 다시 시도하세요.",
-  "操作失败，请重试。",
-  "操作失敗，請重試。",
-  "Vorgang fehlgeschlagen. Bitte erneut versuchen.",
-  "Impossible de terminer. Réessayez.",
-  "No se pudo completar. Inténtalo de nuevo.",
-  "Não foi possível concluir. Tente novamente."
+  "Could not remove the lines.",
+  "선을 제거하지 못했습니다.",
+  "线条去除失败。",
+  "線條去除失敗。",
+  "Linien konnten nicht entfernt werden.",
+  "Impossible de supprimer les lignes.",
+  "No se pudieron eliminar las líneas.",
+  "Não foi possível remover as linhas."
  ],
  "除去に失敗しました。": [
-  "Could not complete the operation. Please try again.",
-  "처리하지 못했습니다. 다시 시도하세요.",
-  "操作失败，请重试。",
-  "操作失敗，請重試。",
-  "Vorgang fehlgeschlagen. Bitte erneut versuchen.",
-  "Impossible de terminer. Réessayez.",
-  "No se pudo completar. Inténtalo de nuevo.",
-  "Não foi possível concluir. Tente novamente."
+  "Cleanup failed.",
+  "제거에 실패했습니다.",
+  "去除失败。",
+  "去除失敗。",
+  "Bereinigung fehlgeschlagen.",
+  "Échec du nettoyage.",
+  "La limpieza falló.",
+  "A remoção falhou."
  ],
  "反映できませんでした。もう一度お試しください。": [
   "Could not complete the operation. Please try again.",
@@ -4891,144 +4891,144 @@ window.BoxTranslations={
   "Não foi possível concluir. Tente novamente."
  ],
  "箱を描画できませんでした。もう一度お試しください。": [
-  "Could not complete the operation. Please try again.",
-  "처리하지 못했습니다. 다시 시도하세요.",
-  "操作失败，请重试。",
-  "操作失敗，請重試。",
-  "Vorgang fehlgeschlagen. Bitte erneut versuchen.",
-  "Impossible de terminer. Réessayez.",
-  "No se pudo completar. Inténtalo de nuevo.",
-  "Não foi possível concluir. Tente novamente."
+  "Could not render the box. Please try again.",
+  "상자를 렌더링하지 못했습니다. 다시 시도하세요.",
+  "无法渲染盒子，请重试。",
+  "無法算繪盒子，請重試。",
+  "Box konnte nicht gerendert werden. Bitte erneut versuchen.",
+  "Impossible de générer la boîte. Réessayez.",
+  "No se pudo renderizar la caja. Inténtalo de nuevo.",
+  "Não foi possível renderizar a caixa. Tente novamente."
  ],
  "PNGを作成できませんでした。": [
-  "Could not complete the operation. Please try again.",
-  "처리하지 못했습니다. 다시 시도하세요.",
-  "操作失败，请重试。",
-  "操作失敗，請重試。",
-  "Vorgang fehlgeschlagen. Bitte erneut versuchen.",
-  "Impossible de terminer. Réessayez.",
-  "No se pudo completar. Inténtalo de nuevo.",
-  "Não foi possível concluir. Tente novamente."
+  "Could not create the PNG.",
+  "PNG를 만들지 못했습니다.",
+  "无法生成PNG。",
+  "無法產生PNG。",
+  "PNG konnte nicht erstellt werden.",
+  "Impossible de créer le PNG.",
+  "No se pudo crear el PNG.",
+  "Não foi possível criar o PNG."
  ],
  "加工用画像を読み込めませんでした。": [
-  "Could not complete the operation. Please try again.",
-  "처리하지 못했습니다. 다시 시도하세요.",
-  "操作失败，请重试。",
-  "操作失敗，請重試。",
-  "Vorgang fehlgeschlagen. Bitte erneut versuchen.",
-  "Impossible de terminer. Réessayez.",
-  "No se pudo completar. Inténtalo de nuevo.",
-  "Não foi possível concluir. Tente novamente."
+  "Could not load the finish mask.",
+  "가공용 이미지를 불러오지 못했습니다.",
+  "无法加载加工蒙版。",
+  "無法載入加工遮色片。",
+  "Veredelungsmaske konnte nicht geladen werden.",
+  "Impossible de charger le masque de finition.",
+  "No se pudo cargar la máscara de acabado.",
+  "Não foi possível carregar a máscara de acabamento."
  ],
  "比較案を更新しました。": [
-  "Done.",
-  "완료했습니다.",
-  "已完成。",
-  "已完成。",
-  "Fertig.",
-  "Terminé.",
-  "Listo.",
-  "Concluído."
+  "Comparison design updated.",
+  "비교안을 업데이트했습니다.",
+  "已更新对比方案。",
+  "已更新比較方案。",
+  "Vergleichsentwurf aktualisiert.",
+  "Variante mise à jour.",
+  "Diseño comparativo actualizado.",
+  "Versão de comparação atualizada."
  ],
  "全案の構図・照明・背景をそろえました。箱のサイズとデザインは各案のままです。": [
-  "Done.",
-  "완료했습니다.",
-  "已完成。",
-  "已完成。",
-  "Fertig.",
-  "Terminé.",
-  "Listo.",
-  "Concluído."
+  "All designs now share the view, lighting and background. Each keeps its own box size and artwork.",
+  "모든 비교안의 구도·조명·배경을 맞췄습니다. 각 안의 상자 크기와 디자인은 유지됩니다.",
+  "已统一所有方案的视角、光线和背景。各方案的盒子尺寸及设计保持不变。",
+  "已統一所有方案的視角、光線和背景。各方案的盒子尺寸及設計保持不變。",
+  "Ansicht, Licht und Hintergrund aller Entwürfe angeglichen. Boxgröße und Design bleiben pro Entwurf erhalten.",
+  "Vue, éclairage et fond harmonisés. Chaque variante conserve sa taille de boîte et son visuel.",
+  "Se han igualado vista, luz y fondo. Cada diseño conserva su tamaño de caja e imagen.",
+  "Vista, luz e fundo alinhados. Cada versão mantém seu tamanho de caixa e arte."
  ],
  "構図を保存しました。別の画像にも使えます。": [
-  "Done.",
-  "완료했습니다.",
-  "已完成。",
-  "已完成。",
-  "Fertig.",
-  "Terminé.",
-  "Listo.",
-  "Concluído."
+  "View saved. You can reuse it with other artwork.",
+  "구도를 저장했습니다. 다른 이미지에도 사용할 수 있습니다.",
+  "已保存构图，可用于其他图像。",
+  "已儲存構圖，可用於其他圖片。",
+  "Ansicht gespeichert. Auch für andere Bilder verwendbar.",
+  "Vue enregistrée. Réutilisable avec d’autres visuels.",
+  "Vista guardada. Puedes usarla con otras imágenes.",
+  "Vista salva. Você pode usá-la com outras imagens."
  ],
  "構図・照明・背景を適用しました。画像・配置と箱のサイズはそのままです。": [
-  "Done.",
-  "완료했습니다.",
-  "已完成。",
-  "已完成。",
-  "Fertig.",
-  "Terminé.",
-  "Listo.",
-  "Concluído."
+  "View, lighting and background applied. Artwork, placement and box size are unchanged.",
+  "구도·조명·배경을 적용했습니다. 이미지·배치와 상자 크기는 유지됩니다.",
+  "已应用视角、光线和背景。图像、配置及盒子尺寸保持不变。",
+  "已套用視角、光線和背景。圖片、配置及盒子尺寸保持不變。",
+  "Ansicht, Licht und Hintergrund angewendet. Bild, Platzierung und Boxgröße bleiben erhalten.",
+  "Vue, lumière et fond appliqués. Visuel, placement et taille de boîte conservés.",
+  "Vista, luz y fondo aplicados. Imagen, colocación y tamaño de caja conservados.",
+  "Vista, luz e fundo aplicados. Arte, posicionamento e tamanho da caixa mantidos."
  ],
  "プロジェクトを読み込みました。PDFは保存したページの画像として復元しています。": [
-  "Done.",
-  "완료했습니다.",
-  "已完成。",
-  "已完成。",
-  "Fertig.",
-  "Terminé.",
-  "Listo.",
-  "Concluído."
+  "Project loaded. PDF pages are restored as saved images.",
+  "프로젝트를 불러왔습니다. PDF는 저장한 페이지의 이미지로 복원됩니다.",
+  "已加载项目。PDF以保存的页面图像恢复。",
+  "已載入專案。PDF以儲存的頁面圖片還原。",
+  "Projekt geladen. PDF-Seiten wurden als gespeicherte Bilder wiederhergestellt.",
+  "Projet chargé. Les pages PDF sont restaurées sous forme d’images enregistrées.",
+  "Proyecto cargado. Las páginas PDF se restauran como imágenes guardadas.",
+  "Projeto carregado. As páginas PDF são restauradas como imagens salvas."
  ],
  "配置を保って更新しました": [
-  "Done.",
-  "완료했습니다.",
-  "已完成。",
-  "已完成。",
-  "Fertig.",
-  "Terminé.",
-  "Listo.",
-  "Concluído."
+  "Updated with layout preserved",
+  "배치를 유지하여 업데이트했습니다",
+  "已保留配置更新",
+  "已保留配置更新",
+  "Aktualisiert, Layout beibehalten",
+  "Mis à jour, placement conservé",
+  "Actualizado conservando la colocación",
+  "Atualizado mantendo o posicionamento"
  ],
  "画像を差し替えました。配置・箱のサイズ・構図を引き継いでいます。": [
-  "Done.",
-  "완료했습니다.",
-  "已完成。",
-  "已完成。",
-  "Fertig.",
-  "Terminé.",
-  "Listo.",
-  "Concluído."
+  "Artwork replaced. Layout, box size and view are preserved.",
+  "이미지를 교체했습니다. 배치·상자 크기·구도를 유지합니다.",
+  "已替换图像，保留了配置、盒子尺寸和视角。",
+  "已更換圖片，保留了配置、盒子尺寸和視角。",
+  "Bild ersetzt. Layout, Boxgröße und Ansicht beibehalten.",
+  "Visuel remplacé. Placement, taille de boîte et vue conservés.",
+  "Imagen reemplazada. Colocación, tamaño de caja y vista conservados.",
+  "Imagem substituída. Posicionamento, tamanho da caixa e vista mantidos."
  ],
  "照明を調整しました。現在の設定は透過PNGにも反映されます。": [
-  "Done.",
-  "완료했습니다.",
-  "已完成。",
-  "已完成。",
-  "Fertig.",
-  "Terminé.",
-  "Listo.",
-  "Concluído."
+  "Lighting adjusted. These settings also apply to transparent PNG exports.",
+  "조명을 조정했습니다. 현재 설정은 투명 PNG에도 적용됩니다.",
+  "已调整光线。当前设置也用于透明PNG导出。",
+  "已調整光線。目前設定也用於透明PNG匯出。",
+  "Beleuchtung angepasst. Gilt auch für transparente PNG-Exporte.",
+  "Éclairage ajusté. Ces réglages s’appliquent aussi aux PNG transparents.",
+  "Iluminación ajustada. También se aplica a los PNG transparentes.",
+  "Iluminação ajustada. As configurações também se aplicam aos PNG transparentes."
  ],
  "表面の指定を取り消しました。": [
-  "Done.",
-  "완료했습니다.",
-  "已完成。",
-  "已完成。",
-  "Fertig.",
-  "Terminé.",
-  "Listo.",
-  "Concluído."
+  "Front-face selection cancelled.",
+  "앞면 지정을 취소했습니다.",
+  "已取消正面指定。",
+  "已取消正面指定。",
+  "Auswahl der Vorderseite aufgehoben.",
+  "Sélection de la face avant annulée.",
+  "Selección del frente cancelada.",
+  "Seleção da frente cancelada."
  ],
  "配置を反映しました。": [
-  "Done.",
-  "완료했습니다.",
-  "已完成。",
-  "已完成。",
-  "Fertig.",
-  "Terminé.",
-  "Listo.",
-  "Concluído."
+  "Layout applied.",
+  "배치를 적용했습니다.",
+  "已应用配置。",
+  "已套用配置。",
+  "Layout angewendet.",
+  "Placement appliqué.",
+  "Colocación aplicada.",
+  "Posicionamento aplicado."
  ],
  "化粧箱に切り替えました。": [
-  "Done.",
-  "완료했습니다.",
-  "已完成。",
-  "已完成。",
-  "Fertig.",
-  "Terminé.",
-  "Listo.",
-  "Concluído."
+  "Switched to a rigid box.",
+  "뚜껑형 상자로 전환했습니다.",
+  "已切换为天地盖盒。",
+  "已切換為天地蓋盒。",
+  "Auf Stülpdeckelschachtel umgestellt.",
+  "Passage à la boîte rigide.",
+  "Se ha cambiado a caja rígida.",
+  "Alterado para caixa rígida."
  ],
  "読み込みを中止しました。": [
   "Import cancelled.",
@@ -5051,64 +5051,64 @@ window.BoxTranslations={
   "Não foi possível salvar. Reduza o tamanho e tente novamente."
  ],
  "余白を確認できませんでした。ぼかしを弱めて再度お試しください。": [
-  "Could not save. Reduce the output size and try again.",
-  "저장하지 못했습니다. 출력 크기를 줄여 다시 시도하세요.",
-  "无法保存，请降低输出尺寸后重试。",
-  "無法儲存，請降低輸出尺寸後重試。",
-  "Speichern fehlgeschlagen. Ausgabegröße reduzieren und erneut versuchen.",
-  "Échec de l’enregistrement. Réduisez la taille et réessayez.",
-  "No se pudo guardar. Reduce el tamaño y vuelve a intentarlo.",
-  "Não foi possível salvar. Reduza o tamanho e tente novamente."
+  "Could not check the margins. Reduce blur and try again.",
+  "여백을 확인하지 못했습니다. 흐림을 줄여 다시 시도하세요.",
+  "无法检查边距。请减弱模糊后重试。",
+  "無法檢查邊距。請減弱模糊後重試。",
+  "Ränder konnten nicht geprüft werden. Unschärfe verringern und erneut versuchen.",
+  "Impossible de vérifier les marges. Réduisez le flou et réessayez.",
+  "No se pudieron comprobar los márgenes. Reduce el desenfoque y vuelve a intentarlo.",
+  "Não foi possível verificar as margens. Reduza o desfoque e tente novamente."
  ],
  "PDFのページサイズを読み取れませんでした。": [
-  "Could not load the PDF. Try another PDF or export its page as an image.",
-  "PDF를 불러오지 못했습니다. 다른 PDF 또는 페이지를 이미지로 내보내 사용하세요.",
-  "无法读取PDF。请尝试其他PDF或将页面导出为图像。",
-  "無法讀取PDF。請嘗試其他PDF或將頁面匯出為圖片。",
-  "PDF konnte nicht geladen werden. Anderes PDF oder als Bild exportierte Seite versuchen.",
-  "Impossible de charger le PDF. Essayez un autre PDF ou une page exportée en image.",
-  "No se pudo cargar el PDF. Prueba otro o exporta la página como imagen.",
-  "Não foi possível carregar o PDF. Tente outro ou exporte a página como imagem."
+  "Could not read the PDF page size.",
+  "PDF 페이지 크기를 읽지 못했습니다.",
+  "无法读取PDF页面尺寸。",
+  "無法讀取PDF頁面尺寸。",
+  "PDF-Seitengröße konnte nicht gelesen werden.",
+  "Impossible de lire la taille de page du PDF.",
+  "No se pudo leer el tamaño de página del PDF.",
+  "Não foi possível ler o tamanho da página do PDF."
  ],
  "PDFの描画に失敗しました。": [
-  "Could not load the PDF. Try another PDF or export its page as an image.",
-  "PDF를 불러오지 못했습니다. 다른 PDF 또는 페이지를 이미지로 내보내 사용하세요.",
-  "无法读取PDF。请尝试其他PDF或将页面导出为图像。",
-  "無法讀取PDF。請嘗試其他PDF或將頁面匯出為圖片。",
-  "PDF konnte nicht geladen werden. Anderes PDF oder als Bild exportierte Seite versuchen.",
-  "Impossible de charger le PDF. Essayez un autre PDF ou une page exportée en image.",
-  "No se pudo cargar el PDF. Prueba otro o exporta la página como imagen.",
-  "Não foi possível carregar o PDF. Tente outro ou exporte a página como imagem."
+  "Could not render the PDF.",
+  "PDF 렌더링에 실패했습니다.",
+  "PDF渲染失败。",
+  "PDF算繪失敗。",
+  "PDF konnte nicht gerendert werden.",
+  "Impossible de générer le rendu du PDF.",
+  "No se pudo renderizar el PDF.",
+  "Não foi possível renderizar o PDF."
  ],
  "PDFを読み込めませんでした。PDFとして書き出し直したファイルをお試しください。": [
-  "Could not load the PDF. Try another PDF or export its page as an image.",
-  "PDF를 불러오지 못했습니다. 다른 PDF 또는 페이지를 이미지로 내보내 사용하세요.",
-  "无法读取PDF。请尝试其他PDF或将页面导出为图像。",
-  "無法讀取PDF。請嘗試其他PDF或將頁面匯出為圖片。",
-  "PDF konnte nicht geladen werden. Anderes PDF oder als Bild exportierte Seite versuchen.",
-  "Impossible de charger le PDF. Essayez un autre PDF ou une page exportée en image.",
-  "No se pudo cargar el PDF. Prueba otro o exporta la página como imagen.",
-  "Não foi possível carregar o PDF. Tente outro ou exporte a página como imagem."
+  "Could not load the PDF. Try exporting it as a new PDF.",
+  "PDF를 불러오지 못했습니다. PDF로 다시 내보낸 파일을 사용해 보세요.",
+  "无法加载PDF。请尝试重新导出为PDF后再加载。",
+  "無法載入PDF。請嘗試重新匯出為PDF後再載入。",
+  "PDF konnte nicht geladen werden. Bitte erneut als PDF exportieren.",
+  "Impossible de charger le PDF. Essayez de le réexporter en PDF.",
+  "No se pudo cargar el PDF. Prueba a exportarlo de nuevo como PDF.",
+  "Não foi possível carregar o PDF. Tente exportá-lo novamente como PDF."
  ],
  "PDFデータを読み込めませんでした。ファイルを選び直してください。": [
-  "Could not load the PDF. Try another PDF or export its page as an image.",
-  "PDF를 불러오지 못했습니다. 다른 PDF 또는 페이지를 이미지로 내보내 사용하세요.",
-  "无法读取PDF。请尝试其他PDF或将页面导出为图像。",
-  "無法讀取PDF。請嘗試其他PDF或將頁面匯出為圖片。",
-  "PDF konnte nicht geladen werden. Anderes PDF oder als Bild exportierte Seite versuchen.",
-  "Impossible de charger le PDF. Essayez un autre PDF ou une page exportée en image.",
-  "No se pudo cargar el PDF. Prueba otro o exporta la página como imagen.",
-  "Não foi possível carregar o PDF. Tente outro ou exporte a página como imagem."
+  "Could not read the PDF data. Select the file again.",
+  "PDF 데이터를 읽지 못했습니다. 파일을 다시 선택하세요.",
+  "无法读取PDF数据，请重新选择文件。",
+  "無法讀取PDF資料，請重新選擇檔案。",
+  "PDF-Daten konnten nicht gelesen werden. Datei erneut wählen.",
+  "Impossible de lire les données PDF. Sélectionnez à nouveau le fichier.",
+  "No se pudieron leer los datos del PDF. Selecciona el archivo de nuevo.",
+  "Não foi possível ler os dados do PDF. Selecione o arquivo novamente."
  ],
  "保存ファイルが250 MBを超えています。比較案や画像サイズを減らしてください。": [
-  "Choose a project file no larger than 250 MB.",
-  "250 MB 이하 작업 파일을 선택하세요.",
-  "请选择不超过250 MB的项目文件。",
-  "請選擇不超過250 MB的專案檔。",
-  "Projektdatei bis 250 MB wählen.",
-  "Choisissez un projet de 250 Mo maximum.",
-  "Elige un proyecto de hasta 250 MB.",
-  "Escolha um projeto de até 250 MB."
+  "The saved file exceeds 250 MB. Remove comparison designs or reduce image sizes.",
+  "저장 파일이 250 MB를 초과합니다. 비교안 수나 이미지 크기를 줄이세요.",
+  "保存的文件超过250 MB。请减少对比方案或缩小图像。",
+  "儲存的檔案超過250 MB。請減少比較方案或縮小圖片。",
+  "Datei ist größer als 250 MB. Vergleichsentwürfe oder Bildgrößen reduzieren.",
+  "Le fichier dépasse 250 Mo. Réduisez les variantes ou la taille des images.",
+  "El archivo supera los 250 MB. Reduce los diseños comparativos o el tamaño de imagen.",
+  "O arquivo excede 250 MB. Reduza as versões de comparação ou o tamanho das imagens."
  ],
  "250 MB以下のプロジェクトファイルを選んでください。": [
   "Choose a project file no larger than 250 MB.",
@@ -5121,24 +5121,24 @@ window.BoxTranslations={
   "Escolha um projeto de até 250 MB."
  ],
  "作業ファイル（.boxproject）を選んでください。": [
-  "Invalid project format or contents. Choose a file saved by this tool.",
-  "프로젝트 형식이나 내용이 올바르지 않습니다. 이 도구로 저장한 파일을 선택하세요.",
-  "项目格式或内容无效，请选择本工具保存的文件。",
-  "專案格式或內容無效，請選擇本工具儲存的檔案。",
-  "Ungültige Projektdaten. Datei wählen, die mit diesem Werkzeug gespeichert wurde.",
-  "Projet invalide. Choisissez un fichier enregistré par cet outil.",
-  "Proyecto no válido. Elige un archivo guardado con esta herramienta.",
-  "Projeto inválido. Escolha um arquivo salvo nesta ferramenta."
+  "Choose a project file (.boxproject).",
+  "작업 파일(.boxproject)을 선택하세요.",
+  "请选择项目文件（.boxproject）。",
+  "請選擇專案檔（.boxproject）。",
+  "Projektdatei (.boxproject) wählen.",
+  "Choisissez un fichier de projet (.boxproject).",
+  "Elige un archivo de proyecto (.boxproject).",
+  "Escolha um arquivo de projeto (.boxproject)."
  ],
  "保存ファイルを読み取れませんでした。このツールで保存した作業ファイル（.boxproject）または構図ファイル（.boxview）を選んでください。": [
-  "Invalid project format or contents. Choose a file saved by this tool.",
-  "프로젝트 형식이나 내용이 올바르지 않습니다. 이 도구로 저장한 파일을 선택하세요.",
-  "项目格式或内容无效，请选择本工具保存的文件。",
-  "專案格式或內容無效，請選擇本工具儲存的檔案。",
-  "Ungültige Projektdaten. Datei wählen, die mit diesem Werkzeug gespeichert wurde.",
-  "Projet invalide. Choisissez un fichier enregistré par cet outil.",
-  "Proyecto no válido. Elige un archivo guardado con esta herramienta.",
-  "Projeto inválido. Escolha um arquivo salvo nesta ferramenta."
+  "Could not read the saved file. Choose a .boxproject or .boxview file saved by this tool.",
+  "저장 파일을 읽지 못했습니다. 이 도구로 저장한 .boxproject 또는 .boxview 파일을 선택하세요.",
+  "无法读取保存的文件。请选择本工具保存的.boxproject或.boxview文件。",
+  "無法讀取儲存的檔案。請選擇本工具儲存的.boxproject或.boxview檔案。",
+  "Datei konnte nicht gelesen werden. Eine mit diesem Tool gespeicherte .boxproject- oder .boxview-Datei wählen.",
+  "Impossible de lire le fichier. Choisissez un .boxproject ou .boxview enregistré avec cet outil.",
+  "No se pudo leer el archivo. Elige un .boxproject o .boxview guardado con esta herramienta.",
+  "Não foi possível ler o arquivo. Escolha um .boxproject ou .boxview salvo por esta ferramenta."
  ],
  "各辺16,000 px以下・合計6,500万画素以下の画像を選んでください。": [
   "Images must be at most 16,000 px per edge and 65 million pixels total.",
@@ -5161,54 +5161,54 @@ window.BoxTranslations={
   "Clique para adicionar cores semelhantes conectadas. A tolerância afeta o último clique."
  ],
  "表面以外の確かな候補は見つかりませんでした。表面の範囲・向きと箱の寸法を確認して再推測するか、残りの面を手動で指定してください。": [
-  "No reliable faces found. Try marking the front face, then detecting again.",
-  "확실한 면을 찾지 못했습니다. 앞면을 지정한 뒤 다시 추정하세요.",
-  "未找到可靠候选面，请指定正面后重新识别。",
-  "未找到可靠候選面，請指定正面後重新辨識。",
-  "Keine sicheren Flächen gefunden. Vorderseite markieren und erneut erkennen.",
-  "Aucune face fiable trouvée. Marquez l’avant puis relancez.",
-  "No se encontraron caras fiables. Marca el frente y vuelve a detectar.",
-  "Nenhuma face confiável encontrada. Marque a frente e detecte novamente."
+  "No reliable candidates besides the front were found. Check the front crop, orientation and box dimensions, then detect again or mark the other faces manually.",
+  "앞면 외에 확실한 후보를 찾지 못했습니다. 앞면 범위·방향과 상자 치수를 확인하고 다시 추정하거나 나머지 면을 직접 지정하세요.",
+  "未找到正面以外的可靠候选面。请检查正面选区、方向及盒子尺寸后重新识别，或手动指定其余各面。",
+  "未找到正面以外的可靠候選面。請檢查正面範圍、方向及盒子尺寸後重新辨識，或手動指定其餘各面。",
+  "Außer der Vorderseite keine sicheren Flächen gefunden. Ausschnitt, Ausrichtung und Maße prüfen; erneut erkennen oder weitere Flächen manuell markieren.",
+  "Aucune face fiable hormis l’avant. Vérifiez sa zone, son orientation et les dimensions, puis relancez ou marquez les autres faces.",
+  "No se encontraron caras fiables aparte del frente. Revisa su recorte, orientación y medidas; detecta de nuevo o marca las demás caras.",
+  "Nenhuma face confiável além da frente. Confira recorte, orientação e dimensões; detecte novamente ou marque as outras faces."
  ],
  "推測できませんでした。表面の範囲を確認するか、各面を手動で指定してください。": [
-  "No reliable faces found. Try marking the front face, then detecting again.",
-  "확실한 면을 찾지 못했습니다. 앞면을 지정한 뒤 다시 추정하세요.",
-  "未找到可靠候选面，请指定正面后重新识别。",
-  "未找到可靠候選面，請指定正面後重新辨識。",
-  "Keine sicheren Flächen gefunden. Vorderseite markieren und erneut erkennen.",
-  "Aucune face fiable trouvée. Marquez l’avant puis relancez.",
-  "No se encontraron caras fiables. Marca el frente y vuelve a detectar.",
-  "Nenhuma face confiável encontrada. Marque a frente e detecte novamente."
+  "Face detection failed. Check the front crop or mark each face manually.",
+  "면을 추정하지 못했습니다. 앞면 범위를 확인하거나 각 면을 직접 지정하세요.",
+  "识别失败。请检查正面选区或手动指定各面。",
+  "辨識失敗。請檢查正面範圍或手動指定各面。",
+  "Flächenerkennung fehlgeschlagen. Vorderseitenausschnitt prüfen oder Flächen manuell markieren.",
+  "Détection impossible. Vérifiez la zone avant ou marquez chaque face manuellement.",
+  "La detección falló. Revisa el recorte frontal o marca cada cara manualmente.",
+  "A detecção falhou. Confira o recorte frontal ou marque cada face manualmente."
  ],
  "各面の文字の向きを確認してください。": [
-  "Check front/back, crops and orientation, then choose Use this layout.",
-  "앞뒤·범위·방향을 확인하고 이 배치 사용을 누르세요.",
-  "确认正背面、范围和方向后，选择使用此配置。",
-  "確認正背面、範圍和方向後，選擇使用此配置。",
-  "Vorne/hinten, Zuschnitt und Richtung prüfen, dann Layout anwenden.",
-  "Vérifiez avant/arrière, recadrage et orientation, puis appliquez.",
-  "Comprueba frente/dorso, recortes y orientación y aplica.",
-  "Confira frente/verso, recortes e orientação e aplique."
+  "Check the text orientation on each face.",
+  "각 면의 글자 방향을 확인하세요.",
+  "请检查各面的文字方向。",
+  "請檢查各面的文字方向。",
+  "Textrichtung auf jeder Fläche prüfen.",
+  "Vérifiez l’orientation du texte sur chaque face.",
+  "Revisa la orientación del texto en cada cara.",
+  "Confira a orientação do texto em cada face."
  ],
  "表裏が違う場合は「表面を指定して推測」を選んでください。": [
-  "Check front/back, crops and orientation, then choose Use this layout.",
-  "앞뒤·범위·방향을 확인하고 이 배치 사용을 누르세요.",
-  "确认正背面、范围和方向后，选择使用此配置。",
-  "確認正背面、範圍和方向後，選擇使用此配置。",
-  "Vorne/hinten, Zuschnitt und Richtung prüfen, dann Layout anwenden.",
-  "Vérifiez avant/arrière, recadrage et orientation, puis appliquez.",
-  "Comprueba frente/dorso, recortes y orientación y aplica.",
-  "Confira frente/verso, recortes e orientação e aplique."
+  "If front and back are reversed, choose “Mark front, then detect”.",
+  "앞뒤가 뒤바뀌면 「앞면 지정 후 추정」을 선택하세요.",
+  "若正反面颠倒，请选择“指定正面后识别”。",
+  "若正反面顛倒，請選擇「指定正面後辨識」。",
+  "Bei vertauschter Vorder-/Rückseite „Vorderseite markieren, dann erkennen“ wählen.",
+  "Si l’avant et l’arrière sont inversés, choisissez « Marquer l’avant, puis détecter ».",
+  "Si frente y reverso están invertidos, elige «Marcar frente y detectar».",
+  "Se frente e verso estiverem invertidos, escolha “Marcar frente e detectar”."
  ],
  "表面だけを囲んでください。今の範囲は辺・四隅で調整できます。": [
-  "Mark only the front face and choose the text's top direction. It will stay fixed while other faces are detected.",
-  "앞면만 지정하고 글자 위쪽을 선택하세요. 앞면을 고정해 나머지를 찾습니다.",
-  "仅标记正面并选择文字上方方向，锁定此范围后识别其他面。",
-  "僅標記正面並選文字上方方向，鎖定此範圍後辨識其他面。",
-  "Nur Vorderseite markieren und Textrichtung wählen. Diese bleibt beim Erkennen weiterer Flächen fixiert.",
-  "Marquez l’avant et le haut du texte. Cette zone reste fixe pendant la détection.",
-  "Marca el frente y la dirección superior del texto. Se fija al detectar las demás caras.",
-  "Marque a frente e o topo do texto. Essa área fica fixa ao detectar as outras faces."
+  "Outline only the front face. Drag edges or corners to adjust the current selection.",
+  "앞면만 둘러싸세요. 변·모서리로 현재 범위를 조정할 수 있습니다.",
+  "请只框选正面。可拖动边缘或角点调整当前选区。",
+  "請只框選正面。可拖曳邊緣或角點調整目前範圍。",
+  "Nur die Vorderseite markieren. Ausschnitt an Rändern oder Ecken anpassen.",
+  "Encadrez uniquement l’avant. Ajustez la sélection par les bords ou coins.",
+  "Marca solo el frente. Ajusta la selección arrastrando bordes o esquinas.",
+  "Marque apenas a frente. Ajuste a seleção pelas bordas ou cantos."
  ],
  "デザインと箱の設定": [
   "Box shape",
@@ -5241,14 +5241,14 @@ window.BoxTranslations={
   "Largura × altura × profundidade"
  ],
  "正面と右側面を見る構図": [
-  "Right angle",
-  "오른쪽 사선",
-  "右斜角",
-  "右斜角",
-  "Schräg rechts",
-  "Trois-quarts droit",
-  "Oblicua derecha",
-  "Ângulo direito"
+  "View showing front and right side",
+  "앞면과 오른쪽 면이 보이는 구도",
+  "显示正面与右侧面的构图",
+  "顯示正面與右側面的構圖",
+  "Ansicht von Vorderseite und rechter Seite",
+  "Vue de l’avant et du côté droit",
+  "Vista del frente y lado derecho",
+  "Vista da frente e lado direito"
  ],
  "斜め下から見上げる構図": [
   "Low angle",
@@ -5411,24 +5411,24 @@ window.BoxTranslations={
   "Usar imagem única"
  ],
  "面に使う範囲。ドラッグで選択、矢印キーで移動": [
-  "Drag edges or corners to resize, inside to move, outside to select again.",
-  "변·모서리로 크기 조절, 안쪽으로 이동, 바깥쪽으로 새로 선택하세요.",
-  "拖动边缘或角点调整大小，框内移动，框外重新选择。",
-  "拖曳邊緣或角點調整大小，框內移動，框外重新選取。",
-  "Ränder/Ecken ziehen zum Skalieren, innen verschieben, außen neu auswählen.",
-  "Bords et coins : redimensionner ; intérieur : déplacer ; extérieur : resélectionner.",
-  "Arrastra bordes para ajustar, dentro para mover y fuera para seleccionar de nuevo.",
-  "Arraste bordas para ajustar, dentro para mover e fora para selecionar novamente."
+  "Face crop. Drag to select; arrow keys to move.",
+  "면에 사용할 범위. 드래그로 선택, 방향키로 이동.",
+  "面选区。拖动选择，方向键移动。",
+  "面範圍。拖曳選取，方向鍵移動。",
+  "Flächenausschnitt. Ziehen zum Auswählen, Pfeiltasten zum Verschieben.",
+  "Zone de face. Glissez pour sélectionner, flèches pour déplacer.",
+  "Recorte de cara. Arrastra para seleccionar; flechas para mover.",
+  "Recorte da face. Arraste para selecionar; setas para mover."
  ],
  "選んだ面の画像を90度回転": [
-  "Rotate",
-  "회전",
-  "旋转",
-  "旋轉",
-  "Drehen",
-  "Rotation",
-  "Giro",
-  "Rotação"
+  "Rotate selected face artwork by 90°",
+  "선택한 면의 이미지를 90° 회전",
+  "将所选面图像旋转90°",
+  "將所選面圖片旋轉90°",
+  "Bild der gewählten Fläche um 90° drehen",
+  "Tourner le visuel de la face sélectionnée de 90°",
+  "Girar la imagen de la cara seleccionada 90°",
+  "Girar a imagem da face selecionada em 90°"
  ],
  "選んだ箱を並べた3Dプレビュー": [
   "Live comparison",
@@ -5451,14 +5451,14 @@ window.BoxTranslations={
   "Cor de fundo"
  ],
  "加工範囲の編集画像。クリックで選択、ブラシで追加・消去。": [
-  "Select finish area",
-  "가공 범위 선택",
-  "选择加工区域",
-  "選擇加工區域",
-  "Veredelungsbereich wählen",
-  "Sélectionner la zone de finition",
-  "Seleccionar área de acabado",
-  "Selecionar área de acabamento"
+  "Finish mask editor. Click to select; brush to add or erase.",
+  "가공 범위 편집 이미지. 클릭으로 선택, 브러시로 추가·삭제.",
+  "加工区域编辑图像。点击选择，画笔添加或擦除。",
+  "加工範圍編輯圖片。點擊選取，筆刷新增或擦除。",
+  "Veredelungsmaske bearbeiten. Klicken zum Auswählen, Pinsel zum Ergänzen oder Löschen.",
+  "Éditeur du masque. Cliquez pour sélectionner, pinceau pour ajouter ou effacer.",
+  "Editor de máscara. Clic para seleccionar; pincel para añadir o borrar.",
+  "Editor de máscara. Clique para selecionar; pincel para adicionar ou apagar."
  ],
  "裁断線の色を選ぶ画像": [
   "Line color to remove",
@@ -5531,14 +5531,14 @@ window.BoxTranslations={
   "Usar imagem única"
  ],
  "加工用画像を読み込むと、黒い部分に選んだ加工を反映します。": [
-  "Use an image with the same size and layout as the artwork. Paint only the gloss/foil areas black; leave the rest white or transparent.",
-  "디자인과 같은 크기·배치로 이미지를 만드세요. 광택·박 부분만 검정, 나머지는 흰색 또는 투명으로 하세요.",
-  "准备与设计尺寸和版式相同的图像。需上光或烫箔的部分填黑，其余为白色或透明。",
-  "準備與設計尺寸和版面相同的圖片。需上光或燙箔的部分填黑，其餘為白色或透明。",
-  "Bild mit gleicher Größe und Anordnung verwenden. Glanz-/Folienbereiche schwarz, alles andere weiß oder transparent.",
-  "Créez une image de même taille et placement. Zones de vernis/dorure en noir, reste blanc ou transparent.",
-  "Usa una imagen del mismo tamaño y distribución. Pinta de negro las áreas de acabado; el resto, blanco o transparente.",
-  "Use imagem do mesmo tamanho e layout. Áreas de verniz/foil em preto; restante branco ou transparente."
+  "Import a finish mask to apply the selected finish to its black areas.",
+  "가공용 이미지를 불러오면 검은 부분에 선택한 가공을 적용합니다.",
+  "导入加工蒙版后，所选加工应用到黑色部分。",
+  "匯入加工遮色片後，所選加工套用至黑色部分。",
+  "Veredelungsmaske laden: Die gewählte Veredelung wird auf schwarze Bereiche angewendet.",
+  "Importez un masque : la finition choisie s’applique aux zones noires.",
+  "Importa una máscara para aplicar el acabado elegido a las zonas negras.",
+  "Importe uma máscara para aplicar o acabamento escolhido às áreas pretas."
  ],
  "元画像を表示中。": [
   "Original",
@@ -5871,34 +5871,34 @@ window.BoxTranslations={
   "Mockups 3D gratuitos de caixas de jogos | ボドゲ箱イメージツクール"
  ],
  "すべての設定を初期状態に戻しますか？\n\n箱のサイズ・向き・光・ピント・背景・保存設定と、読み込んだ画像の配置をリセットし、ドイツ小箱のサンプルに戻します。\n元の画像・PDFファイルや保存済みの画像は削除されません。": [
-  "Reset dimensions, views, lighting, focus, background, export settings and artwork placement to the initial sample? Original and saved files will not be deleted.",
-  "치수·구도·조명·초점·배경·저장 설정·이미지 배치를 초기 샘플로 되돌릴까요? 원본 및 저장 파일은 삭제되지 않습니다.",
-  "将尺寸、视角、光线、焦点、背景、导出设置和图像配置重置为初始示例？原始文件和已保存文件不会删除。",
-  "將尺寸、視角、光線、焦點、背景、匯出設定和圖片配置重設為初始範例？原始檔和已儲存檔不會刪除。",
-  "Maße, Ansicht, Licht, Fokus, Hintergrund, Export und Design auf das Startbeispiel zurücksetzen? Originale und gespeicherte Dateien bleiben erhalten.",
-  "Réinitialiser dimensions, vue, lumière, focus, fond, export et placement vers l’exemple initial ? Les fichiers originaux et enregistrés restent intacts.",
-  "¿Restablecer medidas, vistas, luz, foco, fondo, exportación y diseño al ejemplo inicial? No se borrarán archivos originales ni guardados.",
-  "Redefinir dimensões, vistas, luz, foco, fundo, exportação e arte ao exemplo inicial? Arquivos originais e salvos não serão apagados."
+  "Reset all settings and replace the current artwork and remove comparison designs? Unsaved changes will be lost.\n\nBox size, orientation, lighting, focus, background, export settings and artwork placement return to the German small-box sample. Save your project first if you need this work. Original image/PDF files and saved exports will not be deleted.",
+  "모든 설정을 초기화하고 현재 이미지와 비교안을 지울까요? 저장하지 않은 변경 사항은 사라집니다.\n\n상자 크기·방향·조명·초점·배경·저장 설정·이미지 배치를 독일 소형 상자 샘플로 되돌립니다. 필요한 작업은 먼저 프로젝트로 저장하세요. 원본 이미지·PDF와 저장한 이미지는 삭제되지 않습니다.",
+  "重置所有设置并替换当前图像并清除对比方案？未保存的更改将丢失。\n\n盒子尺寸、方向、光线、焦点、背景、导出设置和图像配置将恢复为德式小盒示例。需要保留的工作请先保存为项目。原始图像、PDF及已保存的导出图像不会删除。",
+  "重設所有設定並更換目前圖片並清除比較方案？未儲存的變更將遺失。\n\n盒子尺寸、方向、光線、焦點、背景、匯出設定和圖片配置將還原為德式小盒範例。需要保留的工作請先儲存為專案。原始圖片、PDF及已儲存的匯出圖片不會刪除。",
+  "Alle Einstellungen zurücksetzen und das aktuelle Bild ersetzen und Vergleichsentwürfe entfernen? Ungespeicherte Änderungen gehen verloren.\n\nGröße, Ausrichtung, Licht, Fokus, Hintergrund, Export und Bildplatzierung werden auf das Beispiel der kleinen deutschen Box zurückgesetzt. Projekt bei Bedarf vorher speichern. Originalbilder, PDFs und gespeicherte Exporte werden nicht gelöscht.",
+  "Tout réinitialiser et remplacer le visuel actuel et effacer les variantes ? Les modifications non enregistrées seront perdues.\n\nDimensions, orientation, lumière, mise au point, fond, export et placement reviennent à l’exemple de petite boîte allemande. Enregistrez le projet pour conserver ce travail. Images et PDF originaux et exports enregistrés ne seront pas supprimés.",
+  "¿Restablecer todos los ajustes y reemplazar la imagen actual y eliminar los diseños comparativos? Se perderán los cambios sin guardar.\n\nTamaño, orientación, luz, foco, fondo, exportación y colocación vuelven al ejemplo de caja pequeña alemana. Guarda el proyecto antes si necesitas conservarlo. No se eliminarán imágenes ni PDF originales ni exportaciones guardadas.",
+  "Redefinir tudo e substituir a imagem atual e remover as versões de comparação? Alterações não salvas serão perdidas.\n\nTamanho, orientação, luz, foco, fundo, exportação e posicionamento voltam ao exemplo de caixa pequena alemã. Salve o projeto antes se precisar manter o trabalho. Imagens e PDFs originais e exportações salvas não serão excluídos."
  ],
  "バグ報告（Googleフォームを新しいタブで開く）": [
-  "Report a bug",
-  "오류 신고",
-  "报告问题",
-  "回報問題",
-  "Fehler melden",
-  "Signaler un bug",
-  "Informar de un error",
-  "Relatar um erro"
+  "Report a bug (opens Google Forms in a new tab)",
+  "오류 신고 (새 탭에서 Google 설문지 열기)",
+  "报告问题（在新标签页打开Google表单）",
+  "回報問題（在新分頁開啟Google表單）",
+  "Fehler melden (Google Forms in neuem Tab)",
+  "Signaler un bug (Google Forms dans un nouvel onglet)",
+  "Informar de un error (Google Forms en nueva pestaña)",
+  "Relatar um erro (Google Forms em nova aba)"
  ],
  "大きな照明で、図柄と立体感をバランスよく見せます。": [
-  "White light and subtle reflections add depth while preserving artwork colors.",
-  "원본 색을 유지하며 흰빛과 은은한 반사로 입체감을 줍니다.",
-  "保留原图色调，以白光和适度反射营造立体感。",
-  "保留原圖色調，以白光和適度反射營造立體感。",
-  "Weißes Licht und dezente Reflexe geben Tiefe und erhalten die Designfarben.",
-  "Lumière blanche et reflets discrets donnent du relief en préservant les couleurs.",
-  "Luz blanca y reflejos suaves dan volumen conservando los colores.",
-  "Luz branca e reflexos discretos dão volume preservando as cores."
+  "Broad lighting balances artwork visibility and depth.",
+  "넓은 조명으로 디자인과 입체감을 균형 있게 보여줍니다.",
+  "宽广光源平衡呈现图案与立体感。",
+  "寬廣光源平衡呈現圖案與立體感。",
+  "Großflächiges Licht bringt Design und Tiefe ausgewogen zur Geltung.",
+  "Un éclairage large équilibre le visuel et le relief.",
+  "La luz amplia equilibra el diseño y el volumen.",
+  "A luz ampla equilibra a arte e a profundidade."
  ],
  "「除去結果を確認」で仕上がりを確認してください。": [
   "Preview cleanup",
@@ -5921,14 +5921,14 @@ window.BoxTranslations={
   "Clique numa linha ou use o seletor de cor."
  ],
  "PDFの線情報を読み込み中です。少し待ってからお試しください。": [
-  "Loading…",
-  "불러오는 중…",
-  "正在加载…",
-  "正在載入…",
-  "Wird geladen…",
-  "Chargement…",
-  "Cargando…",
-  "Carregando…"
+  "Loading PDF stroke data. Wait a moment and try again.",
+  "PDF 선 정보 불러오는 중입니다. 잠시 후 다시 시도하세요.",
+  "正在加载PDF线条信息，请稍候重试。",
+  "正在載入PDF線條資訊，請稍候重試。",
+  "PDF-Linien werden geladen. Kurz warten und erneut versuchen.",
+  "Chargement des traits PDF. Patientez, puis réessayez.",
+  "Cargando datos de líneas del PDF. Espera un momento y vuelve a intentarlo.",
+  "Carregando dados das linhas do PDF. Aguarde um momento e tente novamente."
  ],
  "消したい線の色を画像からクリックして選んでください。元画像は残り、面の推測には引き続き元画像を使います。": [
   "Detection uses the original image. The box can use a cleaned version: hide PDF strokes/layers or fill thin image lines with nearby colors.",
@@ -5941,114 +5941,114 @@ window.BoxTranslations={
   "A detecção usa o original. A caixa pode usar uma versão limpa: ocultar traços/camadas PDF ou preencher linhas finas com cores próximas."
  ],
  "PDFの線色を選ぶと、下の図柄を保って線を非表示にできます。": [
-  "Hide PDF strokes / layers",
-  "PDF 선·레이어 숨기기",
-  "隐藏PDF线条或图层",
-  "隱藏PDF線條或圖層",
-  "PDF-Linien/Ebenen ausblenden",
-  "Masquer traits et calques PDF",
-  "Ocultar trazos y capas PDF",
-  "Ocultar traços e camadas PDF"
+  "Select a PDF stroke color to hide those lines while preserving artwork underneath.",
+  "PDF 선 색을 선택하면 아래 디자인을 유지하며 선을 숨길 수 있습니다.",
+  "选择PDF线条颜色即可隐藏线条，并保留下方图案。",
+  "選擇PDF線條顏色即可隱藏線條，並保留下方圖案。",
+  "PDF-Linienfarbe wählen, um Linien auszublenden und das darunterliegende Design zu erhalten.",
+  "Choisissez la couleur des traits PDF pour les masquer en conservant le visuel dessous.",
+  "Elige el color de líneas del PDF para ocultarlas conservando el diseño de debajo.",
+  "Escolha a cor das linhas do PDF para ocultá-las preservando a arte abaixo."
  ],
  "独立した線が見つかりません。専用レイヤーを選ぶか、画像の細線補修に切り替えてください。": [
-  "No separate strokes of this color. For rasterized lines, switch to repair with nearby colors.",
-  "해당 색의 독립된 선이 없습니다. 이미지에 포함된 선은 주변 색 보정으로 전환하세요.",
-  "没有此颜色的独立线条。图像内嵌线请使用周边颜色修补。",
-  "沒有此顏色的獨立線條。圖片內嵌線請使用周邊顏色修補。",
-  "Keine separaten Linien dieser Farbe. Rasterlinien mit Umgebungsfarben reparieren.",
-  "Aucun trait séparé de cette couleur. Pour les traits raster, utilisez les couleurs voisines.",
-  "No hay trazos independientes de este color. Para líneas rasterizadas usa reparación con colores cercanos.",
-  "Sem traços separados desta cor. Para linhas rasterizadas use reparo com cores próximas."
+  "No separate strokes found. Select a dedicated layer or switch to thin-line repair.",
+  "독립된 선을 찾지 못했습니다. 전용 레이어를 선택하거나 가는 선 보정으로 전환하세요.",
+  "未找到独立线条。请选择专用图层或切换到细线修补。",
+  "未找到獨立線條。請選擇專用圖層或切換至細線修補。",
+  "Keine separaten Linien gefunden. Eigene Ebene wählen oder zur Linienreparatur wechseln.",
+  "Aucun trait indépendant trouvé. Choisissez un calque dédié ou la correction des lignes fines.",
+  "No hay trazos independientes. Elige una capa dedicada o cambia a reparación de líneas finas.",
+  "Nenhum traço independente encontrado. Escolha uma camada dedicada ou a correção de linhas finas."
  ],
  "PDFの線情報を取得できませんでした。画像の細線補修を使えます。": [
-  "No separate strokes of this color. For rasterized lines, switch to repair with nearby colors.",
-  "해당 색의 독립된 선이 없습니다. 이미지에 포함된 선은 주변 색 보정으로 전환하세요.",
-  "没有此颜色的独立线条。图像内嵌线请使用周边颜色修补。",
-  "沒有此顏色的獨立線條。圖片內嵌線請使用周邊顏色修補。",
-  "Keine separaten Linien dieser Farbe. Rasterlinien mit Umgebungsfarben reparieren.",
-  "Aucun trait séparé de cette couleur. Pour les traits raster, utilisez les couleurs voisines.",
-  "No hay trazos independientes de este color. Para líneas rasterizadas usa reparación con colores cercanos.",
-  "Sem traços separados desta cor. Para linhas rasterizadas use reparo com cores próximas."
+  "Could not read PDF stroke data. You can use image thin-line repair instead.",
+  "PDF 선 정보를 가져오지 못했습니다. 이미지의 가는 선 보정을 사용할 수 있습니다.",
+  "无法获取PDF线条信息，可改用图像细线修补。",
+  "無法取得PDF線條資訊，可改用圖片細線修補。",
+  "PDF-Liniendaten nicht verfügbar. Stattdessen dünne Bildlinien reparieren.",
+  "Impossible de lire les traits PDF. Utilisez la correction des lignes fines de l’image.",
+  "No se pudieron leer las líneas del PDF. Puedes usar la reparación de líneas finas.",
+  "Não foi possível ler as linhas do PDF. Use a correção de linhas finas da imagem."
  ],
  "画像上で各面の範囲を調整できます。選び直すと、その範囲だけが箱に反映されます。": [
-  "Detect faces, or select a face and mark its area on the image.",
-  "면을 추정하거나 면을 선택해 이미지에 범위를 지정하세요.",
-  "自动识别，或选择一个面并在图像上标记区域。",
-  "自動辨識，或選擇一個面並在圖片上標記區域。",
-  "Flächen erkennen oder eine Fläche wählen und im Bild markieren.",
-  "Détectez les faces ou choisissez-en une et tracez sa zone.",
-  "Detecta las caras o elige una y marca su área.",
-  "Detecte as faces ou escolha uma e marque sua área."
+  "Adjust each face crop on the image. Reselecting uses only that area on the box.",
+  "이미지에서 각 면의 범위를 조정할 수 있습니다. 다시 선택하면 해당 범위만 상자에 반영됩니다.",
+  "可在图像上调整各面选区。重新选择后，盒子只使用该区域。",
+  "可在圖片上調整各面範圍。重新選取後，盒子只使用該區域。",
+  "Flächenausschnitte im Bild anpassen. Nach Neuauswahl wird nur dieser Bereich verwendet.",
+  "Ajustez chaque face sur l’image. Après resélection, seule cette zone est utilisée sur la boîte.",
+  "Ajusta cada cara en la imagen. Al volver a seleccionarla, la caja usa solo esa zona.",
+  "Ajuste cada face na imagem. Ao selecionar novamente, a caixa usa apenas essa área."
  ],
  "表裏の展開図を自動配置 · 寸法を確認": [
-  "Imported as a front/back dieline.",
-  "앞뒤 전개도로 불러왔습니다.",
-  "已作为正背面展开图导入。",
-  "已作為正背面展開圖匯入。",
-  "Als Vorder-/Rückseitenvorlage geladen.",
-  "Importé comme gabarit avant/arrière.",
-  "Importado como plantilla frontal/trasera.",
-  "Importado como molde frente/verso."
+  "Front/back dieline placed automatically · check dimensions",
+  "앞뒤 전개도 자동 배치 · 치수 확인",
+  "自动配置正反面展开图 · 检查尺寸",
+  "自動配置正反面展開圖 · 檢查尺寸",
+  "Vorder-/Rückseitenstanzriss automatisch platziert · Maße prüfen",
+  "Patron avant/arrière placé automatiquement · vérifiez les dimensions",
+  "Troquel frontal/posterior colocado automáticamente · revisa las medidas",
+  "Faca de corte frente/verso posicionada automaticamente · confira as dimensões"
  ],
  "展開図として配置・各面を確認してください": [
-  "Imported as a dieline.",
-  "전개도로 불러왔습니다.",
-  "已作为展开图导入。",
-  "已作為展開圖匯入。",
-  "Als Stanzvorlage geladen.",
-  "Importé comme gabarit.",
-  "Importado como plantilla.",
-  "Importado como molde."
+  "Placed as a dieline. Check each face.",
+  "전개도로 배치했습니다. 각 면을 확인하세요.",
+  "已按展开图配置，请检查各面。",
+  "已按展開圖配置，請檢查各面。",
+  "Als Stanzriss platziert. Jede Fläche prüfen.",
+  "Placé comme patron. Vérifiez chaque face.",
+  "Colocado como troquel. Revisa cada cara.",
+  "Posicionado como faca de corte. Confira cada face."
  ],
  "画像・PDFを選ぶと箱にデザインが反映されます。": [
-  "Choose image or PDF",
-  "이미지·PDF 선택",
-  "选择图像或PDF",
-  "選擇圖片或PDF",
-  "Bild oder PDF wählen",
-  "Choisir une image ou un PDF",
-  "Elegir imagen o PDF",
-  "Escolher imagem ou PDF"
+  "Choose an image or PDF to apply artwork to the box.",
+  "이미지·PDF를 선택하면 상자에 디자인이 적용됩니다.",
+  "选择图像或PDF即可将设计应用到盒子。",
+  "選擇圖片或PDF即可將設計套用至盒子。",
+  "Bild oder PDF wählen, um das Design auf die Box anzuwenden.",
+  "Choisissez une image ou un PDF pour placer le visuel sur la boîte.",
+  "Elige una imagen o PDF para aplicar el diseño a la caja.",
+  "Escolha uma imagem ou PDF para aplicar a arte na caixa."
  ],
  "元画像全体を表面に配置しました。展開図なら、面を推測して配置し直せます。": [
-  "Imported as a single artwork.",
-  "단일 디자인으로 불러왔습니다.",
-  "已作为单张设计导入。",
-  "已作為單張設計匯入。",
-  "Als Einzelbild geladen.",
-  "Importé comme visuel unique.",
-  "Importado como diseño único.",
-  "Importado como arte única."
+  "The entire source image is on the front. For a dieline, detect faces to rearrange it.",
+  "원본 전체를 앞면에 배치했습니다. 전개도라면 면을 추정해 다시 배치할 수 있습니다.",
+  "已将整张原图配置到正面。若是展开图，可识别各面重新配置。",
+  "已將整張原圖配置到正面。若是展開圖，可辨識各面重新配置。",
+  "Ganzes Original auf der Vorderseite platziert. Bei einem Stanzriss Flächen erkennen und neu zuordnen.",
+  "Image entière placée sur l’avant. Pour un patron, détectez les faces pour la répartir.",
+  "Imagen completa colocada en el frente. Si es un troquel, detecta las caras para recolocarla.",
+  "Imagem completa posicionada na frente. Para uma faca de corte, detecte as faces para redistribuir."
  ],
  "1枚絵の全体を表面に配置しました。箱のサイズは「箱のかたち」タブで変更できます。": [
-  "Imported as a single artwork.",
-  "단일 디자인으로 불러왔습니다.",
-  "已作为单张设计导入。",
-  "已作為單張設計匯入。",
-  "Als Einzelbild geladen.",
-  "Importé comme visuel unique.",
-  "Importado como diseño único.",
-  "Importado como arte única."
+  "The entire artwork is on the front. Change box dimensions in the Box shape tab.",
+  "이미지 전체를 앞면에 배치했습니다. 상자 크기는 「상자 형태」 탭에서 변경하세요.",
+  "已将整张图像配置到正面。可在“盒型”选项卡修改盒子尺寸。",
+  "已將整張圖片配置到正面。可在「盒型」頁籤修改盒子尺寸。",
+  "Ganzes Bild auf der Vorderseite. Boxgröße unter „Schachtelform“ ändern.",
+  "Visuel entier placé sur l’avant. Modifiez les dimensions dans « Forme de la boîte ».",
+  "Imagen completa colocada en el frente. Cambia las medidas en «Forma de la caja».",
+  "Imagem completa posicionada na frente. Altere as dimensões em “Formato da caixa”."
  ],
  "候補を取り消しました。表面を調整して再推測できます。": [
-  "Candidates cancelled. The layout is unchanged.",
-  "후보를 취소했습니다. 배치는 바뀌지 않았습니다.",
-  "已取消候选，配置未改变。",
-  "已取消候選，配置未改變。",
-  "Vorschläge verworfen. Layout unverändert.",
-  "Candidats annulés. Placement inchangé.",
-  "Candidatos cancelados. Colocación sin cambios.",
-  "Candidatos cancelados. Posicionamento inalterado."
+  "Candidates cancelled. Adjust the front face and detect again.",
+  "후보를 취소했습니다. 앞면을 조정한 뒤 다시 추정할 수 있습니다.",
+  "已取消候选面，可调整正面后重新识别。",
+  "已取消候選面，可調整正面後重新辨識。",
+  "Vorschläge verworfen. Vorderseite anpassen und erneut erkennen.",
+  "Propositions annulées. Ajustez l’avant, puis relancez la détection.",
+  "Candidatos cancelados. Ajusta el frente y detecta de nuevo.",
+  "Candidatos cancelados. Ajuste a frente e detecte novamente."
  ],
  "キャラメル箱に切り替えました。展開図は各面を選んで範囲を合わせてください。": [
-  "Paperboard box with tuck flaps at both ends.",
-  "위아래에 끼우는 뚜껑이 있는 종이 상자입니다.",
-  "两端插舌封口的纸盒。",
-  "兩端插舌封口的紙盒。",
-  "Karton mit Stecklaschen an beiden Enden.",
-  "Boîte en carton avec rabats aux deux extrémités.",
-  "Caja de cartón con pestañas en ambos extremos.",
-  "Caixa de papel-cartão com abas nas duas extremidades."
+  "Switched to a tuck box. Select each face and adjust its dieline crop.",
+  "접이식 상자로 전환했습니다. 전개도에서 각 면을 선택해 범위를 맞추세요.",
+  "已切换为插舌盒。请逐面选择并调整展开图选区。",
+  "已切換為插舌盒。請逐面選擇並調整展開圖範圍。",
+  "Auf Faltschachtel umgestellt. Jede Fläche wählen und Ausschnitt im Stanzriss anpassen.",
+  "Passage à la boîte à rabats. Sélectionnez chaque face et ajustez sa zone sur le patron.",
+  "Se ha cambiado a caja de solapas. Elige cada cara y ajusta su recorte del troquel.",
+  "Alterado para caixa com abas. Selecione cada face e ajuste seu recorte na faca de corte."
  ],
  "ボドゲ箱イメージツクールのトップへ": [
   "Open tool",
@@ -6131,114 +6131,114 @@ window.BoxTranslations={
   "Pré-visualize e salve PNG. ZIP exporta vistas ou caixa/sombra separadas. GIF oferece volta completa ou oscilação com velocidade e ângulo ajustáveis."
  ],
  "{0}を開きました。編集後は「現在の状態で更新」で比較案に反映できます。": [
-  "Edit ({0})",
-  "편집 ({0})",
-  "编辑 ({0})",
-  "編輯 ({0})",
-  "Bearbeiten ({0})",
-  "Modifier ({0})",
-  "Editar ({0})",
-  "Editar ({0})"
+  "Opened {0}. After editing, choose “Update with current state” to update this comparison design.",
+  "{0}을 열었습니다. 편집 후 「현재 상태로 업데이트」로 비교안에 반영하세요.",
+  "已打开{0}。编辑后选择“以当前状态更新”以更新此对比方案。",
+  "已開啟{0}。編輯後選擇「以目前狀態更新」以更新此比較方案。",
+  "{0} geöffnet. Nach der Bearbeitung mit „Mit aktuellem Stand aktualisieren“ den Vergleichsentwurf aktualisieren.",
+  "{0} ouvert. Après modification, choisissez « Mettre à jour avec l’état actuel » pour actualiser la variante.",
+  "Se abrió {0}. Tras editar, elige «Actualizar con el estado actual» para actualizar este diseño comparativo.",
+  "{0} aberto. Após editar, escolha “Atualizar com estado atual” para atualizar esta versão de comparação."
  ],
  "「{0}」を比較枠{1}に追加しました。編集中の箱と、ほかの比較案はそのままです。": [
-  "Added to comparison. Change artwork or settings to add another design. ({0}, {1})",
-  "비교에 추가했습니다. 이미지·설정을 바꿔 다음 안을 추가하세요. ({0}, {1})",
-  "已添加到比较，可修改图像或设置再添加新方案。 ({0}, {1})",
-  "已加入比較，可修改圖片或設定再加入新方案。 ({0}, {1})",
-  "Zum Vergleich hinzugefügt. Bild/Einstellungen ändern, um weitere Designs hinzuzufügen. ({0}, {1})",
-  "Ajouté à la comparaison. Modifiez le visuel ou les réglages pour ajouter une autre variante. ({0}, {1})",
-  "Añadido a comparación. Cambia imagen o ajustes para añadir otra variante. ({0}, {1})",
-  "Adicionado à comparação. Altere imagem ou ajustes para adicionar outra versão. ({0}, {1})"
+  "Added “{0}” to comparison slot {1}. The box you are editing and other designs are unchanged.",
+  "“{0}”을 비교 슬롯 {1}에 추가했습니다. 편집 중인 상자와 다른 비교안은 유지됩니다.",
+  "已将“{0}”添加到对比槽位{1}。正在编辑的盒子和其他方案保持不变。",
+  "已將「{0}」加入比較欄位{1}。正在編輯的盒子和其他方案保持不變。",
+  "„{0}“ zu Vergleichsplatz {1} hinzugefügt. Aktuelle Box und andere Entwürfe bleiben unverändert.",
+  "« {0} » ajouté à l’emplacement {1}. La boîte en cours et les autres variantes restent inchangées.",
+  "«{0}» añadido al espacio {1}. La caja en edición y los demás diseños permanecen igual.",
+  "“{0}” adicionado ao espaço {1}. A caixa em edição e as outras versões permanecem iguais."
  ],
  "{0}に加工用画像を配置しました。青い部分が加工範囲です。": [
-  "Show finish area in blue ({0})",
-  "가공 범위를 파란색으로 표시 ({0})",
-  "蓝色显示加工区域 ({0})",
-  "藍色顯示加工區域 ({0})",
-  "Veredelung blau anzeigen ({0})",
-  "Afficher la finition en bleu ({0})",
-  "Mostrar acabado en azul ({0})",
-  "Mostrar acabamento em azul ({0})"
+  "Finish mask placed on {0}. Blue marks the finish area.",
+  "{0}에 가공용 이미지를 배치했습니다. 파란 부분이 가공 범위입니다.",
+  "已为{0}配置加工蒙版。蓝色部分为加工区域。",
+  "已為{0}配置加工遮色片。藍色部分為加工範圍。",
+  "Veredelungsmaske auf {0} platziert. Blau markiert den Veredelungsbereich.",
+  "Masque de finition placé sur {0}. Le bleu indique la zone de finition.",
+  "Máscara de acabado colocada en {0}. El azul indica el área de acabado.",
+  "Máscara de acabamento posicionada em {0}. O azul indica a área de acabamento."
  ],
  "カメラを回してGIFを作成しています… {0}": [
-  "Creating… ({0})",
-  "만드는 중… ({0})",
-  "正在生成… ({0})",
-  "正在產生… ({0})",
-  "Wird erstellt… ({0})",
-  "Création… ({0})",
-  "Creando… ({0})",
-  "Criando… ({0})"
+  "Creating GIF with an orbiting camera… {0}",
+  "카메라를 회전하며 GIF 만드는 중… {0}",
+  "正在环绕相机生成GIF… {0}",
+  "正在環繞相機產生GIF… {0}",
+  "GIF mit umlaufender Kamera wird erstellt… {0}",
+  "Création du GIF avec caméra en rotation… {0}",
+  "Creando GIF con la cámara en órbita… {0}",
+  "Criando GIF com a câmera em órbita… {0}"
  ],
  "回転GIFを作成しています… {0}": [
-  "Creating… ({0})",
-  "만드는 중… ({0})",
-  "正在生成… ({0})",
-  "正在產生… ({0})",
-  "Wird erstellt… ({0})",
-  "Création… ({0})",
-  "Creando… ({0})",
-  "Criando… ({0})"
+  "Creating rotating GIF… {0}",
+  "회전 GIF 만드는 중… {0}",
+  "正在生成旋转GIF… {0}",
+  "正在產生旋轉GIF… {0}",
+  "Rotierendes GIF wird erstellt… {0}",
+  "Création du GIF de rotation… {0}",
+  "Creando GIF giratorio… {0}",
+  "Criando GIF de rotação… {0}"
  ],
  "細い線を補修しています… {0}": [
-  "Creating… ({0})",
-  "만드는 중… ({0})",
-  "正在生成… ({0})",
-  "正在產生… ({0})",
-  "Wird erstellt… ({0})",
-  "Création… ({0})",
-  "Creando… ({0})",
-  "Criando… ({0})"
+  "Repairing thin lines… {0}",
+  "가는 선 보정 중… {0}",
+  "正在修补细线… {0}",
+  "正在修補細線… {0}",
+  "Dünne Linien werden repariert… {0}",
+  "Correction des lignes fines… {0}",
+  "Reparando líneas finas… {0}",
+  "Corrigindo linhas finas… {0}"
  ],
  "PDFの {0} ページ目を読み込んでいます…": [
-  "Loading… ({0})",
-  "불러오는 중… ({0})",
-  "正在加载… ({0})",
-  "正在載入… ({0})",
-  "Wird geladen… ({0})",
-  "Chargement… ({0})",
-  "Cargando… ({0})",
-  "Carregando… ({0})"
+  "Loading PDF page {0}…",
+  "PDF {0}페이지 불러오는 중…",
+  "正在加载PDF第{0}页…",
+  "正在載入PDF第{0}頁…",
+  "PDF-Seite {0} wird geladen…",
+  "Chargement de la page {0} du PDF…",
+  "Cargando la página {0} del PDF…",
+  "Carregando a página {0} do PDF…"
  ],
  "PDFの {0} ページ目を読み込みました。各面の範囲を合わせてください。": [
-  "Detect faces, or select a face and mark its area on the image. ({0})",
-  "면을 추정하거나 면을 선택해 이미지에 범위를 지정하세요. ({0})",
-  "自动识别，或选择一个面并在图像上标记区域。 ({0})",
-  "自動辨識，或選擇一個面並在圖片上標記區域。 ({0})",
-  "Flächen erkennen oder eine Fläche wählen und im Bild markieren. ({0})",
-  "Détectez les faces ou choisissez-en une et tracez sa zone. ({0})",
-  "Detecta las caras o elige una y marca su área. ({0})",
-  "Detecte as faces ou escolha uma e marque sua área. ({0})"
+  "Loaded PDF page {0}. Adjust the crop for each face.",
+  "PDF {0}페이지를 불러왔습니다. 각 면의 범위를 맞추세요.",
+  "已加载PDF第{0}页。请调整各面的选区。",
+  "已載入PDF第{0}頁。請調整各面的範圍。",
+  "PDF-Seite {0} geladen. Ausschnitte der Flächen anpassen.",
+  "Page {0} du PDF chargée. Ajustez la zone de chaque face.",
+  "Página {0} del PDF cargada. Ajusta el recorte de cada cara.",
+  "Página {0} do PDF carregada. Ajuste o recorte de cada face."
  ],
  "{0}個の線と{1}個のレイヤーを非表示にしました。図柄が消えていないか確認してから適用してください。": [
-  "Artwork and lines with the same color may also be affected. Always preview the result. ({0}, {1})",
-  "같은 색의 디자인도 영향을 받을 수 있으니 결과를 확인하세요. ({0}, {1})",
-  "同色图案和线条也可能受影响，请务必检查结果。 ({0}, {1})",
-  "同色圖案和線條也可能受影響，請務必檢查結果。 ({0}, {1})",
-  "Gleichfarbige Designs können betroffen sein. Ergebnis immer prüfen. ({0}, {1})",
-  "Les éléments de même couleur peuvent être affectés. Vérifiez toujours le résultat. ({0}, {1})",
-  "El diseño del mismo color también puede verse afectado. Revisa el resultado. ({0}, {1})",
-  "Elementos da mesma cor podem ser afetados. Confira o resultado. ({0}, {1})"
+  "Hidden {0} strokes and {1} layers. Check that the artwork is intact before applying.",
+  "선 {0}개와 레이어 {1}개를 숨겼습니다. 디자인이 사라지지 않았는지 확인한 뒤 적용하세요.",
+  "已隐藏{0}条线和{1}个图层。请确认图案未被误删后再应用。",
+  "已隱藏{0}條線和{1}個圖層。請確認圖案未被誤刪後再套用。",
+  "{0} Linien und {1} Ebenen ausgeblendet. Vor dem Anwenden prüfen, ob das Design vollständig ist.",
+  "{0} traits et {1} calques masqués. Vérifiez que le visuel est intact avant d’appliquer.",
+  "Ocultos {0} trazos y {1} capas. Comprueba que el diseño esté intacto antes de aplicar.",
+  "{0} traços e {1} camadas ocultos. Confira se a arte está intacta antes de aplicar."
  ],
  "{0}画素を補修しました。青い表示や元画像と比べて仕上がりを確認してください。": [
-  "Artwork and lines with the same color may also be affected. Always preview the result. ({0})",
-  "같은 색의 디자인도 영향을 받을 수 있으니 결과를 확인하세요. ({0})",
-  "同色图案和线条也可能受影响，请务必检查结果。 ({0})",
-  "同色圖案和線條也可能受影響，請務必檢查結果。 ({0})",
-  "Gleichfarbige Designs können betroffen sein. Ergebnis immer prüfen. ({0})",
-  "Les éléments de même couleur peuvent être affectés. Vérifiez toujours le résultat. ({0})",
-  "El diseño del mismo color también puede verse afectado. Revisa el resultado. ({0})",
-  "Elementos da mesma cor podem ser afetados. Confira o resultado. ({0})"
+  "Repaired {0} pixels. Check the result against the blue overlay and original image.",
+  "{0}픽셀을 보정했습니다. 파란 표시와 원본 이미지를 비교해 결과를 확인하세요.",
+  "已修补{0}个像素。请与蓝色标记及原图对比检查结果。",
+  "已修補{0}個像素。請與藍色標記及原圖對比檢查結果。",
+  "{0} Pixel repariert. Ergebnis mit blauer Markierung und Original vergleichen.",
+  "{0} pixels corrigés. Comparez le résultat au marquage bleu et à l’original.",
+  "Reparados {0} píxeles. Compara el resultado con la marca azul y el original.",
+  "{0} pixels corrigidos. Compare o resultado com a marcação azul e a imagem original."
  ],
  "{0}の範囲。辺・四隅をドラッグしてサイズ調整、内側で移動、外側で選び直し。矢印キーで1px移動。{1}": [
-  "Drag edges or corners to resize, inside to move, outside to select again. ({0}, {1})",
-  "변·모서리로 크기 조절, 안쪽으로 이동, 바깥쪽으로 새로 선택하세요. ({0}, {1})",
-  "拖动边缘或角点调整大小，框内移动，框外重新选择。 ({0}, {1})",
-  "拖曳邊緣或角點調整大小，框內移動，框外重新選取。 ({0}, {1})",
-  "Ränder/Ecken ziehen zum Skalieren, innen verschieben, außen neu auswählen. ({0}, {1})",
-  "Bords et coins : redimensionner ; intérieur : déplacer ; extérieur : resélectionner. ({0}, {1})",
-  "Arrastra bordes para ajustar, dentro para mover y fuera para seleccionar de nuevo. ({0}, {1})",
-  "Arraste bordas para ajustar, dentro para mover e fora para selecionar novamente. ({0}, {1})"
+  "Crop for {0}. Drag edges or corners to resize, inside to move, outside to reselect. Arrow keys move by 1 px. {1}",
+  "{0} 범위. 변·모서리로 크기 조정, 안쪽에서 이동, 바깥쪽에서 새로 선택. 방향키로 1 px 이동. {1}",
+  "{0}的选区。拖动边缘或角点调整尺寸，框内移动，框外重新选择。方向键移动1 px。{1}",
+  "{0}的範圍。拖曳邊緣或角點調整尺寸，框內移動，框外重新選取。方向鍵移動1 px。{1}",
+  "Ausschnitt für {0}. Ränder/Ecken: Größe; innen: verschieben; außen: neu wählen. Pfeiltasten: 1 px. {1}",
+  "Zone de {0}. Bords/coins : taille ; intérieur : déplacer ; extérieur : resélectionner. Flèches : 1 px. {1}",
+  "Recorte de {0}. Bordes/esquinas: tamaño; dentro: mover; fuera: seleccionar de nuevo. Flechas: 1 px. {1}",
+  "Recorte de {0}. Bordas/cantos: tamanho; dentro: mover; fora: selecionar novamente. Setas: 1 px. {1}"
  ],
  "/{0} ページ": [
   "/ {0} pages",
@@ -6261,24 +6261,24 @@ window.BoxTranslations={
   "{0} carregado."
  ],
  "画像をなぞって加工範囲を追加します。": [
-  "Brush to add",
-  "브러시로 추가",
-  "画笔添加",
-  "筆刷加入",
-  "Mit Pinsel hinzufügen",
-  "Ajouter au pinceau",
-  "Añadir con pincel",
-  "Adicionar com pincel"
+  "Paint on the image to add finish areas.",
+  "이미지를 따라 그려 가공 범위를 추가합니다.",
+  "在图像上涂画以添加加工区域。",
+  "在圖片上塗畫以新增加工範圍。",
+  "Im Bild malen, um Veredelungsbereiche hinzuzufügen.",
+  "Peignez sur l’image pour ajouter des zones de finition.",
+  "Pinta sobre la imagen para añadir áreas de acabado.",
+  "Pinte na imagem para adicionar áreas de acabamento."
  ],
  "画像をなぞって加工範囲を消去します。": [
-  "Brush to erase",
-  "브러시로 지우기",
-  "画笔擦除",
-  "筆刷擦除",
-  "Mit Pinsel entfernen",
-  "Effacer au pinceau",
-  "Borrar con pincel",
-  "Apagar com pincel"
+  "Paint on the image to erase finish areas.",
+  "이미지를 따라 그려 가공 범위를 지웁니다.",
+  "在图像上涂画以擦除加工区域。",
+  "在圖片上塗畫以擦除加工範圍。",
+  "Im Bild malen, um Veredelungsbereiche zu löschen.",
+  "Peignez sur l’image pour effacer des zones de finition.",
+  "Pinta sobre la imagen para borrar áreas de acabado.",
+  "Pinte na imagem para apagar áreas de acabamento."
  ],
  "{0}本": [
   "{0} strokes",
@@ -6359,6 +6359,286 @@ window.BoxTranslations={
   "Légende exportée : {0}",
   "Leyenda exportada: {0}",
   "Legenda exportada: {0}"
+ ],
+ "保存する箱の画像": [
+  "Box image to save",
+  "저장할 상자 이미지",
+  "要保存的盒子图像",
+  "要儲存的盒子圖片",
+  "Zu speicherndes Boxbild",
+  "Image de la boîte à enregistrer",
+  "Imagen de caja para guardar",
+  "Imagem da caixa para salvar"
+ ],
+ "箱（上に重ねる）": [
+  "Box (top layer)",
+  "상자 (위에 겹치기)",
+  "盒子（叠放在上方）",
+  "盒子（疊放在上方）",
+  "Box (oben überlagern)",
+  "Boîte (calque supérieur)",
+  "Caja (capa superior)",
+  "Caixa (camada superior)"
+ ],
+ "影（下に重ねる）": [
+  "Shadow (bottom layer)",
+  "그림자 (아래에 겹치기)",
+  "阴影（叠放在下方）",
+  "陰影（疊放在下方）",
+  "Schatten (unten überlagern)",
+  "Ombre (calque inférieur)",
+  "Sombra (capa inferior)",
+  "Sombra (camada inferior)"
+ ],
+ "現在の角度": [
+  "Current angle",
+  "현재 각도",
+  "当前角度",
+  "目前角度",
+  "Aktueller Winkel",
+  "Angle actuel",
+  "Ángulo actual",
+  "Ângulo atual"
+ ],
+ "同じ角度の反対面": [
+  "Opposite face, same angle",
+  "같은 각도의 반대 면",
+  "同角度的另一面",
+  "同角度的另一面",
+  "Gegenseite, gleicher Winkel",
+  "Face opposée, même angle",
+  "Cara opuesta, mismo ángulo",
+  "Face oposta, mesmo ângulo"
+ ],
+ "箱の設定を確認": [
+  "Review box settings",
+  "상자 설정 확인",
+  "检查盒子设置",
+  "檢查盒子設定",
+  "Boxeinstellungen prüfen",
+  "Vérifier les réglages de la boîte",
+  "Revisar ajustes de la caja",
+  "Revisar configurações da caixa"
+ ],
+ "箱の照明を調整": [
+  "Adjust box lighting",
+  "상자 조명 조정",
+  "调整盒子光线",
+  "調整盒子光線",
+  "Boxbeleuchtung einstellen",
+  "Régler l’éclairage de la boîte",
+  "Ajustar iluminación de la caja",
+  "Ajustar iluminação da caixa"
+ ],
+ "推測した{0}面の候補を反映しました": [
+  "Applied {0} detected faces",
+  "추정한 면 후보 {0}개를 적용했습니다",
+  "已应用识别出的{0}个面",
+  "已套用辨識出的{0}個面",
+  "{0} erkannte Flächen angewendet",
+  "{0} faces détectées appliquées",
+  "Aplicadas {0} caras detectadas",
+  "{0} faces detectadas aplicadas"
+ ],
+ "1周{0}秒で回転する箱のサンプル": [
+  "Box rotation sample: {0} seconds per full turn",
+  "한 바퀴 {0}초 상자 회전 샘플",
+  "盒子旋转示例：每圈{0}秒",
+  "盒子旋轉範例：每圈{0}秒",
+  "Boxrotation als Beispiel: {0} Sekunden pro Umdrehung",
+  "Exemple de boîte : {0} secondes par tour",
+  "Ejemplo de caja: {0} segundos por vuelta",
+  "Exemplo de caixa: {0} segundos por volta"
+ ],
+ "1往復{0}秒で回転する箱のサンプル": [
+  "Box rotation sample: {0} seconds per back-and-forth cycle",
+  "왕복 {0}초 상자 회전 샘플",
+  "盒子旋转示例：每次往返{0}秒",
+  "盒子旋轉範例：每次往返{0}秒",
+  "Boxrotation als Beispiel: {0} Sekunden pro Hin-und-her-Zyklus",
+  "Exemple de boîte : {0} secondes par aller-retour",
+  "Ejemplo de caja: {0} segundos por vaivén",
+  "Exemplo de caixa: {0} segundos por ida e volta"
+ ],
+ "{0}秒で回転する箱のサンプル": [
+  "Box rotation sample: {0} seconds",
+  "상자 회전 샘플: {0}초",
+  "盒子旋转示例：{0}秒",
+  "盒子旋轉範例：{0}秒",
+  "Boxrotation als Beispiel: {0} Sekunden",
+  "Exemple de rotation : {0} secondes",
+  "Ejemplo de giro de caja: {0} segundos",
+  "Exemplo de rotação da caixa: {0} segundos"
+ ],
+ "{0}を描画しています…": [
+  "Rendering {0}…",
+  "{0} 렌더링 중…",
+  "正在渲染{0}…",
+  "正在算繪{0}…",
+  "{0} wird gerendert…",
+  "Rendu de {0}…",
+  "Renderizando {0}…",
+  "Renderizando {0}…"
+ ],
+ "箱と影を別々に · {0}": [
+  "Separate box and shadow · {0}",
+  "상자·그림자 분리 · {0}",
+  "盒子与阴影分开 · {0}",
+  "盒子與陰影分開 · {0}",
+  "Box und Schatten getrennt · {0}",
+  "Boîte et ombre séparées · {0}",
+  "Caja y sombra separadas · {0}",
+  "Caixa e sombra separadas · {0}"
+ ],
+ "3カット · {0}": [
+  "3 views · {0}",
+  "3개 구도 · {0}",
+  "3个视角 · {0}",
+  "3個視角 · {0}",
+  "3 Ansichten · {0}",
+  "3 vues · {0}",
+  "3 vistas · {0}",
+  "3 vistas · {0}"
+ ],
+ "2カット · {0}": [
+  "2 views · {0}",
+  "2개 구도 · {0}",
+  "2个视角 · {0}",
+  "2個視角 · {0}",
+  "2 Ansichten · {0}",
+  "2 vues · {0}",
+  "2 vistas · {0}",
+  "2 vistas · {0}"
+ ],
+ "{0}秒ループ": [
+  "{0}-second loop",
+  "{0}초 반복",
+  "{0}秒循环",
+  "{0}秒循環",
+  "{0}-Sekunden-Schleife",
+  "Boucle de {0} secondes",
+  "Bucle de {0} segundos",
+  "Loop de {0} segundos"
+ ],
+ "往復回転GIF": [
+  "Back-and-forth GIF",
+  "왕복 회전 GIF",
+  "往复旋转GIF",
+  "往復旋轉GIF",
+  "GIF mit Hin-und-her-Drehung",
+  "GIF en va-et-vient",
+  "GIF de giro de ida y vuelta",
+  "GIF de rotação de ida e volta"
+ ],
+ " · ライブビューの画角": [
+  " · live-view framing",
+  " · 실시간 보기의 화각",
+  " · 实时预览的取景范围",
+  " · 即時預覽的取景範圍",
+  " · Bildausschnitt der Liveansicht",
+  " · cadrage de la vue en direct",
+  " · encuadre de la vista en directo",
+  " · enquadramento da vista ao vivo"
+ ],
+ "{0} 固定": [
+  "{0} locked",
+  "{0} 고정",
+  "{0}已锁定",
+  "{0}已鎖定",
+  "{0} fixiert",
+  "{0} fixé",
+  "{0} fijado",
+  "{0} fixado"
+ ],
+ "{0} 候補": [
+  "{0} candidate",
+  "{0} 후보",
+  "{0}候选",
+  "{0}候選",
+  "{0} Vorschlag",
+  "{0} proposé",
+  "{0} candidato",
+  "{0} candidato"
+ ],
+ "{0} · {1}°": [
+  "{0} · {1}°",
+  "{0} · {1}°",
+  "{0} · {1}°",
+  "{0} · {1}°",
+  "{0} · {1}°",
+  "{0} · {1}°",
+  "{0} · {1}°",
+  "{0} · {1}°"
+ ],
+ "スタジオ：自然な立体感": [
+  "Studio: natural depth",
+  "스튜디오: 자연스러운 입체감",
+  "摄影棚：自然立体感",
+  "攝影棚：自然立體感",
+  "Studio: natürliche Tiefe",
+  "Studio : relief naturel",
+  "Estudio: volumen natural",
+  "Estúdio: profundidade natural"
+ ],
+ "色を確認：陰影ひかえめ": [
+  "Color check: minimal shading",
+  "색상 확인: 약한 명암",
+  "检查颜色：减少阴影",
+  "檢查顏色：減少陰影",
+  "Farbprüfung: dezente Schattierung",
+  "Vérifier les couleurs : ombres réduites",
+  "Comprobar color: sombras suaves",
+  "Verificar cor: sombras discretas"
+ ],
+ "やわらか：ふんわりした光": [
+  "Soft: gentle light",
+  "부드럽게: 은은한 빛",
+  "柔和：柔软光线",
+  "柔和：柔軟光線",
+  "Weich: sanftes Licht",
+  "Doux : lumière diffuse",
+  "Suave: luz difusa",
+  "Suave: luz difusa"
+ ],
+ "くっきり：陰影をはっきり": [
+  "Contrast: defined shadows",
+  "선명하게: 뚜렷한 명암",
+  "清晰：强化明暗",
+  "清晰：強化明暗",
+  "Kontrast: deutliche Schatten",
+  "Contrasté : ombres marquées",
+  "Contraste: sombras definidas",
+  "Contraste: sombras definidas"
+ ],
+ "暖かい光：ぬくもりのある色": [
+  "Warm light: warm tones",
+  "따뜻한 빛: 따뜻한 색감",
+  "暖光：温暖色调",
+  "暖光：溫暖色調",
+  "Warmes Licht: warme Farbtöne",
+  "Lumière chaude : tons chaleureux",
+  "Luz cálida: tonos cálidos",
+  "Luz quente: tons acolhedores"
+ ],
+ "{0} · {1}秒ループ · ライブビューの画角": [
+  "{0} · {1}-second loop · live-view framing",
+  "{0} · {1}초 반복 · 실시간 보기의 화각",
+  "{0} · {1}秒循环 · 实时预览的取景范围",
+  "{0} · {1}秒循環 · 即時預覽的取景範圍",
+  "{0} · {1}-Sekunden-Schleife · Bildausschnitt der Liveansicht",
+  "{0} · boucle de {1} secondes · cadrage de la vue en direct",
+  "{0} · bucle de {1} segundos · encuadre de la vista en directo",
+  "{0} · loop de {1} segundos · enquadramento da vista ao vivo"
+ ],
+ "{0} · {1}秒ループ": [
+  "{0} · {1}-second loop",
+  "{0} · {1}초 반복",
+  "{0} · {1}秒循环",
+  "{0} · {1}秒循環",
+  "{0} · {1}-Sekunden-Schleife",
+  "{0} · boucle de {1} secondes",
+  "{0} · bucle de {1} segundos",
+  "{0} · loop de {1} segundos"
  ]
 };
 window.BoxLocaleHelp={
@@ -6433,7 +6713,7 @@ window.BoxLocaleHelp={
   ],
   [
    "Reset all settings",
-   "Reset dimensions, views, lighting, focus, background, export settings and artwork placement to the initial sample? Original and saved files will not be deleted."
+   "Reset all settings and artwork to the initial sample? Unsaved changes will be lost. Save your project first. Original and saved files remain intact."
   ]
  ],
  "ko": [
@@ -6507,7 +6787,7 @@ window.BoxLocaleHelp={
   ],
   [
    "모든 설정 초기화",
-   "치수·구도·조명·초점·배경·저장 설정·이미지 배치를 초기 샘플로 되돌릴까요? 원본 및 저장 파일은 삭제되지 않습니다."
+   "모든 설정과 이미지를 초기 샘플로 되돌릴까요? 저장하지 않은 변경 사항은 사라집니다. 먼저 프로젝트를 저장하세요. 원본·저장 파일은 유지됩니다."
   ]
  ],
  "zh-CN": [
@@ -6581,7 +6861,7 @@ window.BoxLocaleHelp={
   ],
   [
    "重置所有设置",
-   "将尺寸、视角、光线、焦点、背景、导出设置和图像配置重置为初始示例？原始文件和已保存文件不会删除。"
+   "将所有设置和图像重置为初始示例？未保存的更改将丢失，请先保存项目。原始及已保存文件不受影响。"
   ]
  ],
  "zh-TW": [
@@ -6655,7 +6935,7 @@ window.BoxLocaleHelp={
   ],
   [
    "重設所有設定",
-   "將尺寸、視角、光線、焦點、背景、匯出設定和圖片配置重設為初始範例？原始檔和已儲存檔不會刪除。"
+   "將所有設定和圖片重設為初始範例？未儲存的變更將遺失，請先儲存專案。原始及已儲存檔案不受影響。"
   ]
  ],
  "de": [
@@ -6729,7 +7009,7 @@ window.BoxLocaleHelp={
   ],
   [
    "Alle Einstellungen zurücksetzen",
-   "Maße, Ansicht, Licht, Fokus, Hintergrund, Export und Design auf das Startbeispiel zurücksetzen? Originale und gespeicherte Dateien bleiben erhalten."
+   "Alle Einstellungen und das Bild auf das Startbeispiel zurücksetzen? Ungespeicherte Änderungen gehen verloren. Projekt vorher speichern. Originale und gespeicherte Dateien bleiben erhalten."
   ]
  ],
  "fr": [
@@ -6803,7 +7083,7 @@ window.BoxLocaleHelp={
   ],
   [
    "Tout réinitialiser",
-   "Réinitialiser dimensions, vue, lumière, focus, fond, export et placement vers l’exemple initial ? Les fichiers originaux et enregistrés restent intacts."
+   "Tout réinitialiser vers l’exemple initial ? Les modifications non enregistrées seront perdues. Enregistrez le projet avant. Les fichiers originaux et enregistrés restent intacts."
   ]
  ],
  "es": [
@@ -6877,7 +7157,7 @@ window.BoxLocaleHelp={
   ],
   [
    "Restablecer todo",
-   "¿Restablecer medidas, vistas, luz, foco, fondo, exportación y diseño al ejemplo inicial? No se borrarán archivos originales ni guardados."
+   "¿Restablecer todo al ejemplo inicial? Se perderán los cambios sin guardar. Guarda el proyecto antes. Los archivos originales y guardados se conservan."
   ]
  ],
  "pt-BR": [
@@ -6951,7 +7231,7 @@ window.BoxLocaleHelp={
   ],
   [
    "Redefinir tudo",
-   "Redefinir dimensões, vistas, luz, foco, fundo, exportação e arte ao exemplo inicial? Arquivos originais e salvos não serão apagados."
+   "Redefinir tudo para o exemplo inicial? Alterações não salvas serão perdidas. Salve o projeto antes. Arquivos originais e salvos permanecem intactos."
   ]
  ]
 };

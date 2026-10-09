@@ -559,7 +559,7 @@ const tick=()=>new Promise(resolve=>setTimeout(resolve,0));
 function syncExportButtons(){for(const id of ['export-three','export-pair','export-gif','export-layers'])$(id).disabled=!ready||!sourceImage||importing||exporting;}
 function captionLines(){
  const lines=[];if($('dimension-caption').checked)lines.push(box.width+' × '+box.height+' × '+box.depth+' mm');
- if(referenceMesh)lines.push(BoxFeatures.references[$('size-reference').value].label);return lines;
+ if(referenceMesh){const label=BoxFeatures.references[$('size-reference').value].label;lines.push(window.BoxI18n?.t(label)??label);}return lines;
 }
 function paintCornerCaption(ctx,width,height,lines){
  if(lines.length){let font=Math.max(12,Math.round(Math.min(width,height)*.018));ctx.font='500 '+font+'px sans-serif';const measured=Math.max(...lines.map(t=>ctx.measureText(t).width))+font*1.3;if(measured>width*.88)font=Math.max(6,Math.floor(font*width*.88/measured));const pad=font*.65,margin=font*1.1;ctx.font='500 '+font+'px sans-serif';ctx.textBaseline='top';const labelW=Math.max(...lines.map(t=>ctx.measureText(t).width))+pad*2,labelH=font*1.5*lines.length+pad*2,x=width-margin-labelW,y=height-margin-labelH;ctx.fillStyle='rgba(255,255,255,.9)';ctx.fillRect(x,y,labelW,labelH);ctx.fillStyle='#35383e';lines.forEach((text,i)=>ctx.fillText(text,x+pad,y+pad+i*font*1.5));}
@@ -572,6 +572,7 @@ function syncCaptionPreview(){
  const ctx=canvas.getContext('2d');ctx.setTransform(ratio,0,0,ratio,0,0);ctx.clearRect(0,0,w,h);const lines=captionLines();paintCornerCaption(ctx,w,h,lines);canvas.setAttribute('aria-label','書き出し時の右下の表記：'+lines.join('、'));
 }
 $('dimension-caption').addEventListener('change',()=>{syncCaptionPreview();save();});
+document.addEventListener('box-language-change',()=>{if(ready&&!exporting)syncCaptionPreview();});
 function dimensionsFor(longEdge){const ratio={square:1,portrait:4/5,story:9/16,wide:16/9}[$('output-aspect').value]||1;return ratio>=1?[longEdge,Math.round(longEdge/ratio)]:[Math.round(longEdge*ratio),longEdge];}
 function exportCameraFor(width,height,bounds,baseCamera=camera){
  const cam=baseCamera.clone();cam.aspect=width/height;cam.zoom=1;cam.clearViewOffset();cam.updateProjectionMatrix();const b={...(bounds||outputBounds(cam))};
